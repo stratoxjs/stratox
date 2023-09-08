@@ -19,7 +19,7 @@ export class Stratox {
     #imported = [];
     #elem;
     #values = {};
-    #creator = [];
+    #creator = {};
 
     static #staticImport = [];
 
@@ -52,15 +52,33 @@ export class Stratox {
         StratoxBuilder.setComponent(key, fn, this);
     }
 
+
     /**
      * Easily create a view
      * @param {string} key  View key/name
      * @param {object} data Object data to pass on to the view
      * @return Create (will return an instance of Create)
      */
-    addView(key, data) {
-        this.#creator.push(Create.view(key, data));
-        return this.#creator[this.#creator.length-1];
+    view(key, data) {
+        let newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
+        $.extend(newObj, data);
+        this.#creator[key] = Create.view(key, newObj);
+        return this.#creator[key];
+    }
+
+
+    /**
+     * Easily create a form item
+     * @param {string} type  Form type (text, textarea, select, checkbox, radio)
+     * @param {string} name  Field name
+     * @param {string} label Add label to field
+     * @return Create (will  return an instance of Create)
+     */
+    form(name, data) {
+        let newObj = (this.#components[name]) ? this.#components[name] : {};
+        $.extend(newObj, data);
+        this.#creator[name] = Create.form(name, data);
+        return this.#creator[name];
     }
 
     /**
@@ -71,37 +89,25 @@ export class Stratox {
      * @return Create (will  return an instance of Create)
      */
     addForm(type, name, label) {
-        this.#creator.push(Create.form(type, name, label));
-        return this.#creator[this.#creator.length-1];
+        this.#creator[name] = Create.form(type, name, label);
+        return this.#creator[name];
     }
 
     /**
-     * Advanced option to add view and form data 
-     * @param {mixed} key  The view key/name or object form Create instance
-     * @param {object} data Pass data to view
+     * Easily create a form item
+     * @param {string} type  Form type (text, textarea, select, checkbox, radio)
+     * @param {string} name  Field name
+     * @param {string} label Add label to field
+     * @return Create (will  return an instance of Create)
      */
-    add(key, data) {
-        if(key instanceof Create) {
-            this.#components[key.getName()] = key;
-        } else {
-            this.#components[key] = data;
-        }
-        return this;
+    updateForm(key, data) {
+        let newObj = (this.#components[key] && this.#components[key].type) ? this.#components[key] : { type: "text" };
+        $.extend(newObj, data);
+        this.#creator[name] = Create.form(newObj.type, newObj.name, (newObj.label ?? "")).merge(newObj);
+        return this.#creator[name];
     }
 
-    /**
-     * Advanced option to add view and form data 
-     * @param {mixed} key  The view key/name or object form Create instance
-     * @param {object} data Pass data to view
-     */
-    add(key, data) {
-        if(key instanceof Create) {
-            this.#components[key.getName()] = key;
-        } else {
-            this.#components[key] = data;
-        }
-        return this;
-    }
+    
 
 
     /**
@@ -119,6 +125,12 @@ export class Stratox {
      * @return {void}
      */
     update(key, data) {
+
+        if(key === undefined) {
+            this.#observer.set(this.#components);
+            return this;
+        }
+
         if(key instanceof Create) {
             this.#components[key.getName()] = key;
         } else {
@@ -130,6 +142,21 @@ export class Stratox {
         }
 
         this.#observer.set(this.#components);
+        return this;
+    }
+
+
+    /**
+     * Advanced option to add view and form data 
+     * @param {mixed} key  The view key/name or object form Create instance
+     * @param {object} data Pass data to view
+     */
+    add(key, data) {
+        if(key instanceof Create) {
+            this.#components[key.getName()] = key;
+        } else {
+            this.#components[key] = data;
+        }
         return this;
     }
 
@@ -185,9 +212,10 @@ export class Stratox {
     execute(call) {
         let inst = this;
 
-        if(typeof this.#creator === "object" && this.#creator.length > 0) {
-            for(let i = 0; i < this.#creator.length; i++) this.add(this.#creator[i]);
-        }
+        if(!$.isEmptyObject(this.#creator)) $.each(this.#creator, function(k, v) {
+            inst.add(v);
+        });
+
         this.#observer = new StratoxObserver(this.#components);
 
         inst.build(function(field) {

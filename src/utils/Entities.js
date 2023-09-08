@@ -38,8 +38,14 @@ export class Entities extends String {
         return this.replace(/[&<>"']/g, match => map[match]);
     }
 
+    protect() {
+        this.htmlspecialchars();
+        return this;
+    }
+
     xss() {
-        return this.htmlspecialchars();
+        this.htmlspecialchars();
+        return this;
     }
 
     urlencode() {

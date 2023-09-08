@@ -14,16 +14,21 @@ $(document).ready(function() {
 
 	let stratox = new Stratox("#ingress");
 
+
 	// Will return a Create instance of Stratox 
 	// src/views/ingress.js
-	let create = stratox.addView("ingress", {
+	let create = stratox.view("ingress", {
 	    headline: "Lorem ipsum dolor",
-	    content: "Lorem ipsum dolor sit amet"
+	    content: "Lorem ipsum dolor sit amet",
+	    tags: ["Tag 1", "Tag 2", "Tag 3"]
 	});
 
 	// Add some form fields to ingress field
-	stratox.addForm("text", "name", "Name");
-	stratox.addForm("text", "email", "Email");
+	stratox.form("name").setLabel("Name");
+
+	stratox.form("email").setLabel("Email");
+
+	
 
 
 
@@ -33,19 +38,20 @@ $(document).ready(function() {
 	stratox.execute(function(observer) {
 
 
+
 		$("#add-phone").click(function(e) {
 			e.preventDefault();
-			stratox.update(stratox.addForm("text", "phone", "Phone"));
+			stratox.update(stratox.form("phone").setLabel());
 		});
 
 		let stratoxFooter = new Stratox("#footer");
 
-		stratoxFooter.addView("footer", {
+		stratoxFooter.view("footer", {
 		    headline: "Please use the email fields!",
 		    content: "Is the email address korrekt?"
 		});
 		
-		stratoxFooter.addForm("group", "groupedField", "Group")
+		stratoxFooter.form("customField", { type: "group" })
 		.setFields({
 			ingress: {
 				type: "ingress",
@@ -73,11 +79,11 @@ $(document).ready(function() {
 		$(document).on("input", function(e) {
 			let inp = $(e.target), name = inp.attr("name");
 			if(name === "email") {
-				stratoxFooter.update("footer", function(data) {
-					data.data.headline = inp.val();
-				});
+				stratoxFooter.view("footer", { headline: inp.val() });
+				stratoxFooter.update();
 			}
 		});
+		
 
 	});
 
@@ -95,7 +101,7 @@ $(document).ready(function() {
 	});
 
 	let stratoxEvent = new Stratox();
-	stratoxEvent.addView("component", {
+	stratoxEvent.view("component", {
 	    headline: "Lorem ipsum dolor",
 	    content: "Lorem ipsum dolor sit amet"
 	});

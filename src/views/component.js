@@ -19,9 +19,9 @@ export function component(data, name, inst) {
     $("#event-holder").on("click", ".btn", function(e) {
     	e.preventDefault();
     	if(!inst.count) inst.count = 1;
-    	inst.update(name, {
-    		headline: "Updated "+inst.count+" time"
-    	});
+    	inst.update(name, function(obj) {
+            obj.data.headline = "Updated "+inst.count+" time";
+        });
     	inst.count++;
     });
 

@@ -31,6 +31,9 @@ const StratoxFunc = {
         if(typeof items !== "object") return false;
         return items.includes(item);
 
+    }, isEmptyObject(obj) {
+        return (Object.keys(obj).length === 0);
+
     }, count: function(arr) {
         return (this.isArray(arr)) ? arr.length : 0;
 

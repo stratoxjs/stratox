@@ -230,7 +230,7 @@ export class StratoxBuilder extends StratoxTemplate {
         let val = this.#padFieldValues(), out, fn, formatedData;
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
             if(typeof fn === "function") {
-                out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this);
+                out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this, $);
             } else {
                 out = this[this.data.type]();
             }         

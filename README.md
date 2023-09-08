@@ -43,11 +43,11 @@ export function ingressComponent(data, name, stratox, builder, helper) {
 	<header class="relative">
 		<h1 class="title">${data.headline.toUpperCase()}</h1>
 		<p>${data.content}</p>
-		${tags(data)}
+		${tags()}
 	</header>
 	`;
 
-	function tags(data) {
+	function tags() {
 		let out = "";
 		if(helper.isArray(data.tags ?? null)) {
 			out += '<div class="tags">';

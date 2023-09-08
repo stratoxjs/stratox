@@ -7,7 +7,7 @@ Over the past few years, JavaScript has grown into an incredibly powerful langua
 We encourage developers to prioritize JavaScript and HTML, as they rightly should, instead of grappling with the complexities of new markup and platform-specific functions, which in the end only lead to the burden of unnecessary abstractions. Stratox harnesses JavaScript's core capabilities, promoting a practical and fundamental approach to modern web development.
 
 ### Platform-agnostic nature
-Stratox.js doesn't discriminate or judge based on the platform you use, and it works seamlessly on all platforms and depends on nothing but it self!
+Stratox.js doesn't discriminate or judge based on the platform you use, and it works seamlessly on all platforms and depends on nothing but it self.
 
 ## Example
 

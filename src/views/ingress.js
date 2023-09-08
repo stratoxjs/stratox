@@ -9,11 +9,11 @@ export function ingressComponent(data, name, model, builder, helper) {
 		<div class="abs top right pad legend">ingress</div>
 	    <h1 class="title">${data.headline.toUpperCase()}</h1>
 	    <p>${data.content}</p>
-	    ${tags(data)}
+	    ${tags()}
 	</header>
 	`;
 
-	function tags(data) {
+	function tags() {
 		let out = "";
 		if(helper.isArray(data.tags ?? null)) {
 			out += '<div class="tags">';

@@ -25,24 +25,11 @@ $(document).ready(function() {
 
 	// Add some form fields to ingress field
 	stratox.form("name").setLabel("Name");
-
 	stratox.form("email").setLabel("Email");
-
 	
-
-
-
-
 
 	// Now the ingress, form data and the footer rest in the same view
 	stratox.execute(function(observer) {
-
-
-
-		$("#add-phone").click(function(e) {
-			e.preventDefault();
-			stratox.update(stratox.form("phone").setLabel());
-		});
 
 		let stratoxFooter = new Stratox("#footer");
 
@@ -107,5 +94,5 @@ $(document).ready(function() {
 	});
 
 	stratoxEvent.execute();
-});
 
+});

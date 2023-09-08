@@ -66,7 +66,6 @@ export class Stratox {
         return this.#creator[key];
     }
 
-
     /**
      * Easily create a form item
      * @param {string} type  Form type (text, textarea, select, checkbox, radio)
@@ -80,35 +79,6 @@ export class Stratox {
         this.#creator[name] = Create.form(name, data);
         return this.#creator[name];
     }
-
-    /**
-     * Easily create a form item
-     * @param {string} type  Form type (text, textarea, select, checkbox, radio)
-     * @param {string} name  Field name
-     * @param {string} label Add label to field
-     * @return Create (will  return an instance of Create)
-     */
-    addForm(type, name, label) {
-        this.#creator[name] = Create.form(type, name, label);
-        return this.#creator[name];
-    }
-
-    /**
-     * Easily create a form item
-     * @param {string} type  Form type (text, textarea, select, checkbox, radio)
-     * @param {string} name  Field name
-     * @param {string} label Add label to field
-     * @return Create (will  return an instance of Create)
-     */
-    updateForm(key, data) {
-        let newObj = (this.#components[key] && this.#components[key].type) ? this.#components[key] : { type: "text" };
-        $.extend(newObj, data);
-        this.#creator[name] = Create.form(newObj.type, newObj.name, (newObj.label ?? "")).merge(newObj);
-        return this.#creator[name];
-    }
-
-    
-
 
     /**
      * Get componet object in its pure form
@@ -125,7 +95,6 @@ export class Stratox {
      * @return {void}
      */
     update(key, data) {
-
         if(key === undefined) {
             this.#observer.set(this.#components);
             return this;
@@ -144,8 +113,7 @@ export class Stratox {
         this.#observer.set(this.#components);
         return this;
     }
-
-
+    
     /**
      * Advanced option to add view and form data 
      * @param {mixed} key  The view key/name or object form Create instance

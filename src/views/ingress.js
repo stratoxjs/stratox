@@ -17,7 +17,7 @@ export function ingressComponent(data, name, model, builder, helper) {
 		let out = "";
 		if(helper.isArray(data.tags ?? null)) {
 			out += '<div class="tags">';
-			helper.each(data.tags, function(e, val) {
+			helper.each(data.tags, (key, val) => {
 				out += '<div class="tag">'+val.toUpperCase()+'</div>';
 		    });
 		    out += '</div>';

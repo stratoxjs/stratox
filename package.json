@@ -1,0 +1,20 @@
+{
+  "name": "stratox",
+  "version": "1.0.3",
+  "description": "JavaScript templates engine for building user interfaces",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "template",
+    "library",
+    "agnostic"
+  ],
+  "author": "Daniel Ronkainen",
+  "license": "Apache-2.0"
+}

@@ -37,6 +37,9 @@ To begin, create a template file, such as **"/src/views/ingress.js"**. The file 
 // The important part is that at least one function must be exported
 export function ingressComponent(data, name, stratox, builder, helper) {
 
+	// In this example I am using Javacript Template literals for a clean look.
+	// But as this is regular Javacript you can output it as you want.
+	
 	let out = `
 	<header class="relative">
 		<h1 class="title">${data.headline.toUpperCase()}</h1>

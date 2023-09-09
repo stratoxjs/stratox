@@ -1,3 +1,4 @@
+
 # Stratox.js - Template library for building user interfaces
 
 Stratox.js, an modern JavaScript library, facilitates the development of templates and user interfaces (UI) with a focus on components and views, offering a flexible and efficient approach to web development.
@@ -6,6 +7,13 @@ We encourage developers to prioritize JavaScript and HTML, as they should, inste
 
 ### Platform-agnostic nature
 Stratox.js doesn't discriminate or judge based on the platform you use, and it works seamlessly on all platforms and depends on nothing but it self.
+
+
+## Installation
+```
+npm i stratox
+```
+*Or just download the zip and import Stratox.js file*
 
 ## Example
 

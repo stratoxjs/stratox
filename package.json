@@ -2,7 +2,6 @@
   "name": "stratox",
   "version": "1.0.3",
   "description": "JavaScript templates engine for building user interfaces",
-  "main": "index.js",
   "directories": {
     "example": "examples",
     "test": "tests"
@@ -13,6 +12,7 @@
   "keywords": [
     "template",
     "library",
+    "ES6",
     "agnostic"
   ],
   "author": "Daniel Ronkainen",

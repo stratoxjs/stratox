@@ -1,5 +1,6 @@
 
 
+
 # Stratox.js - Template library for building user interfaces
 
 Stratox.js, an modern JavaScript library, facilitates the development of templates and user interfaces (UI) with a focus on components and views, offering a flexible and efficient approach to web development.
@@ -16,7 +17,14 @@ npm i stratox
 ```
 *Or just download the zip and import Stratox.js file*
 
-## Example
+
+## Full documentation
+The initial documentation draft is ready.
+### [See it here](https://wazabii.se/stratoxDocs/)
+
+
+## Quick guide / Preview
+This is just a quick guide to preview how easy it is. Visit the link above for the full documention.
 
 ### index.html
 Begin by adding an element to the HTML document.
@@ -35,8 +43,6 @@ Stratox.setConfigs({
 ```
 **xss:** The data are safeguarded against malicious attacks like XSS
 **directory:** Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
-
-
 
 ### Template files
 First, we need to create a template for use. There are multiple ways to do this, but for this example, I'll demonstrate the most straightforward method. More examples will follow.
@@ -102,12 +108,12 @@ That is it... As you can see it is very easy if you know HTML and javascript.
 Want to update the templates information? 
 ```js
 
-stratoxFooter.view("ingress", { headline: "Headline updated once!" });
-stratoxFooter.update();
+stratoxIngress.view("ingress", { headline: "Headline updated once!" });
+stratoxIngress.update();
 
 // Or...
 
-stratoxFooter.update("ingress", function(obj) {
+stratoxIngress.update("ingress", function(obj) {
 	obj.data.headline = "Headline updated twize!";
 });
 

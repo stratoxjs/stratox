@@ -126,8 +126,22 @@ export class Stratox {
         return this;
     }
 
+    /**
+     * Trigger callback when script is ready
+     * @param  {Function} fn
+     * @return {void}
+     */
     eventOnload(fn) {
         setTimeout(fn, 1);
+    }
+
+    /**
+     * Set form values
+     * @param {object}
+     */
+    setValues(values) {
+        if(typeof values === "object") throw new Error("The argument 1 has to be an object");
+        this.#values = values;
     }
     
     /**

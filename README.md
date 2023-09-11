@@ -20,7 +20,7 @@ npm i stratox
 
 ## Full documentation
 The initial documentation draft is ready.
-### [See it here](https://wazabii.se/stratoxDocs/)
+### [Read the documentation](https://wazabii.se/stratoxDocs/)
 
 
 ## Quick guide / Preview

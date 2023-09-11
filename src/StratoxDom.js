@@ -280,7 +280,7 @@ const StratoxFunc = {
             return this;
 
         }, children: function() {
-            return wa(this.get(0).parentElement.children);
+            return StratoxDom(this.get(0).parentElement.children);
 
         }, siblings: function() {
             let el = this.get(0), children = el.parentElement.children, arr = Array();
@@ -298,27 +298,27 @@ const StratoxFunc = {
             return this;
 
         }, parent: function() {
-            return wa(this.get(0).parentElement);
+            return StratoxDom(this.get(0).parentElement);
 
         }, first: function() {
-            return wa(this.get(0));
+            return StratoxDom(this.get(0));
 
         }, last: function() {
             let l = this.selector.length-1;
-            return wa(this.get(l));
+            return StratoxDom(this.get(l));
 
         }, next: function(i) {
-            return wa(this.get(i).nextElementSibling);
+            return StratoxDom(this.get(i).nextElementSibling);
 
         }, prev: function(i) {
-            return wa(this.get(i).previousElementSibling);
+            return StratoxDom(this.get(i).previousElementSibling);
 
         }, eq: function(i) {
             let k = StratoxFunc.toNum(i);
             if(this.selector && this.selector[0] && this.selector[0][0]) {
-                return wa(this.selector[0][i]);
+                return StratoxDom(this.selector[0][i]);
             }
-            return wa(this.selector[i]);
+            return StratoxDom(this.selector[i]);
 
         }, getLength: function() {
             return this.selector.length;
@@ -335,11 +335,11 @@ const StratoxFunc = {
 
         }, find: function(elem) {
             //let el = this.query(elem, this.get(0), true);
-            return wa(this.query(elem, this.get(0), true));
+            return StratoxDom(this.query(elem, this.get(0), true));
 
         }, closest: function(elem) {
             let selector = this.get(0).closest(elem);
-            return wa(selector);
+            return StratoxDom(selector);
 
         }, get: function(i) {
             let k = StratoxFunc.toNum(i);
@@ -362,8 +362,9 @@ const StratoxFunc = {
             return this;
 
         }, on: function(events, call, call2, call3) {
+
             if(typeof call3 === "function") {
-                let newInst = wa(this.query(call, this.get(0), true));
+                let newInst = StratoxDom(this.query(call, this.get(0), true));
                 newInst.each(function(el) {
                     el.addEventListener(events, function(e) {
                         e.data = call2;
@@ -385,7 +386,11 @@ const StratoxFunc = {
                 
             } else {
                 this.each(function(el) {
-                    if(el) el.addEventListener(events, call);
+                    if(el) el.addEventListener(events, function(e) {
+                        let newTarget = e.target;
+                        call.apply(newTarget, [e, newTarget]);
+                        return newTarget;
+                    });
                 });
             }
 
@@ -496,7 +501,7 @@ const StratoxFunc = {
                 el.insertAdjacentHTML("beforeend", out);
                 lastEl = el;
             });
-            return wa(lastEl.lastChild);
+            return StratoxDom(lastEl.lastChild);
 
         }, prepend: function(out) {
             let lastEl;
@@ -504,14 +509,14 @@ const StratoxFunc = {
                 el.insertAdjacentHTML("afterbegin", out);
                 lastEl = el;
             });
-            return wa(lastEl.firstChild);
+            return StratoxDom(lastEl.firstChild);
 
         }, appendTo: function(elem) {
-            let inst = wa(elem).append(this.parent().html());
+            let inst = StratoxDom(elem).append(this.parent().html());
             return inst;
         
         }, prependTo: function(elem) {
-            let inst = wa(elem).prepend(this.parent().html());
+            let inst = StratoxDom(elem).prepend(this.parent().html());
             return inst;
 
         }, before: function(out) {
@@ -521,7 +526,7 @@ const StratoxFunc = {
                 el.insertAdjacentHTML("beforebegin", out);
                 lastEl = el;
             });
-            return wa(lastEl).prev();
+            return StratoxDom(lastEl).prev();
 
         }, after: function(out) {
             let lastEl;
@@ -530,13 +535,13 @@ const StratoxFunc = {
                 lastEl = el;
             });
 
-            return wa(lastEl).next();
+            return StratoxDom(lastEl).next();
 
         }, insertBefore: function(elem) {
-            return wa(elem).before(this.textSelector);
+            return StratoxDom(elem).before(this.textSelector);
 
         }, insertAfter: function(elem) {
-            return wa(elem).after(this.textSelector);
+            return StratoxDom(elem).after(this.textSelector);
             
         }, replaceWith: function(out) {
             let inst = this;
@@ -549,7 +554,7 @@ const StratoxFunc = {
                     el.replaceWith(newEl);
                 });
 
-                return wa(newEl);
+                return StratoxDom(newEl);
 
             } else {
                 this.each(function(el) {
@@ -595,5 +600,3 @@ const StratoxFunc = {
 }
 
 export const StratoxDom = StratoxFunc.extend(StratoxObj, StratoxFunc);
-
-

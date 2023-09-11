@@ -1,4 +1,5 @@
 
+
 # Stratox.js - Template library for building user interfaces
 
 Stratox.js, an modern JavaScript library, facilitates the development of templates and user interfaces (UI) with a focus on components and views, offering a flexible and efficient approach to web development.
@@ -25,14 +26,17 @@ Begin by adding an element to the HTML document.
 ```
 
 ### Configure 
-Add the configuration bellow some where it will globally execute
-*/examples/App.js*
+Add the configuration bellow in you main js file, some where it will globally execute.
 ```js
 Stratox.setConfigs({
 	xss: "true, // (Default: true) Will auto protect all input data
-	directory: "./views/"
+	directory: "/absolute/path/to/views/"
 });
 ```
+**xss:** The data are safeguarded against malicious attacks like XSS
+**directory:** Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
+
+
 
 ### Template files
 First, we need to create a template for use. There are multiple ways to do this, but for this example, I'll demonstrate the most straightforward method. More examples will follow.

@@ -157,10 +157,10 @@ export class StratoxBuilder extends StratoxTemplate {
      * @return {object}
      */
     getValidateItem(key) {
-    	if(this.data && this.data.validate && this.data.validate[key]) {
-    		return this.data.validate[key];
-    	}
-    	return false;
+        if(this.data && this.data.validate && this.data.validate[key]) {
+            return this.data.validate[key];
+        }
+        return false;
     }
 
     /**
@@ -170,8 +170,8 @@ export class StratoxBuilder extends StratoxTemplate {
      * @return {string|bool}
      */
     getValidation(key, argKey) {
-    	let vl;
-    	return ((vl = this.getValidateItem(key)) && vl[argKey] !== undefined) ? vl[argKey] : false;
+        let vl;
+        return ((vl = this.getValidateItem(key)) && vl[argKey] !== undefined) ? vl[argKey] : false;
     }
 
     /**
@@ -230,7 +230,8 @@ export class StratoxBuilder extends StratoxTemplate {
         let val = this.#padFieldValues(), out, fn, formatedData;
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
             if(typeof fn === "function") {
-                out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this, $);
+                //out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this, $);
+                out = fn.apply(this.model, [this.#autoProtectData(this.data.data ?? {}), this.data.type, $, this]);
             } else {
                 out = this[this.data.type]();
             }         
@@ -238,7 +239,8 @@ export class StratoxBuilder extends StratoxTemplate {
             return (out ? out : "");
 
         } else {
-            throw new Error('The component/view named "'+this.data.type+'" does not exist.');
+            this.model.observer().stop();
+            console.error('The component/view named "'+this.data.type+'" does not exist.');
         }
     }
 

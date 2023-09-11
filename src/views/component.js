@@ -1,9 +1,9 @@
 import { StratoxDom as $ } from '../StratoxDom.js';
 
 
-export function component(data, name, inst) {
+export function component(data, name, helper, builder) {
 
-    let obj = $("#events"), 
+    let inst = this, obj = $("#events"), 
     out = `
     <section id="event-holder" class="holder relative">
     	<div class="abs top right pad legend">${name}</div>

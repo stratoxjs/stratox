@@ -16,7 +16,8 @@ export class Stratox {
     #field;
     #components = {};
     #observer = {};
-    #imported = [];
+    #imported = {};
+    #incremented = [];
     #elem;
     #values = {};
     #creator = {};
@@ -31,6 +32,17 @@ export class Stratox {
     constructor(obj) {
         this.#elem = $(obj);
         this.#values = {};
+    }
+
+    /**
+     * Will resolve the relative path
+     * @param  {string} dir
+     * @return {string}
+     */
+    static resolve(dir) {
+        if(typeof dir !== "string") dir = "";
+        var file = window.location.pathname.split("/"), lastpart = file.pop(), path = file.join("/");
+        return path+"/"+dir;
     }
 
     /**
@@ -96,7 +108,7 @@ export class Stratox {
      */
     update(key, data) {
         if(key === undefined) {
-            this.#observer.set(this.#components);
+            this.#observer.notify();
             return this;
         }
 
@@ -112,6 +124,10 @@ export class Stratox {
 
         this.#observer.set(this.#components);
         return this;
+    }
+
+    eventOnload(fn) {
+        setTimeout(fn, 1);
     }
     
     /**
@@ -138,38 +154,49 @@ export class Stratox {
     }
 
     /**
+     * Get DOM element
+     * @return {StratoxDom}
+     */
+    getElement() {
+        return this.#elem;
+    }
+
+    /**
      * Build the reponse
      * @param  {callable} call
      * @return {void}
      */
-    build(call) {
-        let inst = this;
+    async build(call) {
+        let inst = this, dir = "";
         this.#field = new StratoxBuilder(this.#components, "view", this.getConfigs(), this);
 
         // Values are used to trigger magick methods
         this.#field.setValues(this.#values);
 
-        $.each(this.#components, function(key, data) {
+        dir = inst.getConfigs("directory");
+        if(!dir.endsWith('/')) dir += '/';
+
+        for (const [key, data] of Object.entries(this.#components)) {
             if(inst.#field.hasComponent(data.type)) {
                 // Component is loaded...
                 
             } else {
-                inst.#imported.push(false);
-                inst.#importTemplate(inst.getConfigs("directory")+key+".js", function(mod) {
-                    
-                    // Add support for multiple exported components
-                    $.each(mod, function(k, fn) {
-                        StratoxBuilder.setComponent(key, fn);
-                    });
-
-                    if(inst.#imported[inst.#imported.length-1]) {
-                        if(typeof call === "function") call(inst.#field);
-                    }
+                inst.#incremented.push(false);
+                const module = await import(dir+key+".js");
+                inst.#incremented[inst.#incremented.length-1] = true;
+                inst.#imported[key] = true;
+                
+                $.each(module, function(k, fn) {
+                    StratoxBuilder.setComponent(key, fn);
                 });
             }
-        });
+        }
 
-        if(inst.#imported.length === 0) if(typeof call === "function") call(inst.#field);
+        if(inst.#incremented[inst.#incremented.length-1]) {            
+            if(typeof call === "function") call(inst.#field);
+        } else {
+            if(inst.#incremented.length === 0 && inst.#field) if(typeof call === "function") call(inst.#field);
+        }
     }
 
     /**
@@ -187,10 +214,9 @@ export class Stratox {
         this.#observer = new StratoxObserver(this.#components);
 
         inst.build(function(field) {
-
             inst.#observer.factory(function(jsonData, temp) {
                 // Insert all processed HTML componets and place them into the document
-                inst.#elem.html(field.get());
+                if(inst.#elem) inst.#elem.html(field.get());
             });
 
             // Init listener and notify the listener
@@ -219,31 +245,6 @@ export class Stratox {
             // Callback
             if(typeof call === "function") call(inst.#observer);
         });       
-    }
-
-
-    /**
-     * Import dynamic template
-     * @param  {string}   file
-     * @param  {Function} callback
-     * @return {void}
-     */
-    async #importTemplate(file, callback) {
-
-        let le, inst = this;
-        
-        le = this.#imported.length;
-        try {
-            const module = await import(file);
-            setTimeout(function() {
-                inst.#imported[le-1] = true;
-                if(typeof callback === "function") callback(module);
-            }, 10);
-            //return module;
-
-        } catch (error) {
-            console.error('Stratox import error:', error);
-        }
     }
 
     /**

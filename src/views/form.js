@@ -1,7 +1,7 @@
 
 
-export function formComponent(data, inst) {
-	let out = '';
+export function formComponent(data, name, helper, builder) {
+	let inst = this, out = '';
 
 	out += '<form id="component-'+inst.name+'" data-action="'+(data.action ?? "")+'" data-method="'+(data.method ?? "post")+'">';
 	inst.groupFactory(function(o, val) {

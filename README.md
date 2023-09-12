@@ -41,8 +41,10 @@ Stratox.setConfigs({
 	directory: "/absolute/path/to/views/"
 });
 ```
-**xss:** The data are safeguarded against malicious attacks like XSS
-**directory:** Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
+##### xss:
+The data are safeguarded against malicious attacks like XSS
+##### directory: 
+Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
 
 ### Template files
 First, we need to create a template for use. There are multiple ways to do this, but for this example, I'll demonstrate the most straightforward method. More examples will follow.
@@ -53,7 +55,7 @@ To begin, create a template file, such as **"/src/views/ingress.js"**. The file 
 ```js
 // You can name the function whatever. 
 // The important part is that at least one function must be exported
-export function ingressComponent(data, name, stratox, builder, helper) {
+export function ingressComponent(data, name, helper, builder) {
 
 	// In this example I am using Javacript Template literals for a clean look.
 	// But as this is regular Javacript you can output it as you want.

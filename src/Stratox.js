@@ -49,7 +49,7 @@ export class Stratox {
      * Configurations
      * @param {object}
      */
-    static setConfigs(configs) {        
+    static setConfigs(configs) {
         $.extend(this.#configs, configs);
     }
 

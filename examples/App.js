@@ -1,6 +1,5 @@
 import { StratoxDom as $ } from '../src/StratoxDom.js';
 import { Stratox } from '../src/Stratox.js';
-import { Create } from '../src/utils/Create.js';
 
 // This example took me 20 minutes to write!
 // Thats how powerfull this template systems is!

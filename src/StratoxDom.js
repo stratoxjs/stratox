@@ -6,10 +6,7 @@
  */
 const StratoxFunc = {
     extend: function(a, b) {
-        for (var key in b) {
-            if (b.hasOwnProperty(key)) a[key] = b[key];
-        }
-        return a;
+        return Object.assign(a, b);
 
     }, each: function(obj, callback) {
         let i = 0;
@@ -113,7 +110,8 @@ const StratoxFunc = {
             this.elem = elem;
             this.selector = this._selector();
             this.domStyles = {};
-            this.length = this.selector.length;
+            this.bind = {};
+            if(this.selector) this.length = this.selector.length;
             return this;
 
         }, _selector: function() {
@@ -334,7 +332,6 @@ const StratoxFunc = {
             return Array.prototype.indexOf.call(c, el.get(0));
 
         }, find: function(elem) {
-            //let el = this.query(elem, this.get(0), true);
             return StratoxDom(this.query(elem, this.get(0), true));
 
         }, closest: function(elem) {
@@ -343,7 +340,7 @@ const StratoxFunc = {
 
         }, get: function(i) {
             let k = StratoxFunc.toNum(i);
-            return this.selector[k];
+            return (this.selector[k] ?? this.selector);
 
         }, ready: function(call) {
             this.get(0).addEventListener('DOMContentLoaded', call);
@@ -354,47 +351,46 @@ const StratoxFunc = {
             if(inst.selector) inst.selector.forEach(function(el) {
                 if(typeof callback === "function") {
                     if(el && el[0]) el = el[0];
-
                     callback.apply(el, [el, inst.selector, i]);
                 }
                 i++;
             });
             return this;
 
-        }, on: function(events, call, call2, call3) {
+        }, on: function(...argument) {
+            
+            const inst = this, [event, ...args] = argument;
+            let target, data = {}, callable = function(e) {};
 
-            if(typeof call3 === "function") {
-                let newInst = StratoxDom(this.query(call, this.get(0), true));
-                newInst.each(function(el) {
-                    el.addEventListener(events, function(e) {
-                        e.data = call2;
-                        call3(e);
-                    });
-                });
+            StratoxFunc.each(args, function(k, v) {
+                if(typeof v === "string") target = v;
+                if(typeof v === "object") data = v;
+                if(typeof v == "function") callable = function(e) {
+                    let newTarget = (target && (typeof e?.target?.closest === "function")) ? e.target.closest(target) : e.target;
+                    e.data = data;
+                    v.apply(newTarget, [e, newTarget]);
+                }
+            });
 
-            } else if(typeof call2 === "function") {
-                this.each(function(el) {
-                    if(el) el.addEventListener(events, function(e) {
-                        let newTarget = (e.target && typeof e.target.closest === "function") ? e.target.closest(call) : null;
-                        if(newTarget){
-                            call2.apply(newTarget, [e, newTarget]);
-                            return newTarget;
-                        }
+            if(typeof target !== "string" && typeof this.elem === "string") target = this.elem;
 
-                    }, true);
-                });
-                
-            } else {
-                this.each(function(el) {
-                    if(el) el.addEventListener(events, function(e) {
-                        let newTarget = e.target;
-                        call.apply(newTarget, [e, newTarget]);
-                        return newTarget;
-                    });
-                });
-            }
+            inst.each(function(el) {
+                if(el) {
+                    el.addEventListener(event, callable);
+                    el.off = Object.assign( {[event]: {[target]: () => el.removeEventListener(event, callable) }}, {} );
+                }
+            });
 
             return this;
+
+        }, off: function(event, target) {
+            this.each(function(el) {
+                if(typeof el?.off === "object" && (!event || el?.off?.[event])) StratoxFunc.each(el.off, function(k1, a) {
+                    if(typeof a === "object" && (!target || el?.off?.[event]?.[target])) StratoxFunc.each(a, function(k2, b) {
+                        b();
+                    });
+                });
+            });
 
         }, click: function(call) {
             return this.on("click", call);
@@ -564,10 +560,12 @@ const StratoxFunc = {
             return inst;
 
         }, html: function(out, test) {
-            if(out === undefined) return this.get().innerHTML;
-            this.each(function(el) {
-                if(el) this.innerHTML = out;
-            });
+            if(this.selector) {
+                if(out === undefined) return this.get().innerHTML;
+                this.each(function(el) {
+                    if(el) this.innerHTML = out;
+                });
+            }
             return this;
 
         }, empty: function() {
@@ -577,10 +575,12 @@ const StratoxFunc = {
             return this;
 
         }, text: function(out) {
-            if(out === undefined) return this.get().textContent;
-            this.each(function(el) {
-                if(el) el.textContent = out;
-            });
+            if(this.selector) { 
+                if(out === undefined) return this.get().textContent;
+                this.each(function(el) {
+                    if(el) el.textContent = out;
+                });
+            }
             return this;
 
         }, val: function(value) {
@@ -597,6 +597,6 @@ const StratoxFunc = {
 
     StratoxObj.obj.init();
     return StratoxObj.obj;
-}
+};
 
 export const StratoxDom = StratoxFunc.extend(StratoxObj, StratoxFunc);

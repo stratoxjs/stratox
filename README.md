@@ -37,7 +37,7 @@ Begin by adding an element to the HTML document.
 Add the configuration bellow in you main js file, some where it will globally execute.
 ```js
 Stratox.setConfigs({
-	xss: "true, // (Default: true) Will auto protect all input data
+	xss: true, // (Default: true) Will auto protect all input data
 	directory: "/absolute/path/to/views/"
 });
 ```

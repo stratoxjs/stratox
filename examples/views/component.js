@@ -1,7 +1,6 @@
-import { StratoxDom as $ } from '../StratoxDom.js';
 
 
-export function component(data, name, helper, builder) {
+export function component(data, name, $, builder) {
 
     let inst = this, obj = $("#events"), 
     out = `

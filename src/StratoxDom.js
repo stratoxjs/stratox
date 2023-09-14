@@ -131,7 +131,7 @@ const StratoxFunc = {
 
             return Array(this.elem);
 
-        }, isSelf: function() {
+        }, isStratoxDom: function() {
             return true;
 
         }, query: function(elem, bind, quertSel) {
@@ -367,8 +367,10 @@ const StratoxFunc = {
                 if(typeof v === "object") data = v;
                 if(typeof v == "function") callable = function(e) {
                     let newTarget = (target && (typeof e?.target?.closest === "function")) ? e.target.closest(target) : e.target;
-                    e.data = data;
-                    v.apply(newTarget, [e, newTarget]);
+                    if(newTarget) {
+                        if(e.data === undefined) e.data = data;
+                        v.apply(newTarget, [e, newTarget]);
+                    }
                 }
             });
 
@@ -385,8 +387,8 @@ const StratoxFunc = {
 
         }, off: function(event, target) {
             this.each(function(el) {
-                if(typeof el?.off === "object" && (!event || el?.off?.[event])) StratoxFunc.each(el.off, function(k1, a) {
-                    if(typeof a === "object" && (!target || el?.off?.[event]?.[target])) StratoxFunc.each(a, function(k2, b) {
+                if(typeof el?.off === "object" && (!event || el?.off?.[event])) StratoxFunc.each(el.off, function(k1, a) {
+                    if(typeof a === "object" && (!target || el?.off?.[event]?.[target])) StratoxFunc.each(a, function(k2, b) {
                         b();
                     });
                 });

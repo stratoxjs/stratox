@@ -8,8 +8,20 @@ $(document).ready(function() {
 
 	// src/views
 	Stratox.setConfigs({
-	    directory: "./views/"
+	    directory: "../examples/views/"
 	});
+
+
+
+	let ingress = Stratox.create({ ingress: "#ingress" }, {
+		headline: "Lorem ipsum dolor",
+	    content: "Lorem ipsum dolor sit amet",
+	    tags: ["Tag 1", "Tag 2", "Tag 3"]
+	}, function(observer) {
+
+	});
+	return false;
+
 
 	let stratox = new Stratox("#ingress");
 

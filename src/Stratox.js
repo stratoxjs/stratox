@@ -21,6 +21,8 @@ export class Stratox {
     #elem;
     #values = {};
     #creator = {};
+    #response;
+    static #instances = {};
 
     static #staticImport = [];
 
@@ -30,19 +32,52 @@ export class Stratox {
     };
 
     constructor(obj) {
-        this.#elem = $(obj);
+        if(typeof obj === "string") this.#elem = $(obj);
         this.#values = {};
     }
 
     /**
-     * Will resolve the relative path
-     * @param  {string} dir
-     * @return {string}
+     * Create mutable view
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {fn} call            callback
+     * @return {static}
      */
-    static resolve(dir) {
-        if(typeof dir !== "string") dir = "";
-        var file = window.location.pathname.split("/"), lastpart = file.pop(), path = file.join("/");
-        return path+"/"+dir;
+    static create(key, data, call) {
+        if(typeof this.#instances[key] !== "object") {
+            if(typeof key === "object") {
+                let keys = Object.keys(key), el;
+                if(keys.length === 0) throw new Error('View key/name object is empty, either use it as a string or { viewName: "#element" }.');
+                if(keys.length > 1) console.warn('When using "@create," use only one object set e.g. { viewName: "#element" }, despite having more available.');
+
+                if(typeof key[keys[0]] === "string") {
+                    el = key[keys[0]];
+                    key = keys[0];
+                    this.#instances[key] = new Stratox(el);
+                } else {
+                    throw new Error('View key/name is wrong, either use it as a string or { viewName: "#element" }.');
+                }
+
+            } else {
+                this.#instances[key] = new Stratox();
+            }        
+            
+            this.#instances[key].view(key, data);
+            this.#instances[key].execute(call);
+        }
+        return this.#instances[key];
+    }
+
+
+    /**
+     * Create mutable view
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {fn} call            callback
+     * @return {static}
+     */
+    withView(key, data, call) {
+        return Stratox.create(key, data, call);
     }
 
     /**
@@ -63,7 +98,6 @@ export class Stratox {
         if(typeof fn !== "function") throw new Error("The argument 2 in @prepareView has to be a callable");
         StratoxBuilder.setComponent(key, fn, this);
     }
-
 
     /**
      * Easily create a view
@@ -124,6 +158,22 @@ export class Stratox {
 
         this.#observer.set(this.#components);
         return this;
+    }
+
+    /**
+     * Has view loaded?
+     * @return {Boolean}
+     */
+    hasView() {
+        return (typeof this.#response === "string");
+    }
+
+    /**
+     * Get view response
+     * @return {string}
+     */
+    getResponse() {
+        return (this.#response ?? "");
     }
 
     /**
@@ -228,9 +278,11 @@ export class Stratox {
         this.#observer = new StratoxObserver(this.#components);
 
         inst.build(function(field) {
+
             inst.#observer.factory(function(jsonData, temp) {
                 // Insert all processed HTML componets and place them into the document
-                if(inst.#elem) inst.#elem.html(field.get());
+                inst.#response = field.get();
+                if(inst.#elem) inst.#elem.html(inst.#response);
             });
 
             // Init listener and notify the listener
@@ -257,7 +309,9 @@ export class Stratox {
             }
 
             // Callback
-            if(typeof call === "function") call(inst.#observer);
+            if(typeof call === "function") {
+                call.apply(inst, [inst.#observer]);
+            }
         });       
     }
 

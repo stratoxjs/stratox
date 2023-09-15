@@ -6,38 +6,39 @@ import { Stratox } from '../src/Stratox.js';
 
 $(document).ready(function() {
 
-	// src/views
+
+
 	Stratox.setConfigs({
 	    directory: "../examples/views/"
 	});
 
-
-
+	/*
 	let ingress = Stratox.create({ ingress: "#ingress" }, {
 		headline: "Lorem ipsum dolor",
 	    content: "Lorem ipsum dolor sit amet",
 	    tags: ["Tag 1", "Tag 2", "Tag 3"]
-	}, function(observer) {
-
 	});
-	return false;
 
+	setTimeout(function() {
+		ingress.set({ headline: "wwww" });
+		ingress.update();
+	}, 1000);
+	 */
 
 	let stratox = new Stratox("#ingress");
 
 
 	// Will return a Create instance of Stratox 
 	// src/views/ingress.js
-	let create = stratox.view("ingress", {
+	let ingress = stratox.view("ingress", {
 	    headline: "Lorem ipsum dolor",
-	    content: "Lorem ipsum dolor sit amet",
+	    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec dapibus elit dui.",
 	    tags: ["Tag 1", "Tag 2", "Tag 3"]
 	});
 
 	// Add some form fields to ingress field
 	stratox.form("name").setLabel("Name");
 	stratox.form("email").setLabel("Email");
-	
 
 	// Now the ingress, form data and the footer rest in the same view
 	stratox.execute(function(observer) {
@@ -105,5 +106,6 @@ $(document).ready(function() {
 	});
 
 	stratoxEvent.execute();
+
 
 });

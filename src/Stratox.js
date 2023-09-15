@@ -6,9 +6,10 @@
  */
 
 import { StratoxDom as $ } from './StratoxDom.js';
+import { StratoxContainer } from './StratoxContainer.js';
 import { StratoxBuilder } from './StratoxBuilder.js';
 import { StratoxObserver } from './StratoxObserver.js';
-import { Create } from './utils/Create.js';
+import { StratoxItem } from './StratoxItem.js';
 
 export class Stratox {
 
@@ -22,9 +23,7 @@ export class Stratox {
     #values = {};
     #creator = {};
     #response;
-    static #instances = {};
-
-    static #staticImport = [];
+    #container;
 
     static #configs = {
         xss: true,
@@ -34,50 +33,9 @@ export class Stratox {
     constructor(obj) {
         if(typeof obj === "string") this.#elem = $(obj);
         this.#values = {};
-    }
 
-    /**
-     * Create mutable view
-     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
-     * @param  {object} data        The view data
-     * @param  {fn} call            callback
-     * @return {static}
-     */
-    static create(key, data, call) {
-        if(typeof this.#instances[key] !== "object") {
-            if(typeof key === "object") {
-                let keys = Object.keys(key), el;
-                if(keys.length === 0) throw new Error('View key/name object is empty, either use it as a string or { viewName: "#element" }.');
-                if(keys.length > 1) console.warn('When using "@create," use only one object set e.g. { viewName: "#element" }, despite having more available.');
-
-                if(typeof key[keys[0]] === "string") {
-                    el = key[keys[0]];
-                    key = keys[0];
-                    this.#instances[key] = new Stratox(el);
-                } else {
-                    throw new Error('View key/name is wrong, either use it as a string or { viewName: "#element" }.');
-                }
-
-            } else {
-                this.#instances[key] = new Stratox();
-            }        
-            
-            this.#instances[key].view(key, data);
-            this.#instances[key].execute(call);
-        }
-        return this.#instances[key];
-    }
-
-
-    /**
-     * Create mutable view
-     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
-     * @param  {object} data        The view data
-     * @param  {fn} call            callback
-     * @return {static}
-     */
-    withView(key, data, call) {
-        return Stratox.create(key, data, call);
+        this.#container = new StratoxContainer();
+        this.#container.set("view", this);
     }
 
     /**
@@ -100,16 +58,51 @@ export class Stratox {
     }
 
     /**
+     * Create a immutable view (self contained instance, for e.g. modals)
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {fn} call            callback
+     * @return {StratoxItem}
+     */
+    static create(key, data, call) {
+        const obj = this.#getIdentifiers(key), 
+        inst = new Stratox(obj.elem);
+        let item = inst.view(obj.name, data);
+        item.setContainer(inst.#container);
+        inst.execute(call);
+        return item;
+    }
+
+    /**
+     * You can pass objects, instances and factories to you views
+     * @return {StratoxContainer}
+     */
+    container() {
+        return this.#container;
+    }
+
+    /**
      * Easily create a view
      * @param {string} key  View key/name
      * @param {object} data Object data to pass on to the view
-     * @return Create (will return an instance of Create)
+     * @return StratoxItem (will return an instance of StratoxItem)
      */
     view(key, data) {
         let newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
         $.extend(newObj, data);
-        this.#creator[key] = Create.view(key, newObj);
+        this.#creator[key] = this.#initItemView(key, newObj);
         return this.#creator[key];
+    }
+
+    /**
+     * Create mutable view
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {fn} call            callback
+     * @return {static}
+     */
+    withView(key, data, call) {
+        return Stratox.create(key, data, call);
     }
 
     /**
@@ -117,12 +110,12 @@ export class Stratox {
      * @param {string} type  Form type (text, textarea, select, checkbox, radio)
      * @param {string} name  Field name
      * @param {string} label Add label to field
-     * @return Create (will  return an instance of Create)
+     * @return StratoxItem (will  return an instance of StratoxItem)
      */
     form(name, data) {
         let newObj = (this.#components[name]) ? this.#components[name] : {};
         $.extend(newObj, data);
-        this.#creator[name] = Create.form(name, data);
+        this.#creator[name] = StratoxItem.form(name, data);
         return this.#creator[name];
     }
 
@@ -146,8 +139,9 @@ export class Stratox {
             return this;
         }
 
-        if(key instanceof Create) {
+        if(key instanceof StratoxItem) {
             this.#components[key.getName()] = key;
+
         } else {
             if(typeof data === "function") {
                 data(this.#components[key])
@@ -196,11 +190,11 @@ export class Stratox {
     
     /**
      * Advanced option to add view and form data 
-     * @param {mixed} key  The view key/name or object form Create instance
+     * @param {mixed} key  The view key/name or object form StratoxItem instance
      * @param {object} data Pass data to view
      */
     add(key, data) {
-        if(key instanceof Create) {
+        if(key instanceof StratoxItem) {
             this.#components[key.getName()] = key;
         } else {
             this.#components[key] = data;
@@ -232,7 +226,7 @@ export class Stratox {
      */
     async build(call) {
         let inst = this, dir = "";
-        this.#field = new StratoxBuilder(this.#components, "view", this.getConfigs(), this);
+        this.#field = new StratoxBuilder(this.#components, "view", this.getConfigs(), this.#container);
 
         // Values are used to trigger magick methods
         this.#field.setValues(this.#values);
@@ -392,6 +386,31 @@ export class Stratox {
         });
 
         return values;
+    }
+
+
+    static #getIdentifiers(data) {
+        let name, el = null, keys;
+        if(typeof data === "object") {
+            keys = Object.keys(data);
+            if(typeof keys[0] !== "string") throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
+            name = keys[0];
+            el = (data[name] ?? null);
+        } else {
+            if(typeof data === "string") {
+                name = data;
+            } else {
+                throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
+            }
+        }
+        return { name: name, elem: el };
+
+    }
+
+    #initItemView(key, obj) {
+        let inst = StratoxItem.view(key, obj);
+        inst.setContainer(this.#container);
+        return inst;
     }
     
 }

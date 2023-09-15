@@ -1,8 +1,10 @@
-import { StratoxDom as $ } from '../StratoxDom.js';
+import { StratoxDom as $ } from './StratoxDom.js';
+import { StratoxContainer } from './StratoxContainer.js';
 
-export class Create {
+export class StratoxItem {
 
     #compType = "";
+    #container;
 
     type = "";
     label = "";
@@ -22,7 +24,7 @@ export class Create {
     }
 
     static form(name, data) {
-        let inst = new Create(name);
+        let inst = new StratoxItem(name);
         
         inst.#compType = "form";
         inst.setType("text");
@@ -31,9 +33,9 @@ export class Create {
     }
 
     static view(key, data) {
-        if(typeof data !== "object") throw new Error('Argumnent 2 (view object data): In Create.view is required and should be an object');
+        if(typeof data !== "object") throw new Error('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
 
-        let inst = new Create(key);
+        let inst = new StratoxItem(key);
         inst.#compType = "view";
         inst.setData(data);
         inst.setName(key);
@@ -41,8 +43,13 @@ export class Create {
     }
 
     static fromData(type, data) {
-        let inst = new Create(type);
+        let inst = new StratoxItem(type);
         return inst.merge(data);
+    }
+
+    setContainer(container) {
+        if(!(container instanceof StratoxContainer)) throw new Error('Must be an intsance of StratoxContainer');
+        this.#container = container;
     }
 
     getType() {
@@ -97,7 +104,7 @@ export class Create {
         if(typeof obj !== "object") throw new Error('Argumnent 1: Is not a object');
         let newObj = {};
         $.each(obj, function(k, v) {
-            if(v instanceof Create ) {
+            if(v instanceof StratoxItem ) {
                 newObj[v.getName()] = v.get();
             } else {
                 newObj[k] = v;
@@ -126,6 +133,24 @@ export class Create {
         return this;
     }
 
+    set(obj) {
+        if(this.#compType === "form") {
+            if(typeof obj === "function") {
+                obj(this);
+            } else {
+                $.extend(this, obj);
+            }
+            
+        } else {
+            if(typeof obj === "function") {
+                obj(this.data);
+            } else {
+                $.extend(this.data, obj);
+            }
+        }
+        return this;
+    }
+
     getObj() {
         return {
             type: this.type,
@@ -151,4 +176,12 @@ export class Create {
         $.extend(newObj, this.data);
         return newObj;
     }
+
+    update() {
+
+        if(this.#container) {
+            this.#container.get("view").update();
+        }
+    }
+
 }

@@ -3,7 +3,7 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String
  */
 
-export class Entities {
+export class StratoxDTO {
 
 
     constructor(value) {
@@ -11,9 +11,8 @@ export class Entities {
     }
 
     static value(value) {
-        return new Entities(value);
+        return new StratoxDTO(value);
     }
-
 
     /**
      * Magick method
@@ -23,26 +22,47 @@ export class Entities {
         return this.value;
     }
 
-    String() {
-        return String(this.value);
-    }
-
-
+    /**
+     * To upper case
+     * @return {self}
+     */
     toUpper() {
-        this.value = String(this.value).toUpperCase();
+        this.value = this.value.toUpperCase();
         return this;
     }
 
+    /**
+     * To lower case
+     * @return {self}
+     */
     toLower() {
-        this.value = String(this.value).toLowerCase();
+        this.value = this.value.toLowerCase();
         return this;
     }
 
+    /**
+     * Upper case first cahracter
+     * @return {self}
+     */
+    ucfirst() {
+        this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+        return this;
+    }
+
+    /**
+     * Strip all tags
+     * @return {self}
+     */
     stripTags() {
         this.value = this.value.replace(/<[^>]*>/g, '');
         return this;
     }
 
+    /**
+     * Excerpt
+     * @param  {int} length max length
+     * @return {self}
+     */
     excerpt(length) {
         if(typeof length !== "number") length = 30;
         if (length < this.value.length) {
@@ -52,7 +72,10 @@ export class Entities {
         return this;
     }
 
-
+    /**
+     * Escape special cahracters
+     * @return {self}
+     */
     htmlspecialchars() {
         const map = {
             '&': '&amp;',
@@ -65,16 +88,28 @@ export class Entities {
         return this;
     }
 
+    /**
+     * Escape special cahracters
+     * @return {self}
+     */
     protect() {
         this.htmlspecialchars();
         return this;
     }
 
+    /**
+     * Escape special cahracters
+     * @return {self}
+     */
     xss() {
         this.htmlspecialchars();
         return this;
     }
 
+    /**
+     * Url encode
+     * @return {self}
+     */
     urlencode() {
         let str = encodeURIComponent(this.value);
         str.replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28')
@@ -84,20 +119,37 @@ export class Entities {
         return this;
     }
 
+    /**
+     * Url decode
+     * @return {self}
+     */
     urldecode() {
         this.value = decodeURIComponent(this.value.replace(/\+/g, ' '));
         return this;
     }
 
-    
-    /*
-    format() {
+    /**
+     * [sprint description]
+     * @param  {string|number} arguments  Spread of arguments (string number)
+     * @return {self}
+     */
+    sprint() {
         var args = arguments;
-        return this.replace(/{(\d+)}/g, function(match, number) {
+        this.value = this.value.replace(/{(\d+)}/g, function(match, number) {
             return (typeof args[number] != 'undefined') ? args[number] : match;
         });
+        return this;
     }
 
+
+    /**
+     * Access String
+     */
+    String() {
+        return String(this.value);
+    }
+    
+    /*
     padStart(targetLength, padString) {
 
         targetLength = targetLength>>0; //truncate if number or convert non-number to 0;

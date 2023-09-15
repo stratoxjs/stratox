@@ -7,7 +7,7 @@
 
 import { StratoxDom as $ } from './StratoxDom.js';
 import { StratoxTemplate } from './StratoxTemplate.js';
-import { Entities } from './utils/Entities.js';
+import { StratoxDTO } from './StratoxDTO.js';
 
 export class StratoxBuilder extends StratoxTemplate {
 
@@ -20,7 +20,7 @@ export class StratoxBuilder extends StratoxTemplate {
      * @param {string}   key component name/key
      * @param {callable} fn
      */
-    static setComponent(key, fn, model) {
+    static setComponent(key, fn) {
         if(typeof fn !== "function") throw new Error("The argument 2 in @prepareView has to be a callable");
         this.#factory[key] = fn;
     }
@@ -189,10 +189,10 @@ export class StratoxBuilder extends StratoxTemplate {
     /**
      * Format string object
      * @param  {string} val
-     * @return {Entities|String}
+     * @return {StratoxDTO|String}
      */
     format(val) {
-        return new Entities(val);
+        return new StratoxDTO(val);
     }
 
     /**
@@ -231,7 +231,7 @@ export class StratoxBuilder extends StratoxTemplate {
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
             if(typeof fn === "function") {
                 //out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this, $);
-                out = fn.apply(this.model, [this.#autoProtectData(this.data.data ?? {}), this.data.type, $, this]);
+                out = fn.apply(this.containerInst.get("view"), [this.#autoProtectData(this.data.data ?? {}), this.containerInst, $]);
             } else {
                 out = this[this.data.type]();
             }         
@@ -239,7 +239,7 @@ export class StratoxBuilder extends StratoxTemplate {
             return (out ? out : "");
 
         } else {
-            this.model.observer().stop();
+            this.containerInst.get("view").observer().stop();
             console.error('The component/view named "'+this.data.type+'" does not exist.');
         }
     }

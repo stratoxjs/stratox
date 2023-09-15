@@ -6,10 +6,11 @@
  */
 
 import { StratoxDom as $ } from './StratoxDom.js';
+import { StratoxContainer } from './StratoxContainer.js';
 
 export class StratoxTemplate {
 
-    constructor(json, key, settings, model) {
+    constructor(json, key, settings, container) {
         this.json = json;
         this.value = "";
         this.label = "";
@@ -28,7 +29,7 @@ export class StratoxTemplate {
             xss: true
         }, (settings ?? {}));
 
-       this.model = model;
+       this.containerInst = container;
     }
 
     /**

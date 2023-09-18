@@ -25,6 +25,8 @@ export class Stratox {
     #response;
     #container;
 
+    static viewCount = 0; // Total active views
+
     static #configs = {
         xss: true,
         directory: ""
@@ -70,7 +72,7 @@ export class Stratox {
         let item = inst.view(obj.name, data);
         item.setContainer(inst.#container);
         inst.execute(call);
-        return item;
+        return inst;
     }
 
     /**
@@ -220,6 +222,14 @@ export class Stratox {
     }
 
     /**
+     * Get current view count
+     * @return {number}
+     */
+    getViewCount() {
+        return Stratox.viewCount;
+    }
+
+    /**
      * Build the reponse
      * @param  {callable} call
      * @return {void}
@@ -271,6 +281,7 @@ export class Stratox {
 
         this.#observer = new StratoxObserver(this.#components);
 
+        Stratox.viewCount++;
         inst.build(function(field) {
 
             inst.#observer.factory(function(jsonData, temp) {

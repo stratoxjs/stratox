@@ -360,7 +360,7 @@ const StratoxFunc = {
         }, on: function(...argument) {
             
             const inst = this, [event, ...args] = argument;
-            let target, data = {}, callable = function(e) {};
+            let target, data = {}, callable = function(e) {}, ev = event.split(".");
 
             StratoxFunc.each(args, function(k, v) {
                 if(typeof v === "string") target = v;
@@ -376,10 +376,11 @@ const StratoxFunc = {
 
             if(typeof target !== "string" && typeof this.elem === "string") target = this.elem;
 
+
             inst.each(function(el) {
                 if(el) {
-                    el.addEventListener(event, callable);
-                    el.off = Object.assign( {[event]: {[target]: () => el.removeEventListener(event, callable) }}, {} );
+                    el.addEventListener((ev[0] ?? event), callable);
+                    el.off = Object.assign( {[event]: {[target]: () => el.removeEventListener((ev[0] ?? event), callable) }}, {} );
                 }
             });
 

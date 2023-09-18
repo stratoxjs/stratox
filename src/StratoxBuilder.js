@@ -252,13 +252,13 @@ export class StratoxBuilder extends StratoxTemplate {
     #autoProtectData(data) {
         let inst = this;
         if(typeof data === "object") $.each(data, function(k, value) {
-            if(typeof value === "object" && !(value instanceof String)) {
+            if(typeof value === "object" && !(value instanceof StratoxDTO)) {
                 return inst.#autoProtectData(value);
-
             } else {
                 if((typeof value === "string" || typeof value === "number")) {
-                    if(inst.settings.xss) value = inst.format(value).xss();
-                    data[k] = inst.format(value);
+                    let newVal = inst.format(value);
+                    if(inst.settings.xss) newVal.xss();
+                    data[k] = newVal;
                 }
             }
         });

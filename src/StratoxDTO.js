@@ -5,9 +5,12 @@
 
 export class StratoxDTO {
 
+    #value = "";
+    #raw;
 
     constructor(value) {
-        this.value = value.toString();
+        this.#value = value.toString();
+        this.#raw = this.#value;
     }
 
     static value(value) {
@@ -15,11 +18,31 @@ export class StratoxDTO {
     }
 
     /**
+     * Get raw and unprotected value
+     * It is not wrong to use this method But:
+     * This could be used if you want to pass HTML code in object BUT be carefull if handling HTTP Request
+     * @return {string}
+     */
+    getRaw() {
+        return this.#raw;
+    }
+
+    /**
+     * Create new instance to tranverse but with raw and unprotected value
+     * It is not wrong to use this method But:
+     * This could be used if you want to pass HTML code in object BUT be carefull if handling HTTP Request
+     * @return {self} [description]
+     */
+    withRaw() {
+        return new StratoxDTO(this.#raw);
+    }
+
+    /**
      * Magick method
      * @return {string}
      */
     toString() {
-        return this.value;
+        return this.#value;
     }
 
     /**
@@ -27,7 +50,7 @@ export class StratoxDTO {
      * @return {self}
      */
     toUpper() {
-        this.value = this.value.toUpperCase();
+        this.#value = this.#value.toUpperCase();
         return this;
     }
 
@@ -36,7 +59,7 @@ export class StratoxDTO {
      * @return {self}
      */
     toLower() {
-        this.value = this.value.toLowerCase();
+        this.#value = this.#value.toLowerCase();
         return this;
     }
 
@@ -45,7 +68,7 @@ export class StratoxDTO {
      * @return {self}
      */
     ucfirst() {
-        this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+        this.#value = this.#value.charAt(0).toUpperCase() + this.#value.slice(1);
         return this;
     }
 
@@ -54,7 +77,16 @@ export class StratoxDTO {
      * @return {self}
      */
     stripTags() {
-        this.value = this.value.replace(/<[^>]*>/g, '');
+        this.#value = this.#value.replace(/<[^>]*>/g, '');
+        return this;
+    }
+
+    /**
+     * Trim string
+     * @return {self}
+     */
+    trim() {
+        this.#value.trim();
         return this;
     }
 
@@ -65,9 +97,9 @@ export class StratoxDTO {
      */
     excerpt(length) {
         if(typeof length !== "number") length = 30;
-        if (length < this.value.length) {
+        if (length < this.#value.length) {
             this.stripTags();
-            this.value = this.value.substr(0, length).trim() + '...';
+            this.#value = this.#value.substr(0, length).trim() + '...';
         }
         return this;
     }
@@ -84,7 +116,7 @@ export class StratoxDTO {
             '"': '&quot;',
             "'": '&#39;'
         };
-        this.value = this.value.replace(/[&<>"']/g, match => map[match]);
+        this.#value = this.#value.replace(/[&<>"']/g, match => map[match]);
         return this;
     }
 
@@ -111,11 +143,11 @@ export class StratoxDTO {
      * @return {self}
      */
     urlencode() {
-        let str = encodeURIComponent(this.value);
+        let str = encodeURIComponent(this.#value);
         str.replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28')
         .replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 
-        this.value = str;
+        this.#value = str;
         return this;
     }
 
@@ -124,7 +156,7 @@ export class StratoxDTO {
      * @return {self}
      */
     urldecode() {
-        this.value = decodeURIComponent(this.value.replace(/\+/g, ' '));
+        this.#value = decodeURIComponent(this.#value.replace(/\+/g, ' '));
         return this;
     }
 
@@ -135,7 +167,7 @@ export class StratoxDTO {
      */
     sprint() {
         var args = arguments;
-        this.value = this.value.replace(/{(\d+)}/g, function(match, number) {
+        this.#value = this.#value.replace(/{(\d+)}/g, function(match, number) {
             return (typeof args[number] != 'undefined') ? args[number] : match;
         });
         return this;
@@ -146,7 +178,7 @@ export class StratoxDTO {
      * Access String
      */
     String() {
-        return String(this.value);
+        return String(this.#value);
     }
     
     /*

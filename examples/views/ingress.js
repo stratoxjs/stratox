@@ -11,7 +11,7 @@ export function ingressComponent(data, container, helper, builder) {
 	    ${tags()}
 	</header>
 	`;
-
+	
 	function tags() {
 		let out = "";
 		if(helper.isArray(data.tags ?? null)) {

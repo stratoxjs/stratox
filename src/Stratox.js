@@ -24,16 +24,28 @@ export class Stratox {
     #creator = {};
     #response;
     #container;
+    #ivt;
+    #prop = false;
 
     static viewCount = 0; // Total active views
 
+    /**
+     * Default Configs
+     * @type {object}
+     */
     static #configs = {
         xss: true,
-        directory: ""
+        directory: "",
+        popegation: true // Automatic DOM popegation protection
     };
 
-    constructor(obj) {
-        if(typeof obj === "string") this.#elem = $(obj);
+    /**
+     * Start the Stratox JS instance 
+     * @param  {string} elem Pass in element as string e.g. (#elemID, .elemClass, tagname)
+     * @return {self}
+     */
+    constructor(elem) {
+        if(typeof elem === "string") this.#elem = $(elem);
         this.#values = {};
 
         this.#container = new StratoxContainer();
@@ -287,11 +299,12 @@ export class Stratox {
             inst.#observer.factory(function(jsonData, temp) {
                 // Insert all processed HTML componets and place them into the document
                 inst.#response = field.get();
-                if(inst.#elem) inst.#elem.html(inst.#response);
+                if(inst.#elem) inst.insertHtml();
             });
-
             // Init listener and notify the listener
             inst.#observer.listener().notify();
+
+            inst.#prop = false;
 
             // Auto init Magick methods to events if group field is being used
             if(field.hasGroupEvents()) {
@@ -399,7 +412,11 @@ export class Stratox {
         return values;
     }
 
-
+    /**
+     * Get Indentifiers
+     * @param  {object|string} data Should be string (view name) or object ({ viewName: "#element" })
+     * @return {object}
+     */
     static #getIdentifiers(data) {
         let name, el = null, keys;
         if(typeof data === "object") {
@@ -418,6 +435,34 @@ export class Stratox {
 
     }
 
+    /**
+     * Insert HTML, will protect you from unintended DOM Propagation and 
+     * keep High performance even tho DOm would be stuck in a 100000 loop!
+     * @return {void}
+     */
+    insertHtml() {
+        let inst = this;
+        if(inst.getConfigs("popegation") === false || !inst.#prop) {
+            inst.#prop = true;
+            inst.#elem.html(inst.#response);
+        } else {
+
+            // DOM Propagation protection
+            // Will be triggered if same DOM el is trigger consequently
+            if(inst.#ivt !== undefined) clearTimeout(inst.#ivt);
+            inst.#ivt = setTimeout(function() {
+                inst.#prop = false;
+                inst.#elem.html(inst.#response);
+            }, 0);
+        }
+    }
+
+    /**
+     * Will pass on container
+     * @param  {string} key
+     * @param  {object} obj
+     * @return {StratoxItem}
+     */
     #initItemView(key, obj) {
         let inst = StratoxItem.view(key, obj);
         inst.setContainer(this.#container);

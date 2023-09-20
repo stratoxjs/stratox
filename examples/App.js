@@ -1,33 +1,13 @@
 import { StratoxDom as $ } from '../src/StratoxDom.js';
 import { Stratox } from '../src/Stratox.js';
 
-// This example took me 20 minutes to write!
-// Thats how powerfull this template systems is!
-
 $(document).ready(function() {
-
-
 
 	Stratox.setConfigs({
 	    directory: "../examples/views/"
 	});
 
-	/*
-	let ingress = Stratox.create({ ingress: "#ingress" }, {
-		headline: "Lorem ipsum dolor",
-	    content: "Lorem ipsum dolor sit amet",
-	    tags: ["Tag 1", "Tag 2", "Tag 3"]
-	});
-
-	setTimeout(function() {
-		ingress.set({ headline: "wwww" });
-		ingress.update();
-	}, 1000);
-	 */
-
 	let stratox = new Stratox("#ingress");
-
-
 	// Will return a Create instance of Stratox 
 	// src/views/ingress.js
 	let ingress = stratox.view("ingress", {

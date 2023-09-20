@@ -1,6 +1,7 @@
 
 
 
+
 # Stratox.js - Template library for building user interfaces
 
 Stratox.js, an modern JavaScript library, facilitates the development of templates and user interfaces (UI) with a focus on components and views, offering a flexible and efficient approach to web development.
@@ -41,10 +42,9 @@ Stratox.setConfigs({
 	directory: "/absolute/path/to/views/"
 });
 ```
-##### xss:
-The data are safeguarded against malicious attacks like XSS
-##### directory: 
-Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
+**xss:** The data are safeguarded against malicious attacks like XSS
+
+**directory:**  Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
 
 ### Template files
 First, we need to create a template for use. There are multiple ways to do this, but for this example, I'll demonstrate the most straightforward method. More examples will follow.
@@ -62,43 +62,29 @@ export function ingressComponent(data, container, helper, builder) {
 	
 	let out = `
 	<header class="relative">
-		<h1 class="title">${data.headline.toUpperCase()}</h1>
+		<h1 class="title">${data.headline.toUpper()}</h1>
 		<p>${data.content}</p>
-		${tags()}
 	</header>
 	`;
-
-	function tags() {
-		let out = "";
-		if(helper.isArray(data.tags ?? null)) {
-			out += '<div class="tags">';
-			helper.each(data.tags, (key, val) => {
-				out += '<div class="tag">'+val.toUpperCase()+'</div>';
-		    });
-			out += '</div>';
-		}
-		return out;
-	}
-	
 	return out;
 }
 ```
 By default, the **data** arguments are safeguarded against malicious attacks like XSS. However, you can disable this feature if you're using a backend platform that handles it for you.
 
-What's fantastic is that you can create your template using plain JavaScript. I've also provided some handy helper functions to simplify your life. For instance, you can method-chain your data (e.g., data.headline.trim().toUpperCase()) or utilize the argument "helper" to access to the StratoxDom library, which offers a range of helpful functions.
+What's fantastic is that you can create your template using plain JavaScript. I've also provided some handy helper functions to simplify your life. For instance, you can method-chain your data (e.g., data.headline.trim().toUpper()) or utilize the argument "helper" to access to the StratoxDom library, which offers a range of helpful functions.
 
 ###  Lets use the template
 Once the template is created we only need to use it.
 ```js
-let stratoxIngress = new Stratox("#ingress");
+let stratox = new Stratox("#ingress");
 
-stratoxIngress.view("ingress", {
+let ingress = stratox.view("ingress", {
     headline: "Lorem ipsum dolor",
     content: "Lorem ipsum dolor sit amet",
     tags: ["Tag 1", "Tag 2", "Tag 3"]
 });
 
-stratoxIngress.execute(function(observer) {
+stratox.execute(function(observer) {
 	// Callback...
 });
 
@@ -109,16 +95,17 @@ That is it... As you can see it is very easy if you know HTML and javascript.
 ### Update the information
 Want to update the templates information? 
 ```js
-
-stratoxIngress.view("ingress", { headline: "Headline updated once!" });
-stratoxIngress.update();
+ingress.set({ headline: "Headline updated once!" });
+stratox.update();
 
 // Or...
+stratox.view("ingress", { headline: "Headline updated twize!" });
+stratox.update();
 
-stratoxIngress.update("ingress", function(obj) {
-	obj.data.headline = "Headline updated twize!";
+// Or...
+stratox.update("ingress", function(obj) {
+	obj.data.headline = "Headline updated thrice!";
 });
-
 ```
-The text has been updated. Super easy. More example is coming when docs site is done.
+The text has been updated three time with different techniques. Super easy. More example is coming when docs site is done.
 

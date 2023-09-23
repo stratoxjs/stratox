@@ -18,6 +18,14 @@ export class StratoxDTO {
     }
 
     /**
+     * Get value
+     * @return {string}
+     */
+    get() {
+        return this.#value.toString();
+    }
+
+    /**
      * Get raw and unprotected value
      * It is not wrong to use this method But:
      * This could be used if you want to pass HTML code in object BUT be carefull if handling HTTP Request

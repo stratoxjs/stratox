@@ -290,24 +290,25 @@ export class Stratox {
         if(!$.isEmptyObject(this.#creator)) $.each(this.#creator, function(k, v) {
             inst.add(v);
         });
-
+        
         this.#observer = new StratoxObserver(this.#components);
 
-        Stratox.viewCount++;
         inst.build(function(field) {
 
             inst.#observer.factory(function(jsonData, temp) {
+                Stratox.viewCount++;
+
                 // Insert all processed HTML componets and place them into the document
                 inst.#response = field.get();
                 if(inst.#elem) inst.insertHtml();
             });
+
             // Init listener and notify the listener
             inst.#observer.listener().notify();
-
             inst.#prop = false;
 
             // Auto init Magick methods to events if group field is being used
-            if(field.hasGroupEvents()) {
+            if(field.hasGroupEvents() && inst.#elem) {
                 inst.#elem.on("input", function(e) {
                     let inp = $(e.target), key = inp.data("name"), value = inp.val();
                     inst.editFieldValue(key, inp.val());

@@ -231,7 +231,7 @@ export class StratoxBuilder extends StratoxTemplate {
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
             if(typeof fn === "function") {
                 //out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this, $);
-                out = fn.apply(this.containerInst.get("view"), [this.#autoProtectData(this.data.data ?? {}), this.containerInst, $]);
+                out = fn.apply(this.containerInst.get("view"), [this.#autoProtectData(this.data.data ?? {}), this.containerInst, $, this]);
             } else {
                 out = this[this.data.type]();
             }         

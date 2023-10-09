@@ -67,8 +67,6 @@ export function ingressComponent(data, container, helper, builder) {
 	return out;
 }
 ```
-By default, the **data** arguments are safeguarded against malicious attacks like XSS. However, you can disable this feature if you're using a backend platform that handles it for you.
-
 What's fantastic is that you can create your template using plain JavaScript. I've also provided some handy helper functions to simplify your life. For instance, you can method-chain your data (e.g., data.headline.trim().toUpper()) or utilize the argument "helper" to access to the StratoxDom library, which offers a range of helpful functions.
 
 ###  Lets use the template

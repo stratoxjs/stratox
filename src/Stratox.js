@@ -10,6 +10,7 @@ import { StratoxContainer } from './StratoxContainer.js';
 import { StratoxBuilder } from './StratoxBuilder.js';
 import { StratoxObserver } from './StratoxObserver.js';
 import { StratoxItem } from './StratoxItem.js';
+import { StratoxDTO } from './StratoxDTO.js';
 
 export class Stratox {
 
@@ -457,7 +458,28 @@ export class Stratox {
             }, 0);
         }
     }
+    
+    /**
+     * Format string object
+     * @param  {string} val
+     * @return {StratoxDTO|String}
+     */
+    format(val) {
+        return new StratoxDTO(val);
+    }
 
+    /**
+     * Render Mustache
+     * @param  {string} template Template with possible Mustache brackets
+     * @param  {object} data     Object with items to pass to Mustache brackets
+     * @return {string}          Return template with appended object inside of Mustache brackets
+     */
+    renderMustache(template, data) {
+        return template.replace(/{{(.*?)}}/g, function(match, key) {
+            return data[key.trim()] || ""; // Return the corresponding object property or an empty string if not found
+        });
+    }
+    
     /**
      * Will pass on container
      * @param  {string} key

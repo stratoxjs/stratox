@@ -38,11 +38,9 @@ Begin by adding an element to the HTML document.
 Add the configuration bellow in you main js file, some where it will globally execute.
 ```js
 Stratox.setConfigs({
-	xss: true, // (Default: true) Will auto protect all input data
 	directory: "/absolute/path/to/views/"
 });
 ```
-**xss:** The data are safeguarded against malicious attacks like XSS
 
 **directory:**  Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, keep in mind it starts from the Stratox.js file location.
 
@@ -62,7 +60,7 @@ export function ingressComponent(data, container, helper, builder) {
 	
 	let out = `
 	<header class="relative">
-		<h1 class="title">${data.headline.toUpper()}</h1>
+		<h1 class="title">${data.headline}</h1>
 		<p>${data.content}</p>
 	</header>
 	`;

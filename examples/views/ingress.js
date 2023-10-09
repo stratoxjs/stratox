@@ -7,7 +7,7 @@ export function ingressComponent(data, container, helper, builder) {
 	<header class="relative">
 		<div class="abs top right pad legend">ingress</div>
 	    <h1 class="title">${data.headline}</h1>
-	    <p>${data.content.excerpt(55)}</p>
+	    <p>${data.content}</p>
 	    ${tags()}
 	</header>
 	`;
@@ -17,7 +17,7 @@ export function ingressComponent(data, container, helper, builder) {
 		if(helper.isArray(data.tags ?? null)) {
 			out += '<div class="tags">';
 			helper.each(data.tags, (key, val) => {
-				out += '<div class="tag">'+val.toUpper()+'</div>';
+				out += '<div class="tag">'+inst.format(val).toUpper()+'</div>';
 		    });
 		    out += '</div>';
 		}

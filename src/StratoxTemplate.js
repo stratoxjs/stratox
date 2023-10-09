@@ -42,7 +42,7 @@ export class StratoxTemplate {
         if((this.getValidation("length", 0) > 0) || (this.getValidation("hasLength", 1) > 0)) {
             reqSymbol = "*";
         }
-        out = '<div id="'+this.getFieldID()+'" class="holder field-'+this.nameJoin+'" data-index="'+this.index+'">';
+        out = '<div id="'+this.getFieldID()+'" class="mb-20 field-'+this.nameJoin+'" data-index="'+this.index+'">';
         if(this.label) out += '<label>'+this.label+reqSymbol+'<div class="message hide"></div></label>';
         if(this.description) out += '<div class="description legend">'+this.description+'</div>';
         out += call();
@@ -249,7 +249,7 @@ export class StratoxTemplate {
      */
     group() {
         let out = '';
-        out += '<div class="holder wa-advanced-grouped-field">';
+        out += '<div class="mb-20 wa-advanced-grouped-field">';
         this.groupFactory(function(o, val) {
             out += o;
         }, true);

@@ -7,7 +7,6 @@
 
 import { StratoxDom as $ } from './StratoxDom.js';
 import { StratoxTemplate } from './StratoxTemplate.js';
-import { StratoxDTO } from './StratoxDTO.js';
 
 export class StratoxBuilder extends StratoxTemplate {
 
@@ -187,15 +186,6 @@ export class StratoxBuilder extends StratoxTemplate {
     }
 
     /**
-     * Format string object
-     * @param  {string} val
-     * @return {StratoxDTO|String}
-     */
-    format(val) {
-        return new StratoxDTO(val);
-    }
-
-    /**
      * Generate HTML
      * @param  {object} fields
      * @return {string}
@@ -230,8 +220,9 @@ export class StratoxBuilder extends StratoxTemplate {
         let val = this.#padFieldValues(), out, fn, formatedData;
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
             if(typeof fn === "function") {
-                //out = fn(this.#autoProtectData(this.data.data ?? {}), this.data.type, this.model, this, $);
-                out = fn.apply(this.containerInst.get("view"), [this.#autoProtectData(this.data.data ?? {}), this.containerInst, $, this]);
+
+                //out = fn.apply(this.containerInst.get("view"), [this.#autoProtectData(this.data.data ?? {}), this.containerInst, $, this]);
+                out = fn.apply(this.containerInst.get("view"), [(this.data.data ?? {}), this.containerInst, $, this]);
             } else {
                 out = this[this.data.type]();
             }         
@@ -242,27 +233,6 @@ export class StratoxBuilder extends StratoxTemplate {
             this.containerInst.get("view").observer().stop();
             console.error('The component/view named "'+this.data.type+'" does not exist.');
         }
-    }
-
-    /**
-     * Auto protect data (can be enabled/disabled)
-     * @param  {object} data
-     * @return {object} protected data
-     */
-    #autoProtectData(data) {
-        let inst = this;
-        if(typeof data === "object") $.each(data, function(k, value) {
-            if(typeof value === "object" && !(value instanceof StratoxDTO)) {
-                return inst.#autoProtectData(value);
-            } else {
-                if((typeof value === "string" || typeof value === "number")) {
-                    let newVal = inst.format(value);
-                    if(inst.settings.xss) newVal.xss();
-                    data[k] = newVal;
-                }
-            }
-        });
-        return data;
     }
 
     /**

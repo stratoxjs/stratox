@@ -67,7 +67,7 @@ export function ingressComponent(data, container, helper, builder) {
 	return out;
 }
 ```
-What's fantastic is that you can create your template using plain JavaScript. I've also provided some handy helper functions to simplify your life. For instance, you can method-chain your data (e.g., data.headline.trim().toUpper()) or utilize the argument "helper" to access to the StratoxDom library, which offers a range of helpful functions.
+What's fantastic is that you can create your template using plain JavaScript. I've also provided some handy helper functions to simplify your life. For instance, you can utilize the argument "helper" to access to the StratoxDom library, which offers a range of helpful functions.
 
 ###  Lets use the template
 Once the template is created we only need to use it.

@@ -104,7 +104,7 @@ const StratoxFunc = {
         };
     }
 
-}, StratoxObj = function(elem, test) {
+}, StratoxObj = function(elem) {
     StratoxObj.obj = {
         init: function(settings) {
             this.elem = elem;
@@ -121,7 +121,7 @@ const StratoxFunc = {
                 return this.elem.selector;
             }
 
-            let selector = this.query(this.elem, document);
+            let selector = this.qrsel(this.elem, document);
             if(selector !== null) return selector;
 
             if(HTMLCollection.prototype.isPrototypeOf(this.elem) || NodeList.prototype.isPrototypeOf(this.elem)) {
@@ -134,7 +134,7 @@ const StratoxFunc = {
         }, isStratoxDom: function() {
             return true;
 
-        }, query: function(elem, bind, quertSel) {
+        }, qrsel: function(elem, bind, quertSel) {
             if(typeof elem === "string") {
                 if(elem.indexOf("<") === 0) {
                     //this.textSelector = elem;
@@ -332,7 +332,7 @@ const StratoxFunc = {
             return Array.prototype.indexOf.call(c, el.get(0));
 
         }, find: function(elem) {
-            return StratoxDom(this.query(elem, this.get(0), true));
+            return StratoxDom(this.qrsel(elem, this.get(0), true));
 
         }, closest: function(elem) {
             let selector = this.get(0).closest(elem);
@@ -350,7 +350,7 @@ const StratoxFunc = {
             let i = 0, inst = this;
             if(inst.selector) inst.selector.forEach(function(el) {
                 if(typeof callback === "function") {
-                    if(el && el[0]) el = el[0];
+                    //if(el && el[0]) el = el[0]; // DEPRECATED
                     callback.apply(el, [el, inst.selector, i]);
                 }
                 i++;
@@ -366,7 +366,8 @@ const StratoxFunc = {
                 if(typeof v === "string") target = v;
                 if(typeof v === "object") data = v;
                 if(typeof v == "function") callable = function(e) {
-                    let newTarget = (target && (typeof e?.target?.closest === "function")) ? e.target.closest(target) : e.target;
+                    let newTarget = (target && (typeof e?.target?.closest === "function")) ? e.target.closest(target) : 
+                    (((typeof this === "object") && (this !== document)) ? this : e.target);
                     if(newTarget) {
                         if(e.data === undefined) e.data = data;
                         v.apply(newTarget, [e, newTarget]);
@@ -548,7 +549,7 @@ const StratoxFunc = {
                 let newEl;
                 this.each(function(el) {
                     let output = out.apply(inst, [el]);
-                    newEl = inst.query(output);
+                    newEl = inst.qrsel(output);
                     newEl = newEl[0];
                     el.replaceWith(newEl);
                 });
@@ -562,7 +563,7 @@ const StratoxFunc = {
             }
             return inst;
 
-        }, html: function(out, test) {
+        }, html: function(out) {
             if(this.selector) {
                 if(out === undefined) return this.get().innerHTML;
                 this.each(function(el) {

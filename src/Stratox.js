@@ -26,6 +26,7 @@ export class Stratox {
     #response;
     #container;
     #ivt;
+    #timestamp;
     #prop = false;
 
     static viewCount = 0; // Total active views
@@ -35,8 +36,8 @@ export class Stratox {
      * @type {object}
      */
     static #configs = {
-        xss: true,
         directory: "",
+        cache: false, // Automatically clear cache if is false on dynamic import
         popegation: true // Automatic DOM popegation protection
     };
 
@@ -263,7 +264,7 @@ export class Stratox {
                 
             } else {
                 inst.#incremented.push(false);
-                const module = await import(dir+key+".js");
+                const module = await import(dir+key+".js"+inst.#cacheParam());
                 inst.#incremented[inst.#incremented.length-1] = true;
                 inst.#imported[key] = true;
                 
@@ -492,4 +493,25 @@ export class Stratox {
         return inst;
     }
     
+    /**
+     * Get timestamp
+     * @return {int}
+     */
+    #getTime() {
+        if(!this.#timestamp) {
+            this.#timestamp = new Date().getTime();
+        }
+        return this.#timestamp;
+    }
+
+    /**
+     * Get cache parameter
+     * @return {string}
+     */
+    #cacheParam() {
+        if(this.getConfigs("cache") !== false) {
+            return "?v="+this.#getTime();
+        }
+        return "";
+    }
 }

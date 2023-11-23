@@ -509,7 +509,7 @@ export class Stratox {
      * @return {string}
      */
     #cacheParam() {
-        if(this.getConfigs("cache") !== false) {
+        if(this.getConfigs("cache") === false) {
             return "?v="+this.#getTime();
         }
         return "";

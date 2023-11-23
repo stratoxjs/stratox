@@ -1,6 +1,6 @@
 {
   "name": "stratox",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "JavaScript template library designed for the effortless creation of component, views and user interfaces (UI).",
   "directories": {
     "example": "examples",

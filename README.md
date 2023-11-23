@@ -39,8 +39,8 @@ Add the configuration bellow in you main js file, some where it will globally ex
 ```js
 Stratox.setConfigs({
 	directory: "/absolute/path/to/views/",
-    cache: false, // Automatically clear cache if is false on dynamic import
-    popegation: true // Automatic DOM popegation protection
+	cache: false, // Automatically clear cache if is false on dynamic import
+	popegation: true // Automatic DOM popegation protection
 });
 ```
 

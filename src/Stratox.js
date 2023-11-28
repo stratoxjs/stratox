@@ -40,10 +40,10 @@ export class Stratox {
         cache: false, // Automatically clear cache if is false on dynamic import
         popegation: true // Automatic DOM popegation protection
     };
-
+    
     /**
      * Start the Stratox JS instance 
-     * @param  {string} elem Pass in element as string e.g. (#elemID, .elemClass, tagname)
+     * @param {string|object} elem (#elem, .elem, .elem[data-id="test"], $("#elem"))
      * @return {self}
      */
     constructor(elem) {
@@ -87,6 +87,15 @@ export class Stratox {
         item.setContainer(inst.#container);
         inst.execute(call);
         return inst;
+    }
+
+    /**
+     * You can set element later. 
+     * E.g. If you set it in your template view then it will start to auto update on observer change!
+     * @param {string|object} elem (#elem, .elem, .elem[data-id="test"], $("#elem"))
+     */
+    setElement(elem) {
+        this.#elem = $(elem);
     }
 
     /**
@@ -283,8 +292,8 @@ export class Stratox {
 
     /**
      * Build, process and execute to DOM
-     * @param  {[type]} call [description]
-     * @return {[type]}      [description]
+     * @param  {callable} call
+     * @return {void}
      */
     execute(call) {
         let inst = this;

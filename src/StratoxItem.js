@@ -15,6 +15,7 @@ export class StratoxItem {
     fields = {};
     items = {};
     value = "";
+    hasFields = false;
     data = {}; // Merge all values to data
 
     constructor(type) {
@@ -101,6 +102,7 @@ export class StratoxItem {
     }
 
     setFields(obj) {
+        this.hasFields = true;
         if(typeof obj !== "object") throw new Error('Argumnent 1: Is not a object');
         let newObj = {};
         $.each(obj, function(k, v) {
@@ -162,6 +164,7 @@ export class StratoxItem {
             fields: this.fields,
             items: this.items,
             data: this.data,
+            hasFields: this.hasFields,
             value: this.value
         };
     }

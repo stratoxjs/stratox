@@ -93,8 +93,20 @@ export class StratoxBuilder extends StratoxTemplate {
         return "wa-fi-"+this.key+"-"+this.index;
     }
 
+    /**
+     * Check if has grouped events
+     * @return {Boolean}
+     */
     hasGroupEvents() {
         return this.#hasGroupEvents;
+    }
+
+    /**
+     * Check if view has extended field views
+     * @return {Boolean}
+     */
+    hasExtendedField() {
+        return (typeof this.data.fields === "object" && this.hasFields === false);
     }
 
     /**
@@ -212,6 +224,7 @@ export class StratoxBuilder extends StratoxTemplate {
         this.attr = (typeof this.data.attr === "object") ? this.data.attr : {};
         this.fields = (typeof this.data.fields === "object") ? this.data.fields : {};
         this.config = (typeof this.data.config === "object") ? this.data.config : {};
+        this.hasFields = (typeof this.data.hasFields === "boolean") ? this.data.hasFields : false;
 
         $.extend(this.configList, this.config);
         this.#buildFieldNames();
@@ -220,8 +233,6 @@ export class StratoxBuilder extends StratoxTemplate {
         let val = this.#padFieldValues(), out, fn, formatedData;
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
             if(typeof fn === "function") {
-
-                //out = fn.apply(this.containerInst.get("view"), [this.#autoProtectData(this.data.data ?? {}), this.containerInst, $, this]);
                 out = fn.apply(this.containerInst.get("view"), [(this.data.data ?? {}), this.containerInst, $, this]);
             } else {
                 out = this[this.data.type]();

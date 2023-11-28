@@ -10,26 +10,29 @@ import { StratoxContainer } from './StratoxContainer.js';
 
 export class StratoxTemplate {
 
+    json;
+    value = "";
+    label = "";
+    description = "";
+    values = null;
+    name = "";
+    nameJoin = "";
+    nameSplit = Array();
+    index = 0;
+    key;
+    fields = {};
+    attr = {};
+    hasFields = true;
+    config = {};
+    configList = {};
+    settings = {}
+    containerInst;
+
     constructor(json, key, settings, container) {
         this.json = json;
-        this.value = "";
-        this.label = "";
-        this.description = "";
-        this.values = null;
-        this.name = "";
-        this.nameJoin = "";
-        this.nameSplit = Array();
-        this.index = 0;
         this.key = key;
-        this.fields = {};
-        this.attr = {};
-        this.config = {};
-        this.configList = {};
-        this.settings = $.extend({
-            xss: true
-        }, (settings ?? {}));
-
-       this.containerInst = container;
+        this.settings = settings;
+        this.containerInst = container;
     }
 
     /**

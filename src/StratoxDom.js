@@ -117,6 +117,9 @@ const StratoxFunc = {
         }, _selector: function() {
 
             if(this.elem === null) return null;
+            if(typeof this?.elem?.exist === "function" && this.elem.exist()) {
+                this.elem = this.elem.get(0);
+            }
             if(typeof this.elem === "object" && typeof this.elem.isSelf === "function") {
                 return this.elem.selector;
             }

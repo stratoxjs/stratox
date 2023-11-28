@@ -308,10 +308,12 @@ export class Stratox {
 
             inst.#observer.factory(function(jsonData, temp) {
                 Stratox.viewCount++;
-
-                // Insert all processed HTML componets and place them into the document
+                // If response is not empty, 
+                // then insert, processed components and insert to the document
                 inst.#response = field.get();
-                if(inst.#elem) inst.insertHtml();
+                if(inst.#elem && (typeof inst.#response === "string") && inst.#response) {
+                    inst.insertHtml();
+                }
             });
 
             // Init listener and notify the listener

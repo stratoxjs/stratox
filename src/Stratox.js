@@ -418,11 +418,11 @@ export class Stratox {
      * @return {object}
      */
     editFieldValue(key, value) {
-        let nameArr = key.split(","), values = this.#values;
+        let nameArr = Array(), values = this.#values;
+        if(typeof key === "string") nameArr = key.split(",");
         this.modifyValue(values, nameArr, function(obj, key) {
             obj[key] = value;
         });
-
         return values;
     }
 

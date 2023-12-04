@@ -1,12 +1,14 @@
 import { StratoxDom as $ } from '../src/StratoxDom.js';
 import { Stratox } from '../src/Stratox.js';
+import { FormTemplateFields } from './FormTemplateFields.js';
 
 $(document).ready(function() {
 
 	Stratox.setConfigs({
-	    directory: "../examples/views/"
+	    directory: "../examples/views/",
+	    formHandler: FormTemplateFields
 	});
-
+	
 	let stratox = new Stratox("#ingress");
 	// Will return a Create instance of Stratox 
 	// src/views/ingress.js

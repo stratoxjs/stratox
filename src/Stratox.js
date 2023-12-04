@@ -37,6 +37,7 @@ export class Stratox {
      */
     static #configs = {
         directory: "",
+        formHandler: null,
         cache: false, // Automatically clear cache if is false on dynamic import
         popegation: true // Automatic DOM popegation protection
     };
@@ -55,11 +56,35 @@ export class Stratox {
     }
 
     /**
-     * Configurations
+     * Configurations (Immutable)
      * @param {object}
      */
     static setConfigs(configs) {
         $.extend(this.#configs, configs);
+    }
+
+    /**
+     * Get config from configurations
+     * @param  {string|empty} key
+     * @return {mixed}
+     */
+    static getConfigs(key) {
+        return (typeof key === "string") ? Stratox.#configs[key] : Stratox.#configs;
+    }
+
+    /**
+     * Get form handeler
+     * @return {StratoxBuilder} instance of StratoxBuilder
+     */
+    static getFormHandler() {
+        const handler = Stratox.getConfigs("formHandler");
+        if(handler === null) {
+            return StratoxBuilder;
+        }
+        if(typeof handler.setComponent !== "function") {
+            throw new Error("The form handler needs to be extending to the class StratoxBuilder!");
+        }
+        return handler;
     }
 
     /**
@@ -70,7 +95,8 @@ export class Stratox {
      */
     static prepareView(key, fn) {
         if(typeof fn !== "function") throw new Error("The argument 2 in @prepareView has to be a callable");
-        StratoxBuilder.setComponent(key, fn, this);
+        const handler = Stratox.getFormHandler();
+        handler.setComponent(key, fn, this);
     }
 
     /**
@@ -228,15 +254,6 @@ export class Stratox {
     }
 
     /**
-     * Get config from configurations
-     * @param  {string|empty} key
-     * @return {mixed}
-     */
-    getConfigs(key) {
-        return (typeof key === "string") ? Stratox.#configs[key] : Stratox.#configs;
-    }
-
-    /**
      * Get DOM element
      * @return {StratoxDom}
      */
@@ -259,12 +276,13 @@ export class Stratox {
      */
     async build(call) {
         let inst = this, dir = "";
-        this.#field = new StratoxBuilder(this.#components, "view", this.getConfigs(), this.#container);
+        const handler = Stratox.getFormHandler();
+        this.#field = new handler(this.#components, "view", Stratox.getConfigs(), this.#container);
 
         // Values are used to trigger magick methods
         this.#field.setValues(this.#values);
 
-        dir = inst.getConfigs("directory");
+        dir = Stratox.getConfigs("directory");
         if(!dir.endsWith('/')) dir += '/';
 
         for (const [key, data] of Object.entries(this.#components)) {
@@ -278,7 +296,7 @@ export class Stratox {
                 inst.#imported[key] = true;
                 
                 $.each(module, function(k, fn) {
-                    StratoxBuilder.setComponent(key, fn);
+                    handler.setComponent(key, fn);
                 });
             }
         }
@@ -456,7 +474,7 @@ export class Stratox {
      */
     insertHtml() {
         let inst = this;
-        if(inst.getConfigs("popegation") === false || !inst.#prop) {
+        if(Stratox.getConfigs("popegation") === false || !inst.#prop) {
             inst.#prop = true;
             inst.#elem.html(inst.#response);
         } else {
@@ -520,7 +538,7 @@ export class Stratox {
      * @return {string}
      */
     #cacheParam() {
-        if(this.getConfigs("cache") === false) {
+        if(Stratox.getConfigs("cache") === false) {
             return "?v="+this.#getTime();
         }
         return "";

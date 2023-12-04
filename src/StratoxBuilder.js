@@ -10,7 +10,7 @@ import { StratoxTemplate } from './StratoxTemplate.js';
 
 export class StratoxBuilder extends StratoxTemplate {
 
-    static #factory = {};
+    static _factory = {};
     #values = {};
     #hasGroupEvents = false;
 
@@ -21,7 +21,7 @@ export class StratoxBuilder extends StratoxTemplate {
      */
     static setComponent(key, fn) {
         if(typeof fn !== "function") throw new Error("The argument 2 in @prepareView has to be a callable");
-        this.#factory[key] = fn;
+        this._factory[key] = fn;
     }
 
     /**
@@ -30,7 +30,7 @@ export class StratoxBuilder extends StratoxTemplate {
      * @return {callable|false}
      */
     getComponent(key) {
-        return (StratoxBuilder.#factory[key]) ? StratoxBuilder.#factory[key] : false;
+        return (StratoxBuilder._factory[key]) ? StratoxBuilder._factory[key] : false;
     }
 
     /**

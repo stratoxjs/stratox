@@ -341,8 +341,13 @@ export class Stratox {
             // Auto init Magick methods to events if group field is being used
             if(field.hasGroupEvents() && inst.#elem) {
                 inst.#elem.on("input", function(e) {
-                    let inp = $(e.target), key = inp.data("name"), value = inp.val();
-                    inst.editFieldValue(key, inp.val());
+                    let inp = $(e.target), 
+                    key = inp.data("name"), type = inp.attr("type"), value = inp.val();
+                    
+                    if(type === "checkbox" || type === "radio") {
+                        value = (inp.get(0).checked) ? value : 0;
+                    }
+                    inst.editFieldValue(key, value);
                 });
 
                 inst.#elem.on("click", ".wa-field-group-btn", function(e) {
@@ -391,6 +396,15 @@ export class Stratox {
      */
     observer() {
         return this.#observer;
+    }
+
+    /**
+     * withObserver Immutable
+     * used to either create a new instance or access global callbacks
+     * @return {StratoxObserver}
+     */
+    static withObserver() {
+        return StratoxObserver;
     }
 
     /**

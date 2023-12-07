@@ -129,6 +129,22 @@ export class StratoxDTO {
     }
 
     /**
+     * Decode html special characers
+     * @return {self}
+     */
+    htmlspecialchars_decode() {
+        const map = {
+            '&amp;': '&',
+            '&lt;': '<',
+            '&gt;': '>',
+            '&quot;': '"',
+            '&#39;': "'"
+        };
+        this.#value = this.#value.replace(/&amp;|&lt;|&gt;|&quot;|&#39;/g, match => map[match]);
+        return this;
+    }
+
+    /**
      * Escape special cahracters
      * @return {self}
      */

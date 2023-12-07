@@ -48,9 +48,10 @@ export class Stratox {
      * @return {self}
      */
     constructor(elem) {
-        if(typeof elem === "string") this.#elem = $(elem);
+        if(typeof elem === "string") {
+            this.#elem = this.#selector(elem);
+        }
         this.#values = {};
-
         this.#container = new StratoxContainer();
         this.#container.set("view", this);
     }
@@ -60,7 +61,7 @@ export class Stratox {
      * @param {object}
      */
     static setConfigs(configs) {
-        $.extend(this.#configs, configs);
+        Object.assign(this.#configs, configs);
     }
 
     /**
@@ -121,7 +122,7 @@ export class Stratox {
      * @param {string|object} elem (#elem, .elem, .elem[data-id="test"], $("#elem"))
      */
     setElement(elem) {
-        this.#elem = $(elem);
+        this.#elem = this.#selector(elem);
     }
 
     /**
@@ -140,7 +141,7 @@ export class Stratox {
      */
     view(key, data) {
         let newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
-        $.extend(newObj, data);
+        Object.assign(newObj, data);
         this.#creator[key] = this.#initItemView(key, newObj);
         return this.#creator[key];
     }
@@ -165,7 +166,7 @@ export class Stratox {
      */
     form(name, data) {
         let newObj = (this.#components[name]) ? this.#components[name] : {};
-        $.extend(newObj, data);
+        Object.assign(newObj, data);
         this.#creator[name] = StratoxItem.form(name, data);
         return this.#creator[name];
     }
@@ -275,6 +276,7 @@ export class Stratox {
      * @return {void}
      */
     async build(call) {
+
         let inst = this, dir = "";
         const handler = Stratox.getFormHandler();
         this.#field = new handler(this.#components, "view", Stratox.getConfigs(), this.#container);
@@ -295,9 +297,9 @@ export class Stratox {
                 inst.#incremented[inst.#incremented.length-1] = true;
                 inst.#imported[key] = true;
                 
-                $.each(module, function(k, fn) {
+                for(const [k, fn] of Object.entries(module)) {
                     handler.setComponent(key, fn);
-                });
+                }
             }
         }
 
@@ -316,9 +318,13 @@ export class Stratox {
     execute(call) {
         let inst = this;
 
-        if(!$.isEmptyObject(this.#creator)) $.each(this.#creator, function(k, v) {
-            inst.add(v);
-        });
+
+        if(Object.keys(this.#creator).length > 0) {
+            for(const [k, v] of Object.entries(this.#creator)) {
+
+                inst.add(v);
+            }
+        }
         
         this.#observer = new StratoxObserver(this.#components);
 
@@ -340,8 +346,9 @@ export class Stratox {
 
             // Auto init Magick methods to events if group field is being used
             if(field.hasGroupEvents() && inst.#elem) {
+                /*
                 inst.#elem.on("input", function(e) {
-                    let inp = $(e.target), 
+                    let inp = inst.#selector(e.target), 
                     key = inp.data("name"), type = inp.attr("type"), value = inp.val();
                     
                     if(type === "checkbox" || type === "radio") {
@@ -361,6 +368,7 @@ export class Stratox {
                     let btn = $(this), key = btn.data("name"), pos = parseInt(btn.data("position"));
                     inst.deleteGroupField(key, pos, btn.hasClass("after"));
                 });
+                 */
             }
 
             // Callback
@@ -414,11 +422,11 @@ export class Stratox {
      * @param {bool} after (before (false) / after (true))
      */
     addGroupField(key, pos, after) {
-        let nameArr = key.split(","), values = this.#values;
+        let inst = this, nameArr = key.split(","), values = this.#values;
 
         if(after) pos += 1;
         this.modifyValue(values, nameArr, function(obj, key) {
-            if(!$.isArray(obj[key])) obj[key] = Object.values(obj[key]);
+            if(!inst.#isArray(obj[key])) obj[key] = Object.values(obj[key]);
             obj[key].splice(pos, 0, {});
         });
 
@@ -490,7 +498,7 @@ export class Stratox {
         let inst = this;
         if(Stratox.getConfigs("popegation") === false || !inst.#prop) {
             inst.#prop = true;
-            inst.#elem.html(inst.#response);
+            inst.#html(inst.#response);
         } else {
 
             // DOM Propagation protection
@@ -498,7 +506,7 @@ export class Stratox {
             if(inst.#ivt !== undefined) clearTimeout(inst.#ivt);
             inst.#ivt = setTimeout(function() {
                 inst.#prop = false;
-                inst.#elem.html(inst.#response);
+                inst.#html(inst.#response);
             }, 0);
         }
     }
@@ -556,5 +564,31 @@ export class Stratox {
             return "?v="+this.#getTime();
         }
         return "";
+    }
+
+    #selector(elem) {
+        if(elem.indexOf("#") === 0) {
+            return [document.getElementById(elem.substring(1))];
+        }
+        return document.querySelectorAll(elem);
+    }
+    
+    #html(out) {
+        this.#elem.forEach(function(el) {
+            el.innerHTML = out;
+        });
+    }
+
+    #bindEvent(selector, event, callable) {
+        selector.forEach(function(el) {
+            if(el) {
+                el.addEventListener(event, callable);
+            }
+        });
+    }
+
+    #isArray(item) {
+        if(typeof item !== "object") return false;
+        return Array.isArray(item);
     }
 }

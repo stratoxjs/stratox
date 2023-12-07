@@ -235,7 +235,7 @@ export class Stratox {
      * @param {object}
      */
     setValues(values) {
-        if(typeof values === "object") throw new Error("The argument 1 has to be an object");
+        if(typeof values !== "object") throw new Error("The argument 1 has to be an object");
         this.#values = values;
     }
     

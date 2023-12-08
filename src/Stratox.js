@@ -5,7 +5,6 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxDom as $ } from './StratoxDom.js';
 import { StratoxContainer } from './StratoxContainer.js';
 import { StratoxBuilder } from './StratoxBuilder.js';
 import { StratoxObserver } from './StratoxObserver.js';
@@ -39,7 +38,9 @@ export class Stratox {
         directory: "",
         formHandler: null,
         cache: false, // Automatically clear cache if is false on dynamic import
-        popegation: true // Automatic DOM popegation protection
+        popegation: true, // Automatic DOM popegation protection
+        helper: function(builder) { // GLOBAL container / helper / factory that will be passed on to all views  
+        }
     };
     
     /**
@@ -57,7 +58,7 @@ export class Stratox {
     }
 
     /**
-     * Configurations (Immutable)
+     * Configurations
      * @param {object}
      */
     static setConfigs(configs) {
@@ -114,6 +115,16 @@ export class Stratox {
         item.setContainer(inst.#container);
         inst.execute(call);
         return inst;
+    }
+
+    /**
+     * Get a config
+     * Instance based, and passed on to the builder
+     * @param  {string} key
+     * @return {mixed}
+     */
+    _getConfig(key) {
+        return Stratox.getConfigs(key);
     }
 
     /**
@@ -346,29 +357,26 @@ export class Stratox {
 
             // Auto init Magick methods to events if group field is being used
             if(field.hasGroupEvents() && inst.#elem) {
-                /*
-                inst.#elem.on("input", function(e) {
-                    let inp = inst.#selector(e.target), 
-                    key = inp.data("name"), type = inp.attr("type"), value = inp.val();
-                    
+
+                inst.#bindEvent(inst.#elem, "input", function(e) {
+                    const key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
                     if(type === "checkbox" || type === "radio") {
-                        value = (inp.get(0).checked) ? value : 0;
+                        value = (this.checked) ? value : 0;
                     }
                     inst.editFieldValue(key, value);
                 });
 
-                inst.#elem.on("click", ".wa-field-group-btn", function(e) {
+                inst.#bindEvent(inst.#elem, "click", ".wa-field-group-btn", function(e) {
                     e.preventDefault();
-                    let btn = $(this), key = btn.data("name"), pos = parseInt(btn.data("position"));
-                    inst.addGroupField(key, pos, btn.hasClass("after"));
+                    const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
+                    inst.addGroupField(key, pos, this.classList.contains("after"));
                 });
 
-                inst.#elem.on("click", ".wa-field-group-delete-btn", function(e) {
+                inst.#bindEvent(inst.#elem, "click", ".wa-field-group-delete-btn", function(e) {
                     e.preventDefault();
-                    let btn = $(this), key = btn.data("name"), pos = parseInt(btn.data("position"));
-                    inst.deleteGroupField(key, pos, btn.hasClass("after"));
+                    const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
+                    inst.deleteGroupField(key, pos, this.classList.contains("after"));
                 });
-                 */
             }
 
             // Callback
@@ -426,7 +434,7 @@ export class Stratox {
 
         if(after) pos += 1;
         this.modifyValue(values, nameArr, function(obj, key) {
-            if(!inst.#isArray(obj[key])) obj[key] = Object.values(obj[key]);
+            if(!inst.isArray(obj[key])) obj[key] = Object.values(obj[key]);
             obj[key].splice(pos, 0, {});
         });
 
@@ -579,15 +587,26 @@ export class Stratox {
         });
     }
 
-    #bindEvent(selector, event, callable) {
+    #bindEvent(...argument) {
+        let call, elem;
+        const [selector, event, ...args] = argument;
+        
+        elem = call = args[0];
+        if (typeof call !== "function") call = args[1];
+        
         selector.forEach(function(el) {
             if(el) {
+                const callable = function(e) {
+                    let btn = e.target;
+                    if (typeof elem === "string") btn = e.target.closest(elem);
+                    if(btn) call.apply(btn, [e, btn]);
+                }
                 el.addEventListener(event, callable);
             }
         });
     }
 
-    #isArray(item) {
+    isArray(item) {
         if(typeof item !== "object") return false;
         return Array.isArray(item);
     }

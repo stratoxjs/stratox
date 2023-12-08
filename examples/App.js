@@ -6,7 +6,10 @@ $(document).ready(function() {
 
 	Stratox.setConfigs({
 	    directory: "../examples/views/",
-	    formHandler: FormTemplateFields
+	    formHandler: FormTemplateFields,
+	    helper: function() {
+	    	return $;
+	    }
 	});
 	
 	let stratox = new Stratox("#ingress");

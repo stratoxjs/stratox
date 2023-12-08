@@ -5,7 +5,6 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxDom as $ } from './StratoxDom.js';
 import { StratoxTemplate } from './StratoxTemplate.js';
 
 export class StratoxBuilder extends StratoxTemplate {
@@ -49,7 +48,7 @@ export class StratoxBuilder extends StratoxTemplate {
      */
     getAttr(defArgs) {
         if(typeof defArgs !== "object") defArgs = {};
-        let attr = "", objFor = $.extend(defArgs, this.attr);
+        let attr = "", objFor = Object.assign(defArgs, this.attr);
         for(const [key, value] of Object.entries(objFor)) attr += ' '+key+'="'+value+'"';
         return attr;
     }
@@ -79,8 +78,8 @@ export class StratoxBuilder extends StratoxTemplate {
      * @return {Boolean}
      */
     isChecked(value) {
-        if($.isArray(this.value)) {
-            return $.inArray(value, this.value);
+        if(this.containerInst.get("view").isArray(this.value)) {
+            return this.value.includes(value);
         }
         return (this.value == value);
     }
@@ -115,14 +114,13 @@ export class StratoxBuilder extends StratoxTemplate {
      * @return {string}
      */
     groupFactory(callback, builder) {
-
         this.#hasGroupEvents = true;
 
-        let out = "", fields = {}, inst = this, nk = 0, nj = inst.nameJoin, cloneFields = $.extend({}, inst.fields), 
+        let out = "", fields = {}, inst = this, nk = 0, nj = inst.nameJoin, cloneFields = Object.assign({}, inst.fields), 
         length = this.getValueLength(1), config = this.config;
-        if(!$.isArray(this.value)) this.value = Array("");
+        if(!this.containerInst.get("view").isArray(this.value)) this.value = Array("");
 
-        $.each(this.value, function(k, a) {
+        if(typeof this.value === "object") for(const [k, a] of Object.entries(this.value)) {
             let o = "", btnIndex = inst.index, nestedNames = (config.nestedNames !== undefined && config.nestedNames === true);
 
             if(config.controls !== undefined && config.controls === true) {
@@ -131,16 +129,14 @@ export class StratoxBuilder extends StratoxTemplate {
                 o += '<a class="wa-field-group-btn form-group-icon before abs middle top over-2" data-name="'+nj+'" data-key="'+inst.key+'" data-index="'+btnIndex+'" data-position="'+k+'" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"><path d="M16 2 L16 30 M2 16 L30 16" /></svg></a>';
             }
 
-            $.each(cloneFields, function(name, arr) {
-                //arr.config = $.extend((arr.config ?? {}), config);
+            if(typeof cloneFields === "object") for(const [name, arr] of Object.entries(cloneFields)) {
                 let fk = (nestedNames) ? nj+","+nk+","+name : name;
                 fields[fk] = arr;
                 o += inst.#html(fields, false);
-
                 // Is grp then skip index (see @html and @#build). (Changed)
                 //o += inst.#html(fields, (arr.type === "group"));
                 fields = {};
-            });
+            };
 
             nk++;
             if(config.controls !== undefined && config.controls === true) {
@@ -148,7 +144,7 @@ export class StratoxBuilder extends StratoxTemplate {
                 o += '</div>';
             }
             out += callback(o, a);
-        });
+        }
         return out;
     }
     
@@ -192,7 +188,7 @@ export class StratoxBuilder extends StratoxTemplate {
      */
     getValueLength(minVal) {
         let length = 0;
-        if(this.value && $.isArray(this.value)) length = this.value.length;
+        if(this.value && this.containerInst.get("view").isArray(this.value)) length = this.value.length;
         if(typeof minVal === "number" && length <= minVal) length = minVal;
         return length;
     }
@@ -226,16 +222,20 @@ export class StratoxBuilder extends StratoxTemplate {
         this.config = (typeof this.data.config === "object") ? this.data.config : {};
         this.hasFields = (typeof this.data.hasFields === "boolean") ? this.data.hasFields : false;
 
-        $.extend(this.configList, this.config);
+        Object.assign(this.configList, this.config);
         this.#buildFieldNames();
         this.attr['data-name'] = this.nameJoin;
 
         let val = this.#padFieldValues(), out, fn, formatedData;
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
+
+            let helper = this.containerInst.get("view")._getConfig("helper");
+            if(typeof helper === "function") helper = helper(this);
+
             if(typeof fn === "function") {
-                out = fn.apply(this.containerInst.get("view"), [(this.data.data ?? {}), this.containerInst, $, this]);
+                out = fn.apply(this.containerInst.get("view"), [(this.data.data ?? {}), this.containerInst, helper, this]);
             } else {
-                out = this[this.data.type]();
+                out = this[this.data.type](helper);
             }         
             this.index++;
             return (out ? out : "");

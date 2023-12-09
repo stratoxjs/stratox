@@ -5,8 +5,6 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxDom as $ } from './StratoxDom.js';
-
 export class StratoxObserver {
 
     #data = {};
@@ -27,9 +25,9 @@ export class StratoxObserver {
         let newobj, inst = this;
         if(typeof obj === "function") {
             newobj = obj(inst.#proxyData);
-            $.extend(inst.#proxyData, newobj);
+            Object.assign(inst.#proxyData, newobj);
         } else {
-            $.extend(inst.#proxyData, obj);
+            Object.assign(inst.#proxyData, obj);
         }
     }
 
@@ -65,10 +63,9 @@ export class StratoxObserver {
      */
     notify() {
         let inst = this;
-        $.each(this.#callables, function(k, fn) {
+        if(typeof this.#callables === "object") for(const [k, fn] of Object.entries(this.#callables)) {
             fn(inst.#data);
-        });
-
+        };
         if(typeof StratoxObserver._notified === "function") {
             StratoxObserver._notified(inst.#data);
         }

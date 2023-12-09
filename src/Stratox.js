@@ -9,9 +9,10 @@ import { StratoxContainer } from './StratoxContainer.js';
 import { StratoxBuilder } from './StratoxBuilder.js';
 import { StratoxObserver } from './StratoxObserver.js';
 import { StratoxItem } from './StratoxItem.js';
-import { StratoxDTO } from './StratoxDTO.js';
 
 export class Stratox {
+
+    static viewCount = 0;
 
     #bindKey;
     #field;
@@ -28,19 +29,21 @@ export class Stratox {
     #timestamp;
     #prop = false;
 
-    static viewCount = 0; // Total active views
-
     /**
      * Default Configs
      * @type {object}
      */
     static #configs = {
         directory: "",
-        formHandler: null,
+        handlers: {
+            fields: null,
+            helper: function(builder) {
+                // GLOBAL container / helper / factory that will be passed on to all views  
+            }
+        },
         cache: false, // Automatically clear cache if is false on dynamic import
         popegation: true, // Automatic DOM popegation protection
-        helper: function(builder) { // GLOBAL container / helper / factory that will be passed on to all views  
-        }
+        
     };
     
     /**
@@ -50,7 +53,7 @@ export class Stratox {
      */
     constructor(elem) {
         if(typeof elem === "string") {
-            this.#elem = this.#selector(elem);
+            this.#elem = this.setSelector(elem);
         }
         this.#values = {};
         this.#container = new StratoxContainer();
@@ -79,7 +82,7 @@ export class Stratox {
      * @return {StratoxBuilder} instance of StratoxBuilder
      */
     static getFormHandler() {
-        const handler = Stratox.getConfigs("formHandler");
+        const handler = Stratox.getConfigs("handlers").fields;
         if(handler === null) {
             return StratoxBuilder;
         }
@@ -95,10 +98,15 @@ export class Stratox {
      * @param  {Function} fn
      * @return {void}
      */
-    static prepareView(key, fn) {
+    static setComponent(key, fn) {
         if(typeof fn !== "function") throw new Error("The argument 2 in @prepareView has to be a callable");
         const handler = Stratox.getFormHandler();
         handler.setComponent(key, fn, this);
+    }
+
+    // DEPRECATED (Renamed to setComponent)
+    static prepareView(key, fn) {
+        Stratox.setComponent(key, fn);
     }
 
     /**
@@ -118,6 +126,17 @@ export class Stratox {
     }
 
     /**
+     * withObserver Immutable
+     * used to either create a new instance or access global callbacks
+     * Oberver has a Global notify callback listner that will be triggered
+     * every time observer is updated
+     * @return {StratoxObserver}
+     */
+    static withObserver() {
+        return StratoxObserver;
+    }
+
+    /**
      * Get a config
      * Instance based, and passed on to the builder
      * @param  {string} key
@@ -133,7 +152,7 @@ export class Stratox {
      * @param {string|object} elem (#elem, .elem, .elem[data-id="test"], $("#elem"))
      */
     setElement(elem) {
-        this.#elem = this.#selector(elem);
+        this.#elem = this.setSelector(elem);
     }
 
     /**
@@ -303,13 +322,17 @@ export class Stratox {
                 // Component is loaded...
                 
             } else {
-                inst.#incremented.push(false);
-                const module = await import(dir+key+".js"+inst.#cacheParam());
-                inst.#incremented[inst.#incremented.length-1] = true;
-                inst.#imported[key] = true;
-                
-                for(const [k, fn] of Object.entries(module)) {
-                    handler.setComponent(key, fn);
+                if(data.compType !== "form") {
+                    inst.#incremented.push(false);
+                    const module = await import(dir+key+".js"+inst.#cacheParam());
+                    inst.#incremented[inst.#incremented.length-1] = true;
+                    inst.#imported[key] = true;
+                    
+                    for(const [k, fn] of Object.entries(module)) {
+                        handler.setComponent(key, fn);
+                    }
+                } else {
+                    console.warn(`To use the field item ${data.type} you need to specify a formHandler in config!`);
                 }
             }
         }
@@ -329,10 +352,8 @@ export class Stratox {
     execute(call) {
         let inst = this;
 
-
         if(Object.keys(this.#creator).length > 0) {
             for(const [k, v] of Object.entries(this.#creator)) {
-
                 inst.add(v);
             }
         }
@@ -346,6 +367,7 @@ export class Stratox {
                 // If response is not empty, 
                 // then insert, processed components and insert to the document
                 inst.#response = field.get();
+
                 if(inst.#elem && (typeof inst.#response === "string") && inst.#response) {
                     inst.insertHtml();
                 }
@@ -358,7 +380,7 @@ export class Stratox {
             // Auto init Magick methods to events if group field is being used
             if(field.hasGroupEvents() && inst.#elem) {
 
-                inst.#bindEvent(inst.#elem, "input", function(e) {
+                inst.bindEvent(inst.#elem, "input", function(e) {
                     const key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
                     if(type === "checkbox" || type === "radio") {
                         value = (this.checked) ? value : 0;
@@ -366,13 +388,13 @@ export class Stratox {
                     inst.editFieldValue(key, value);
                 });
 
-                inst.#bindEvent(inst.#elem, "click", ".wa-field-group-btn", function(e) {
+                inst.bindEvent(inst.#elem, "click", ".wa-field-group-btn", function(e) {
                     e.preventDefault();
                     const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
                     inst.addGroupField(key, pos, this.classList.contains("after"));
                 });
 
-                inst.#bindEvent(inst.#elem, "click", ".wa-field-group-delete-btn", function(e) {
+                inst.bindEvent(inst.#elem, "click", ".wa-field-group-delete-btn", function(e) {
                     e.preventDefault();
                     const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
                     inst.deleteGroupField(key, pos, this.classList.contains("after"));
@@ -412,15 +434,6 @@ export class Stratox {
      */
     observer() {
         return this.#observer;
-    }
-
-    /**
-     * withObserver Immutable
-     * used to either create a new instance or access global callbacks
-     * @return {StratoxObserver}
-     */
-    static withObserver() {
-        return StratoxObserver;
     }
 
     /**
@@ -494,38 +507,27 @@ export class Stratox {
             }
         }
         return { name: name, elem: el };
-
     }
 
     /**
      * Insert HTML, will protect you from unintended DOM Propagation and 
-     * keep High performance even tho DOm would be stuck in a 100000 loop!
+     * keep High performance even tho DOM would be stuck in a 100000 loop!
      * @return {void}
      */
     insertHtml() {
         let inst = this;
         if(Stratox.getConfigs("popegation") === false || !inst.#prop) {
             inst.#prop = true;
-            inst.#html(inst.#response);
+            inst.html(inst.#response);
         } else {
-
             // DOM Propagation protection
             // Will be triggered if same DOM el is trigger consequently
             if(inst.#ivt !== undefined) clearTimeout(inst.#ivt);
             inst.#ivt = setTimeout(function() {
                 inst.#prop = false;
-                inst.#html(inst.#response);
+                inst.html(inst.#response);
             }, 0);
         }
-    }
-    
-    /**
-     * Format string object
-     * @param  {string} val
-     * @return {StratoxDTO|String}
-     */
-    format(val) {
-        return new StratoxDTO(val);
     }
 
     /**
@@ -538,6 +540,64 @@ export class Stratox {
         return template.replace(/{{(.*?)}}/g, function(match, key) {
             return data[key.trim()] || ""; // Return the corresponding object property or an empty string if not found
         });
+    }
+
+    /**
+     * Set selector/element
+     * @param {object}
+     */
+    setSelector(elem) {
+        if(typeof elem === "object") {
+            return [elem];
+        }
+        if(elem.indexOf("#") === 0) {
+            return [document.getElementById(elem.substring(1))];
+        }
+        return document.querySelectorAll(elem);
+    }
+    
+    /**
+     * Insert HTML into main rect
+     * @param  {string} out
+     * @return {void}
+     */
+    html(out) {
+        this.#elem.forEach(function(el) {
+            el.innerHTML = out;
+        });
+    }
+
+    /**
+     * Easy to work with event handler
+     * @param  {array|spread} argument
+     * @return {void}
+     */
+    bindEvent(...argument) {
+        let call, elem, [selector, event, ...args] = argument;
+        if(typeof selector === "string") selector = this.setSelector(selector);
+        elem = call = args[0];
+        if (typeof call !== "function") call = args[1];
+        
+        selector.forEach(function(el) {
+            if(el) {
+                const callable = function(e) {
+                    let btn = e.target;
+                    if (typeof elem === "string") btn = e.target.closest(elem);
+                    if(btn) call.apply(btn, [e, btn]);
+                }
+                el.addEventListener(event, callable);
+            }
+        });
+    }
+
+    /**
+     * Check if is array
+     * @param  {mixed}  item
+     * @return {bool}
+     */
+    isArray(item) {
+        if(typeof item !== "object") return false;
+        return Array.isArray(item);
     }
     
     /**
@@ -553,7 +613,7 @@ export class Stratox {
     }
     
     /**
-     * Get timestamp
+     * Get timestamp (Can be used to auto clear cache)
      * @return {int}
      */
     #getTime() {
@@ -572,42 +632,5 @@ export class Stratox {
             return "?v="+this.#getTime();
         }
         return "";
-    }
-
-    #selector(elem) {
-        if(elem.indexOf("#") === 0) {
-            return [document.getElementById(elem.substring(1))];
-        }
-        return document.querySelectorAll(elem);
-    }
-    
-    #html(out) {
-        this.#elem.forEach(function(el) {
-            el.innerHTML = out;
-        });
-    }
-
-    #bindEvent(...argument) {
-        let call, elem;
-        const [selector, event, ...args] = argument;
-        
-        elem = call = args[0];
-        if (typeof call !== "function") call = args[1];
-        
-        selector.forEach(function(el) {
-            if(el) {
-                const callable = function(e) {
-                    let btn = e.target;
-                    if (typeof elem === "string") btn = e.target.closest(elem);
-                    if(btn) call.apply(btn, [e, btn]);
-                }
-                el.addEventListener(event, callable);
-            }
-        });
-    }
-
-    isArray(item) {
-        if(typeof item !== "object") return false;
-        return Array.isArray(item);
     }
 }

@@ -5,36 +5,10 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxDom as $ } from './StratoxDom.js';
-import { StratoxContainer } from './StratoxContainer.js';
+import { StratoxBuilder } from './StratoxBuilder.js';
 
-export class StratoxTemplate {
-
-    json;
-    value = "";
-    label = "";
-    description = "";
-    values = null;
-    name = "";
-    nameJoin = "";
-    nameSplit = Array();
-    index = 0;
-    key;
-    fields = {};
-    attr = {};
-    hasFields = true;
-    config = {};
-    configList = {};
-    settings = {}
-    containerInst;
-
-    constructor(json, key, settings, container) {
-        this.json = json;
-        this.key = key;
-        this.settings = settings;
-        this.containerInst = container;
-    }
-
+export class StratoxTemplate extends StratoxBuilder {
+    
     /**
      * Create a container for you form item 
      * @param  {callable} call return form item inside the callable
@@ -63,7 +37,7 @@ export class StratoxTemplate {
 
         // Default
         let out = "", 
-        args = $.extend({
+        args = Object.assign({
             type: "text",
             name: this.name,
             value: this.value,
@@ -88,7 +62,7 @@ export class StratoxTemplate {
      * Regular input field
      * @return {string}
      */
-    text() {
+    text(arg) {
         let inst = this;
         return this.container(function() {
             return inst.input();
@@ -236,7 +210,7 @@ export class StratoxTemplate {
     submit(attributes) {
         let inst = this, 
 
-        args = $.extend({
+        args = Object.assign({
             type: "submit",
             name: this.name,
             value: this.value

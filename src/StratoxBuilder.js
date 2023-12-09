@@ -5,13 +5,40 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxTemplate } from './StratoxTemplate.js';
+import { StratoxItem } from './StratoxItem.js';
 
-export class StratoxBuilder extends StratoxTemplate {
+export class StratoxBuilder {
 
     static _factory = {};
+    
+    json;
+    value = "";
+    label = "";
+    description = "";
+    values = null;
+    name = "";
+    nameJoin = "";
+    nameSplit = Array();
+    index = 0;
+    key;
+    fields = {};
+    attr = {};
+    hasFields = true;
+    config = {};
+    configList = {};
+    settings = {}
+    containerInst;
+
     #values = {};
+    #helper;
     #hasGroupEvents = false;
+
+    constructor(json, key, settings, container) {
+        this.json = json;
+        this.key = key;
+        this.settings = settings;
+        this.containerInst = container;
+    }
 
     /**
      * Create a new component
@@ -54,7 +81,21 @@ export class StratoxBuilder extends StratoxTemplate {
     }
 
     /**
+     * This will make it posible for you to build manual forms in your views
+     * @param  {string} fieldName
+     * @param  {object} args
+     * @return {static}
+     */
+    withField(fieldName, args) {
+        let clone = new this.constructor();
+        const item = StratoxItem.form(fieldName, args);
+        Object.assign(clone, item.get());
+        return clone;
+    }
+
+    /**
      * Set form values
+     * All sets except for value should be a new instance to keep immutability
      * @param object Global values input/field name (example: { name: "About us", permlink: "about-us" } )
      */
     setValues(values) {
@@ -229,13 +270,12 @@ export class StratoxBuilder extends StratoxTemplate {
         let val = this.#padFieldValues(), out, fn, formatedData;
         if((typeof this[this.data.type] === "function") || (fn = this.getComponent(this.data.type))) {
 
-            let helper = this.containerInst.get("view")._getConfig("helper");
-            if(typeof helper === "function") helper = helper(this);
+            const helper = this.#getHelper();
 
             if(typeof fn === "function") {
                 out = fn.apply(this.containerInst.get("view"), [(this.data.data ?? {}), this.containerInst, helper, this]);
             } else {
-                out = this[this.data.type](helper);
+                out = this.#getField(this.data.type);
             }         
             this.index++;
             return (out ? out : "");
@@ -244,6 +284,28 @@ export class StratoxBuilder extends StratoxTemplate {
             this.containerInst.get("view").observer().stop();
             console.error('The component/view named "'+this.data.type+'" does not exist.');
         }
+    }
+
+    /**
+     * Get Field
+     * @param  {string} fieldType
+     * @return {string}
+     */
+    #getField(fieldType) {
+        const helper = this.#getHelper();
+        return this[fieldType](helper);
+    }
+
+    /**
+     * Get helper
+     * @return {mixed}
+     */
+    #getHelper() {
+        if(!this.#helper) {
+            this.#helper = this.containerInst.get("view")._getConfig("handlers").helper;
+            if(typeof this.#helper === "function") this.#helper = this.#helper(this);
+        }
+        return this.#helper;
     }
 
     /**

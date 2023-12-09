@@ -1,9 +1,8 @@
-import { StratoxDom as $ } from './StratoxDom.js';
 import { StratoxContainer } from './StratoxContainer.js';
 
 export class StratoxItem {
 
-    #compType = "";
+    compType = "";
     #container;
 
     type = "";
@@ -27,7 +26,7 @@ export class StratoxItem {
     static form(name, data) {
         let inst = new StratoxItem(name);
         
-        inst.#compType = "form";
+        inst.compType = "form";
         inst.setType("text");
         inst.setName(name);
         return inst.merge(data);
@@ -37,7 +36,7 @@ export class StratoxItem {
         if(typeof data !== "object") throw new Error('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
 
         let inst = new StratoxItem(key);
-        inst.#compType = "view";
+        inst.compType = "view";
         inst.setData(data);
         inst.setName(key);
         return inst;
@@ -62,7 +61,7 @@ export class StratoxItem {
     }
 
     getCompType() {
-        return this.#compType;
+        return this.compType;
     }
 
     setLabel(str) {
@@ -105,14 +104,13 @@ export class StratoxItem {
         this.hasFields = true;
         if(typeof obj !== "object") throw new Error('Argumnent 1: Is not a object');
         let newObj = {};
-        $.each(obj, function(k, v) {
+        for(const [k, v] of Object.entries(obj)) {
             if(v instanceof StratoxItem ) {
                 newObj[v.getName()] = v.get();
             } else {
                 newObj[k] = v;
             }
-        });
-
+        };
         this.fields = newObj;
         return this;
     }
@@ -136,18 +134,18 @@ export class StratoxItem {
     }
 
     set(obj) {
-        if(this.#compType === "form") {
+        if(this.compType === "form") {
             if(typeof obj === "function") {
                 obj(this);
             } else {
-                $.extend(this, obj);
+                Object.assign(this, obj);
             }
             
         } else {
             if(typeof obj === "function") {
                 obj(this.data);
             } else {
-                $.extend(this.data, obj);
+                Object.assign(this.data, obj);
             }
         }
         return this;
@@ -170,13 +168,13 @@ export class StratoxItem {
     }
 
     merge(data) {
-        $.extend(this, data);
+        Object.assign(this, data);
         return this;
     }
 
     get() {
         let newObj = this.getObj();
-        $.extend(newObj, this.data);
+        Object.assign(newObj, this.data);
         return newObj;
     }
 

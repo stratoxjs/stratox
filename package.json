@@ -1,10 +1,9 @@
 {
   "name": "stratox",
-  "version": "1.6.1",
+  "version": "2.0.0",
   "description": "JavaScript template library designed for the effortless creation of component, views and user interfaces (UI).",
   "directories": {
-    "example": "examples",
-    "test": "tests"
+    "src": "src"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -42,18 +42,29 @@ import { Stratox } from './node_modules/stratox/src/Stratox.js';
 ### Configure 
 Add the configuration bellow in you main js file, some where it will globally execute.
 ```js
-//import { FormTemplateFields } from './pathToYourTemplateClas/FormTemplateFields.js';
 Stratox.setConfigs({
-	directory: "/absolute/path/to/views/",
-	//formHandler: FormTemplateFields, // Not required (se bellow)
-	cache: false // Automatically clear cache if is false on dynamic import
+    directory: "/absolute/path/to/views/",
+    cache: false, // Automatically clear cache if is false on dynamic import
+    handlers: {
+    	//fields: FormTemplateFields, // Not required (se bellow)
+    	helper: function() {
+    		// Pass on helper classes, functions and objects to your views
+    		return {
+    			helper1: "Mixed data...",
+    			helper2: "Could be classes You want to",
+    			helper3: "Pass on to you components",
+    		};
+    	}
+    }
 });
 ```
 **directory:**  Directory path for asynchronously or imported templates. Either specify an absolute directory path or if opting for a relative path, **but** keep in mind it starts from the Stratox.js file location meaning if you bundle your files the relative location **will change** to where the bundle file is located at.
 
-**formHandler:** Create a custom class handler for creating or modifying form field items, including [default fields](https://wazabii.se/stratoxjs/dynamic-forms). The form field handler must extend the "StratoxBuilder" class, which is located in "node_modules/stratox/src/StratoxBuilder.js".
-
 **cache:** Automatically clear cache if is false on dynamic import.
+
+**handlers: fields:** Create a custom class handler for creating or modifying form field items, including [default fields](https://wazabii.se/stratoxjs/dynamic-forms). The form field handler must extend the "StratoxBuilder" class, which is located in "node_modules/stratox/src/StratoxBuilder.js".
+
+**handlers: helper:** Pass on helper classes, functions and objects to your views. If you are using a DOM traversal enginge then you could pass it on to the helper that in turn passes it on to your components, views and fields
 
 
 ### Template files
@@ -68,7 +79,7 @@ The asynchronous import is great, especially in the development mode (read more 
 // Add import to the top of your js file
 import { ingressComponent } from './node_modules/stratox/src/views/ingress.js';
 //And then prepare the component...
-Stratox.prepareView("ingress", ingressComponent);
+Stratox.setComponent("ingress", ingressComponent);
 ```
 *Now Stratox will not try to autoload the view/component anymore and it will also be **bundled** with the rest of your files.* 
 

@@ -61,16 +61,16 @@ Begin by adding an element to the HTML document.
 Start by importing "Stratox.js".
 ```js
 import { Stratox } from './node_modules/stratox/src/Stratox.js';
+import { StratoxTemplate } from './node_modules/stratox/src/StratoxTemplate.js'; // (Optional: will add form builder)
 ```
 ### Configure 
 Add the configuration bellow in you main js file, some where it will globally execute.
 ```js
-//import { FormTemplateFields } from './pathToYourTemplateClas/FormTemplateFields.js';
 Stratox.setConfigs({
     directory: "/absolute/path/to/views/",
     cache: false, // Automatically clear cache if is false on dynamic import
     handlers: {
-    	//fields: FormTemplateFields, // Not required (se bellow)
+    	fields: StratoxTemplate, // Optional: will add form builder (se bellow)
     	helper: function() {
     		// Pass on helper classes, functions and objects to your views
     		return {
@@ -86,7 +86,7 @@ Stratox.setConfigs({
 
 **cache:** Automatically clear cache if is false on dynamic import.
 
-**handlers: fields:** Create a custom class handler for creating or modifying form field items, including [default fields](https://wazabii.se/stratoxjs/dynamic-forms). The form field handler must extend the "StratoxBuilder" class, which is located in "node_modules/stratox/src/StratoxBuilder.js".
+**handlers: fields:** Create a custom class handler for creating or modifying form field items, including [default fields](https://wazabii.se/stratoxjs/dynamic-forms). The form field handler must extend the "StratoxBuilder" class, which is located in "node_modules/stratox/src/StratoxBuilder.js". You can also create an new class (or copy StratoxTemplate.js file) and extend your class to StratoxTemplate if you want to add defualt fields or StratoxBuilder if you want to start fresh. Then just creaet your own form fields to your class.
 
 **handlers: helper:** Pass on helper classes, functions and objects to your views. If you are using a DOM traversal enginge then you could pass it on to the helper that in turn passes it on to your components, views and fields
 

@@ -86,7 +86,7 @@ Stratox.setConfigs({
 
 **cache:** Automatically clear cache if is false on dynamic import.
 
-**handlers: fields:** Create a custom class handler for creating or modifying form field items, including [default fields](https://wazabii.se/stratoxjs/dynamic-forms). The form field handler must extend the "StratoxBuilder" class, which is located in "node_modules/stratox/src/StratoxBuilder.js". You can also create an new class (or copy StratoxTemplate.js file) and extend your class to StratoxTemplate if you want to add defualt fields or StratoxBuilder if you want to start fresh. Then just creaet your own form fields to your class.
+**handlers: fields:** Create a custom class handler for creating or modifying form field items, including default fields. The form field handler must extend the "StratoxBuilder" class, which is located in "node_modules/stratox/src/StratoxBuilder.js". You can also create a new class (or copy the StratoxTemplate.js file) and extend your new class to StratoxTemplate if you want to add default fields or StratoxBuilder if you want to start fresh. Then just create your own form fields in your class.
 
 **handlers: helper:** Pass on helper classes, functions and objects to your views. If you are using a DOM traversal enginge then you could pass it on to the helper that in turn passes it on to your components, views and fields
 

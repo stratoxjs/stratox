@@ -5,7 +5,7 @@
 
 Stratox.js weight a mere 6 KB when bundled and minimized, showcasing its lightweight design. Despite its compact size, it rivals major libraries in functionality. This makes Stratox.js an efficient choice for both **applications** and traditional **websites**, ensuring optimal performance and load speeds. Its versatility allows for asynchronous loading of views (with optional caching) or bundling them conveniently in your JS file.
 
-[Jump down to guide](#getting-started)
+[Jump down to guide](#installation)
 
 ### User-Friendly
 Stratox is very user-friendly because it lets you prioritize JavaScript and HTML instead of grappling with the complexities of new markup and platform-specific functions, which in the end only lead to the burden of unnecessary abstractions. Stratox harnesses JavaScript's core capabilities, promoting a practical and fundamental approach to modern web development.

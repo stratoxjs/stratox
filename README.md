@@ -1,16 +1,39 @@
 
-
 # Stratox.js - Template library for building user interfaces
 
 **Stratox.js, an modern, easy to use JavaScript library**, facilitates the development of templates, user interfaces (UI), components and views. Offering a flexible and efficient approach to web development.
 
-We encourage developers to prioritize JavaScript and HTML, as they should, instead of grappling with the complexities of new markup and platform-specific functions, which in the end only lead to the burden of unnecessary abstractions. Stratox harnesses JavaScript's core capabilities, promoting a practical and fundamental approach to modern web development.
+Stratox.js weight a mere 6 KB when bundled and minimized, showcasing its lightweight design. Despite its compact size, it rivals major libraries in functionality. This makes Stratox.js an efficient choice for both **applications** and traditional **websites**, ensuring optimal performance and load speeds. Its versatility allows for asynchronous loading of views (with optional caching) or bundling them conveniently in your JS file.
 
-Moreover, by allowing developers to write regular HTML with the right semantics, Stratox.js ensures that the resulting interfaces are fully **accessible**. This dual emphasis on simplicity and accessibility makes Stratox.js a powerful tool for creating user-friendly and inclusive web applications.
+[Jump down to guide](#getting-started)
+
+### User-Friendly
+Stratox is very user-friendly because it lets you prioritize JavaScript and HTML instead of grappling with the complexities of new markup and platform-specific functions, which in the end only lead to the burden of unnecessary abstractions. Stratox harnesses JavaScript's core capabilities, promoting a practical and fundamental approach to modern web development.
 
 ### Platform-agnostic nature
 Stratox.js doesn't discriminate or judge based on the platform you use, and it works seamlessly on all platforms and depends on nothing but it self.
 
+### Full accessibility support
+Moreover, by allowing developers to write regular HTML with the right semantics, Stratox.js ensures that the resulting interfaces are fully **accessible**. This dual emphasis on simplicity and accessibility makes Stratox.js a powerful tool for creating user-friendly and inclusive web applications.
+
+### Why Stratox.js?
+-   **High Performance:** Stratox.js is optimized for performance.
+-   **Great Load Speed:** Experience swift loading times for a seamless user experience.
+-   **Optimized:** A finely-tuned library that prioritizes efficiency.
+-   **User-Friendly:** Easy to use, making development a breeze.
+-   **Platform-Agnostic:** Works seamlessly across all platforms.
+-   **Template Engine:** Facilitates the creation of Views, components, and UI elements.
+-   **Form Builder:** Follows HTML semantics, supporting nested form names.
+-   **HTML Semantics:** Follow HTML semantics if you wish
+-   **Full Accessibility Support:** You can make your app inclusive and accessible for all.
+-   **Container Library:** Designed for seamless communication between template views and your project.
+- **Async and bundle:** Support asynchronous loading of or bundling of views
+
+### Targeting
+-   **Single-Page Application (SPA):** Ideal for creating SPAs with enhanced user experiences.
+-   **Cross-Platform Compatibility:** Apache Cordova (PhoneGap), Xamarin, React Native, Electron, Ionic, and similar.
+-   **Enhancing Static HTML:** Easily integrates with existing static HTML structures.
+-   **Backend Language Integration:** Communicates seamlessly with various backend languages.
 
 ## Installation
 ```
@@ -21,10 +44,11 @@ npm i stratox
 
 ## Full documentation
 The initial documentation draft is ready. (Still recommended to read guide bellow)
+*The Guide is at the moment some what out dated. It will tho soon be fixed!*
 ### [Read the documentation](https://wazabii.se/stratoxjs/)
 
 
-## Quick guide / Preview
+## Getting started
 This is just a quick guide to preview how easy it is. Visit the link above for the full documention.
 
 ### index.html

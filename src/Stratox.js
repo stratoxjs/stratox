@@ -381,7 +381,7 @@ export class Stratox {
             if(field.hasGroupEvents() && inst.#elem) {
 
                 inst.bindEvent(inst.#elem, "input", function(e) {
-                    const key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
+                    let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
                     if(type === "checkbox" || type === "radio") {
                         value = (this.checked) ? value : 0;
                     }

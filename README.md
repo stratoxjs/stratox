@@ -44,9 +44,8 @@ npm i stratox
 
 ## Full documentation
 The initial documentation draft is ready. (Still recommended to read guide bellow)
-*The Guide is at the moment some what out dated. It will tho soon be fixed!*
-### [Read the documentation](https://wazabii.se/stratoxjs/)
 
+#### [Read the documentation](https://wazabii.se/stratoxjs/)
 
 ## Getting started
 This is just a quick guide to preview how easy it is. Visit the link above for the full documention.
@@ -66,6 +65,7 @@ import { Stratox } from './node_modules/stratox/src/Stratox.js';
 ### Configure 
 Add the configuration bellow in you main js file, some where it will globally execute.
 ```js
+//import { FormTemplateFields } from './pathToYourTemplateClas/FormTemplateFields.js';
 Stratox.setConfigs({
     directory: "/absolute/path/to/views/",
     cache: false, // Automatically clear cache if is false on dynamic import

@@ -83,10 +83,10 @@ export class Stratox {
      */
     static getFormHandler() {
         const handler = Stratox.getConfigs("handlers").fields;
-        if(handler === null) {
+        if(handler === null || handler === undefined) {
             return StratoxBuilder;
         }
-        if(typeof handler.setComponent !== "function") {
+        if(typeof handler?.setComponent !== "function") {
             throw new Error("The form handler needs to be extending to the class StratoxBuilder!");
         }
         return handler;

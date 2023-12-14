@@ -586,6 +586,9 @@ export class Stratox {
                     if(btn) call.apply(btn, [e, btn]);
                 }
                 el.addEventListener(event, callable);
+                el.off = function() {
+                    el.removeEventListener(event, callable);
+                };
             }
         });
     }

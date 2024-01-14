@@ -323,8 +323,11 @@ export class Stratox {
                 
             } else {
                 if(data.compType !== "form") {
+                    const extractFileName = key.split("."), 
+                    file = extractFileName[0];
+
                     inst.#incremented.push(false);
-                    const module = await import(dir+key+".js"+inst.#cacheParam());
+                    const module = await import(dir+file+".js"+inst.#cacheParam());
                     inst.#incremented[inst.#incremented.length-1] = true;
                     inst.#imported[key] = true;
                     

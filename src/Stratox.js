@@ -306,7 +306,6 @@ export class Stratox {
      * @return {void}
      */
     async build(call) {
-        
         let inst = this, dir = "";
         const handler = Stratox.getFormHandler();
         this.#field = new handler(this.#components, "view", Stratox.getConfigs(), this.#container);
@@ -323,7 +322,7 @@ export class Stratox {
                 
             } else {
                 if(data.compType !== "form") {
-                    const extractFileName = key.split("."), 
+                    const extractFileName = key.split("#"), 
                     file = extractFileName[0],
                     compo = inst.#field.hasComponent(file);
 

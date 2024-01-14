@@ -306,7 +306,7 @@ export class Stratox {
      * @return {void}
      */
     async build(call) {
-
+        
         let inst = this, dir = "";
         const handler = Stratox.getFormHandler();
         this.#field = new handler(this.#components, "view", Stratox.getConfigs(), this.#container);
@@ -324,16 +324,21 @@ export class Stratox {
             } else {
                 if(data.compType !== "form") {
                     const extractFileName = key.split("."), 
-                    file = extractFileName[0];
+                    file = extractFileName[0],
+                    compo = inst.#field.hasComponent(file);
 
                     inst.#incremented.push(false);
-                    const module = await import(dir+file+".js"+inst.#cacheParam());
-                    inst.#incremented[inst.#incremented.length-1] = true;
-                    inst.#imported[key] = true;
-                    
-                    for(const [k, fn] of Object.entries(module)) {
-                        handler.setComponent(key, fn);
+                    if(compo) {
+                        handler.setComponent(key, compo);
+                    } else {
+                        const module = await import(dir+file+".js"+inst.#cacheParam());
+                        for(const [k, fn] of Object.entries(module)) {
+                            handler.setComponent(key, fn);
+                        }
                     }
+                    inst.#incremented[inst.#incremented.length-1] = true;
+                    inst.#imported[file] = true;
+
                 } else {
                     console.warn(`To use the field item ${data.type} you need to specify a formHandler in config!`);
                 }

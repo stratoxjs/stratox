@@ -1,11 +1,17 @@
 
+
 # Stratox.js - Template library for building user interfaces
 
 **Stratox.js, an modern, easy to use JavaScript library**, facilitates the development of templates, user interfaces (UI), components and views. Offering a flexible and efficient approach to web development.
 
-Stratox.js weight a mere 6 KB when bundled and minimized, showcasing its lightweight design. Despite its compact size, it rivals major libraries in functionality. This makes Stratox.js an efficient choice for both **applications** and traditional **websites**, ensuring optimal performance and load speeds. Its versatility allows for asynchronous loading of views (with optional caching) or bundling them conveniently in your JS file.
+Stratox.js weight a mere 6 KB when bundled and minimized (gzipped), showcasing its lightweight design. Despite its compact size, it rivals major libraries in functionality. This makes Stratox.js an efficient choice for both **applications** and traditional **websites**, ensuring optimal performance and load speeds. Its versatility allows for asynchronous loading of views (with optional caching) or bundling them conveniently in your main JavaScript file.
 
-[Jump down to guide](#installation)
+## Full documentation
+The initial documentation draft is ready. (Still recommended to read guide bellow)
+
+#### [Read the documentation](https://stratox.wazabii.se/)
+
+## Why Startox
 
 ### User-Friendly
 Stratox is very user-friendly because it lets you prioritize JavaScript and HTML instead of grappling with the complexities of new markup and platform-specific functions, which in the end only lead to the burden of unnecessary abstractions. Stratox harnesses JavaScript's core capabilities, promoting a practical and fundamental approach to modern web development.
@@ -31,7 +37,7 @@ Moreover, by allowing developers to write regular HTML with the right semantics,
 
 ### Targeting
 -   **Single-Page Application (SPA):** Ideal for creating SPAs with enhanced user experiences.
--   **Cross-Platform Compatibility:** Apache Cordova (PhoneGap), Xamarin, React Native, Electron, Ionic, and similar.
+-   **Cross-Platform Compatibility:** Apache Cordova (PhoneGap), Xamarin, Electron, Ionic, and similar.
 -   **Enhancing Static HTML:** Easily integrates with existing static HTML structures.
 -   **Backend Language Integration:** Communicates seamlessly with various backend languages.
 
@@ -40,12 +46,6 @@ Moreover, by allowing developers to write regular HTML with the right semantics,
 npm i stratox
 ```
 *Or just download the zip and import Stratox.js file*
-
-
-## Full documentation
-The initial documentation draft is ready. (Still recommended to read guide bellow)
-
-#### [Read the documentation](https://wazabii.se/stratoxjs/)
 
 ## Getting started
 This is just a quick guide to preview how easy it is. Visit the link above for the full documention.
@@ -145,10 +145,10 @@ stratox.execute(function(observer) {
 ```
 That is it... As you can see it is very easy if you know HTML and javascript.
 
-
 ### Update the information
 Want to update the templates information? 
 ```js
+// Using the variable from above example
 ingress.set({ headline: "Headline updated once!" });
 stratox.update();
 

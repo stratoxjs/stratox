@@ -1,5 +1,6 @@
 
 
+
 # Stratox.js - template engine
 
 **Stratox.js is a user-friendly JavaScript template engine that helps you easily build template components and views.**
@@ -50,7 +51,7 @@ Moreover, by allowing developers to write regular HTML with the right semantics,
 - **Single-Page Application (SPA):** Ideal for creating SPAs with enhanced user experiences.
 - **Cross-Platform Compatibility:** Apache Cordova (PhoneGap), Xamarin, Electron, Ionic, and similar.
 - **Enhancing Static HTML:** Easily integrates with existing static HTML structures.
-- **Backend Language Integration:** Communicates seamlessly with various backend languages.
+- **Backend Language Integration:** Easily integrates with various backend languages.
 
 ## Example
 Below is a just **basic** example to demonstrate how easy it is to build a template view/component. There are a lot more examples in the [documentation](https://stratox.wazabii.se/).

@@ -17,7 +17,7 @@ export class Stratox {
     #bindKey;
     #field;
     #components = {};
-    #observer = {};
+    #observer;
     #imported = {};
     #incremented = [];
     #elem;
@@ -99,9 +99,13 @@ export class Stratox {
      * @return {void}
      */
     static setComponent(key, fn) {
-        if(typeof fn !== "function") throw new Error("The argument 2 in @prepareView has to be a callable");
+        if(typeof fn !== "function") throw new Error("The argument 2 in @setComponent has to be a callable");
         const handler = Stratox.getFormHandler();
         handler.setComponent(key, fn, this);
+    }
+
+    withComponent(key, fn) {
+        Stratox.setComponent(key, fn);
     }
 
     // DEPRECATED (Renamed to setComponent)
@@ -113,16 +117,64 @@ export class Stratox {
      * Create a immutable view (self contained instance, for e.g. modals)
      * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
      * @param  {object} data        The view data
-     * @param  {fn} call            callback
+     * @param  {object} args        Access container and/or before, complete callbacks
      * @return {StratoxItem}
      */
-    static create(key, data, call) {
+    static create(key, data, args) {
         const obj = this.#getIdentifiers(key), 
         inst = new Stratox(obj.elem);
-        let item = inst.view(obj.name, data);
+
+        let config = { container: false, before: false, complete: false }, 
+        item = inst.view(obj.name, data);
         item.setContainer(inst.#container);
-        inst.execute(call);
+
+
+        if(typeof args === "function") {
+            config.complete = args;
+
+        } else {
+            Object.assign(config, args);
+            if(typeof config.container === "object") 
+                for(const [key, value] of Object.entries(config.container)) {
+                inst.container().set(key, value);
+            }
+            if(typeof config.before === "function") config.before(inst, data);
+        }
+
+        inst.execute(config.complete);
         return inst;
+    }
+
+    open(elem) {
+        return new Stratox(elem);
+    }    
+
+    /**
+     * Create mutable view
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {object} args        Access container and/or before, complete callbacks
+     * @return {static}
+     */
+    withView(key, data, args) {
+        if(typeof key === "function" || typeof key === "object") {
+            const comp = this.#getSetCompFromKey(key);
+            Stratox.setComponent(comp.name, comp.func);
+            key = comp.name;
+        }
+        return Stratox.create(key, data, args);
+    }
+
+    /**
+     * Create mutable view
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {object} args        Access container and/or before, complete callbacks
+     * @return {static}
+     */
+    partial(key, data, args) {
+        const view = this.withView(key, data, args);
+        return view.getResponse();
     }
 
     /**
@@ -164,27 +216,45 @@ export class Stratox {
     }
 
     /**
+     * You can group a view and contain it inside a parent HTML tags
+     * @param  {string} key
+     * @param  {callable} callable
+     * @return {StratoxItem}
+     */
+    group(key, callable) {
+        Stratox.setComponent(key, function(data, container, helper, builder) {
+            let out = callable.apply(this.open(), [data, container, helper, builder]);
+            if(out instanceof Stratox) {
+                out = out.execute();
+            }
+            if(typeof out !== "string") {
+                throw new Error("The Stratox @group method needs to return a string or and instance of Stratox.");
+            }
+            return out;
+        });
+        return this.view(key);
+        //return this;
+    }
+
+    /**
      * Easily create a view
      * @param {string} key  View key/name
      * @param {object} data Object data to pass on to the view
      * @return StratoxItem (will return an instance of StratoxItem)
      */
     view(key, data) {
+
+        if(typeof key === "function" || typeof key === "object") {
+            const comp = this.#getSetCompFromKey(key);
+            Stratox.setComponent(comp.name, comp.func);
+            key = comp.name;
+        }
+
         let newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
         Object.assign(newObj, data);
+
         this.#creator[key] = this.#initItemView(key, newObj);
         return this.#creator[key];
-    }
-
-    /**
-     * Create mutable view
-     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
-     * @param  {object} data        The view data
-     * @param  {fn} call            callback
-     * @return {static}
-     */
-    withView(key, data, call) {
-        return Stratox.create(key, data, call);
     }
 
     /**
@@ -216,6 +286,15 @@ export class Stratox {
      * @return {void}
      */
     update(key, data) {
+
+
+        /*
+        if(typeof key === "function" || typeof key === "object") {
+            const comp = this.#getSetCompFromKey(key);
+            key = comp.name;
+        }
+         */
+
         if(key === undefined) {
             this.#observer.notify();
             return this;
@@ -359,14 +438,18 @@ export class Stratox {
     execute(call) {
         let inst = this;
 
+        if(typeof this.#observer === "object") {
+            this.#observer.notify();
+            return this.getResponse();
+        }
+
         if(Object.keys(this.#creator).length > 0) {
             for(const [k, v] of Object.entries(this.#creator)) {
                 inst.add(v);
             }
         }
-        
-        this.#observer = new StratoxObserver(this.#components);
 
+        this.#observer = new StratoxObserver(this.#components);
         inst.build(function(field) {
 
             inst.#observer.factory(function(jsonData, temp) {
@@ -374,7 +457,7 @@ export class Stratox {
                 // If response is not empty, 
                 // then insert, processed components and insert to the document
                 inst.#response = field.get();
-
+                //console.log(inst.#response);
                 if(inst.#elem && (typeof inst.#response === "string") && inst.#response) {
                     inst.insertHtml();
                 }
@@ -412,7 +495,9 @@ export class Stratox {
             if(typeof call === "function") {
                 call.apply(inst, [inst.#observer]);
             }
-        });       
+        });
+
+        return this.getResponse();
     }
 
     /**
@@ -642,5 +727,21 @@ export class Stratox {
             return "?v="+this.#getTime();
         }
         return "";
+    }
+
+
+    /**
+     * Return possible component setter 
+     * @param  {function|object} key
+     * @return {object}
+     */
+    #getSetCompFromKey(key) {
+        let func, name;
+        if(typeof key === "object") {
+            const keys = Object.keys(key);
+            const func = key[keys[0]];
+            return { name: func.name+"#"+keys[0], func: func }
+        }
+        return { name: key.name, func: key }
     }
 }

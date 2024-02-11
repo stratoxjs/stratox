@@ -19,7 +19,7 @@ export class StratoxTemplate extends StratoxBuilder {
         if((this.getValidation("length", 0) > 0) || (this.getValidation("hasLength", 1) > 0)) {
             reqSymbol = "*";
         }
-        out = '<div id="'+this.getFieldID()+'" class="mb-20 field-'+this.nameJoin+'" data-index="'+this.index+'">';
+        out = '<div id="'+this.getFieldID()+'" class="mb field-'+this.nameJoin+'" data-index="'+this.index+'">';
         if(this.label) out += '<label>'+this.label+reqSymbol+'<div class="message hide"></div></label>';
         if(this.description) out += '<div class="description legend">'+this.description+'</div>';
         out += call();
@@ -169,7 +169,7 @@ export class StratoxTemplate extends StratoxBuilder {
             if(typeof inst.data.items === "object") {
                 for(const [value, name] of Object.entries(inst.data.items)) {
                     let checked  = (inst.isChecked(value))  ? ' checked="checked"' : "";
-                    out += '<label class="radio item small"><input'+attr+' value="'+value+'"'+checked+'><span class="title">'+name+'</span></label>';
+                    out += '<label class="radio items small"><input'+attr+' value="'+value+'"'+checked+'><span class="title">'+name+'</span></label>';
                 }
             } else {
                 console.warn("Object items parameter is missing.");
@@ -194,7 +194,7 @@ export class StratoxTemplate extends StratoxBuilder {
             if(typeof inst.data.items === "object") {
                 for(const [value, name] of Object.entries(inst.data.items)) {
                     let checked  = (inst.isChecked(value))  ? ' checked="checked"' : "";
-                    out += '<label class="checkbox item small"><input'+attr+' value="'+value+'"'+checked+'><span class="title">'+name+'</span></label>';
+                    out += '<label class="checkbox items small"><input'+attr+' value="'+value+'"'+checked+'><span class="title">'+name+'</span></label>';
                 }
             } else {
                 console.warn("Object items parameter is missing.");

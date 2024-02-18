@@ -162,7 +162,7 @@ export class Stratox {
             Stratox.setComponent(comp.name, comp.func);
             key = comp.name;
         }
-        return Stratox.create(key, data, args);
+        return Stratox.create(...arguments);
     }
 
     /**
@@ -173,7 +173,7 @@ export class Stratox {
      * @return {static}
      */
     partial(key, data, args) {
-        const view = this.withView(key, data, args);
+        const view = this.withView(...arguments);
         return view.getResponse();
     }
 
@@ -209,6 +209,7 @@ export class Stratox {
 
     /**
      * You can pass objects, instances and factories to you views
+     * Re-name it to getContainer????
      * @return {StratoxContainer}
      */
     container() {
@@ -222,8 +223,9 @@ export class Stratox {
      * @return {StratoxItem}
      */
     group(key, callable) {
+        const inst = this;
         Stratox.setComponent(key, function(data, container, helper, builder) {
-            let out = callable.apply(this.open(), [data, container, helper, builder]);
+            let out = callable.apply(inst.open(), [...arguments]);
             if(out instanceof Stratox) {
                 out = out.execute();
             }
@@ -232,8 +234,8 @@ export class Stratox {
             }
             return out;
         });
-        return this.view(key);
-        //return this;
+        this.view(key);
+        return inst;
     }
 
     /**
@@ -243,7 +245,6 @@ export class Stratox {
      * @return StratoxItem (will return an instance of StratoxItem)
      */
     view(key, data) {
-
         if(typeof key === "function" || typeof key === "object") {
             const comp = this.#getSetCompFromKey(key);
             Stratox.setComponent(comp.name, comp.func);
@@ -286,14 +287,6 @@ export class Stratox {
      * @return {void}
      */
     update(key, data) {
-
-
-        /*
-        if(typeof key === "function" || typeof key === "object") {
-            const comp = this.#getSetCompFromKey(key);
-            key = comp.name;
-        }
-         */
 
         if(key === undefined) {
             this.#observer.notify();
@@ -423,12 +416,13 @@ export class Stratox {
             }
         }
 
-        if(inst.#incremented[inst.#incremented.length-1]) {            
-            if(typeof call === "function") call(inst.#field);
-        } else {
-            if(inst.#incremented.length === 0 && inst.#field) if(typeof call === "function") call(inst.#field);
+        if(typeof call === "function" && 
+            (inst.#incremented[inst.#incremented.length-1] || inst.#incremented.length === 0 && inst.#field)) {
+            call(inst.#field);
         }
     }
+
+    
 
     /**
      * Build, process and execute to DOM
@@ -438,17 +432,14 @@ export class Stratox {
     execute(call) {
         let inst = this;
 
+        // Already created then update view
         if(typeof this.#observer === "object") {
             this.#observer.notify();
             return this.getResponse();
         }
 
-        if(Object.keys(this.#creator).length > 0) {
-            for(const [k, v] of Object.entries(this.#creator)) {
-                inst.add(v);
-            }
-        }
-
+        // Strat build and create views
+        this.#prepareViews();
         this.#observer = new StratoxObserver(this.#components);
         inst.build(function(field) {
 
@@ -468,28 +459,7 @@ export class Stratox {
             inst.#prop = false;
 
             // Auto init Magick methods to events if group field is being used
-            if(field.hasGroupEvents() && inst.#elem) {
-
-                inst.bindEvent(inst.#elem, "input", function(e) {
-                    let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
-                    if(type === "checkbox" || type === "radio") {
-                        value = (this.checked) ? value : 0;
-                    }
-                    inst.editFieldValue(key, value);
-                });
-
-                inst.bindEvent(inst.#elem, "click", ".wa-field-group-btn", function(e) {
-                    e.preventDefault();
-                    const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
-                    inst.addGroupField(key, pos, this.classList.contains("after"));
-                });
-
-                inst.bindEvent(inst.#elem, "click", ".wa-field-group-delete-btn", function(e) {
-                    e.preventDefault();
-                    const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
-                    inst.deleteGroupField(key, pos, this.classList.contains("after"));
-                });
-            }
+            inst.startFormEvents(field);
 
             // Callback
             if(typeof call === "function") {
@@ -498,6 +468,49 @@ export class Stratox {
         });
 
         return this.getResponse();
+    }
+
+    /**
+     * Strat form events. This should either be called in execute callable or inside a view template
+     * @param  {StratoxBuilder} field   An instance of StratoxBuilder
+     * @return {void}
+     */
+    startFormEvents(field) {
+        const inst = this;
+        if(field.hasGroupEvents() && inst.#elem) {
+            inst.bindEvent(inst.#elem, "input", function(e) {
+                let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
+                if(type === "checkbox" || type === "radio") {
+                    value = (this.checked) ? value : 0;
+                }
+                inst.editFieldValue(key, value);
+            });
+
+            inst.bindEvent(inst.#elem, "click", ".wa-field-group-btn", function(e) {
+                e.preventDefault();
+                const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
+                inst.addGroupField(key, pos, this.classList.contains("after"));
+            });
+
+            inst.bindEvent(inst.#elem, "click", ".wa-field-group-delete-btn", function(e) {
+                e.preventDefault();
+                const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
+                inst.deleteGroupField(key, pos, this.classList.contains("after"));
+            });
+        }
+    }
+
+    /**
+     * Prepare all views from data
+     * @return {void}
+     */
+    #prepareViews() {
+        const inst = this;
+        if(Object.keys(this.#creator).length > 0) {
+            for(const [k, v] of Object.entries(this.#creator)) {
+                inst.add(v);
+            }
+        }
     }
 
     /**

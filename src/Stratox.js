@@ -162,7 +162,7 @@ export class Stratox {
             Stratox.setComponent(comp.name, comp.func);
             key = comp.name;
         }
-        return Stratox.create(...arguments);
+        return Stratox.create(key, data, args);
     }
 
     /**

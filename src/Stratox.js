@@ -53,7 +53,7 @@ export class Stratox {
      */
     constructor(elem) {
         if(typeof elem === "string") {
-            this.#elem = this.setSelector(elem);
+            this.#elem = elem;
         }
         this.#values = {};
         this.#container = new StratoxContainer();
@@ -204,7 +204,7 @@ export class Stratox {
      * @param {string|object} elem (#elem, .elem, .elem[data-id="test"], $("#elem"))
      */
     setElement(elem) {
-        this.#elem = this.setSelector(elem);
+        this.#elem = elem;
     }
 
     /**
@@ -361,6 +361,9 @@ export class Stratox {
      * @return {StratoxDom}
      */
     getElement() {
+        if(typeof this.#elem === "string") {
+            this.#elem = this.setSelector(this.#elem);
+        }
         return this.#elem;
     }
 
@@ -378,6 +381,7 @@ export class Stratox {
      * @return {void}
      */
     async build(call) {
+      
         let inst = this, dir = "";
         const handler = Stratox.getFormHandler();
         this.#field = new handler(this.#components, "view", Stratox.getConfigs(), this.#container);
@@ -420,9 +424,8 @@ export class Stratox {
             (inst.#incremented[inst.#incremented.length-1] || inst.#incremented.length === 0 && inst.#field)) {
             call(inst.#field);
         }
+       
     }
-
-    
 
     /**
      * Build, process and execute to DOM
@@ -667,8 +670,8 @@ export class Stratox {
      * @return {void}
      */
     html(out) {
-        this.#elem.forEach(function(el) {
-            el.innerHTML = out;
+        this.getElement().forEach(function(el) {
+            if(el) el.innerHTML = out;
         });
     }
 

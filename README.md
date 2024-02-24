@@ -1,7 +1,7 @@
 
 
 
-# Stratox.js - template engine
+# Stratox.js - template engine ![npm](https://img.shields.io/npm/v/stratox)
 
 **Stratox.js is a user-friendly JavaScript template engine that helps you easily build template components and views.**
 

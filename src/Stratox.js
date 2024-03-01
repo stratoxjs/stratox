@@ -128,7 +128,6 @@ export class Stratox {
         item = inst.view(obj.name, data);
         item.setContainer(inst.#container);
 
-
         if(typeof args === "function") {
             config.complete = args;
 
@@ -144,7 +143,12 @@ export class Stratox {
         inst.execute(config.complete);
         return inst;
     }
-
+    
+    /**
+     * Open new Stratox instance
+     * @param  {string} elem String element query selector
+     * @return {Stratox}
+     */
     open(elem) {
         return new Stratox(elem);
     }    
@@ -297,6 +301,7 @@ export class Stratox {
             this.#components[key.getName()] = key;
 
         } else {
+            key = StratoxItem.getViewName(key);
             if(typeof data === "function") {
                 data(this.#components[key])
             } else {
@@ -329,8 +334,11 @@ export class Stratox {
      * @param  {Function} fn
      * @return {void}
      */
-    eventOnload(fn) {
-        setTimeout(fn, 1);
+    eventOnload(fn, time) {
+        if(typeof time !== "number") {
+            time = 0;
+        }
+        setTimeout(fn, time);
     }
 
     /**
@@ -401,12 +409,12 @@ export class Stratox {
                     const extractFileName = key.split("#"), 
                     file = extractFileName[0],
                     compo = inst.#field.hasComponent(file);
-
                     inst.#incremented.push(false);
-                    if(compo) {
+
+                    if(typeof compo === "function") {
                         handler.setComponent(key, compo);
                     } else {
-                        const module = await import(dir+file+".js"+inst.#cacheParam());
+                        const module = await import(/* @vite-ignore */dir+file+".js"+inst.#cacheParam());
                         for(const [k, fn] of Object.entries(module)) {
                             handler.setComponent(key, fn);
                         }
@@ -481,7 +489,19 @@ export class Stratox {
     startFormEvents(field) {
         const inst = this;
         if(field.hasGroupEvents() && inst.#elem) {
-            inst.bindEvent(inst.#elem, "input", function(e) {
+            inst.bindGroupEvents(inst.#elem);
+        }
+    }
+
+    /**
+     * Bind grouped event to DOM
+     * @param  {string} elem Element string query selector
+     * @return {void}
+     */
+    bindGroupEvents(elem) {
+        const inst = this;
+        this.eventOnload(function() {
+            inst.bindEvent(elem, "input", function(e) {
                 let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
                 if(type === "checkbox" || type === "radio") {
                     value = (this.checked) ? value : 0;
@@ -489,19 +509,21 @@ export class Stratox {
                 inst.editFieldValue(key, value);
             });
 
-            inst.bindEvent(inst.#elem, "click", ".wa-field-group-btn", function(e) {
+            inst.bindEvent(elem, "click", ".wa-field-group-btn", function(e) {
                 e.preventDefault();
                 const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
                 inst.addGroupField(key, pos, this.classList.contains("after"));
             });
 
-            inst.bindEvent(inst.#elem, "click", ".wa-field-group-delete-btn", function(e) {
+            inst.bindEvent(elem, "click", ".wa-field-group-delete-btn", function(e) {
                 e.preventDefault();
                 const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
                 inst.deleteGroupField(key, pos, this.classList.contains("after"));
             });
-        }
+        }, 1);
+        
     }
+
 
     /**
      * Prepare all views from data

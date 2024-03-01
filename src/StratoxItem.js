@@ -34,6 +34,8 @@ export class StratoxItem {
 
     static view(key, data) {
         if(typeof data !== "object") throw new Error('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
+        
+        key = StratoxItem.getViewName(key);
 
         let inst = new StratoxItem(key);
         inst.compType = "view";
@@ -46,6 +48,14 @@ export class StratoxItem {
         let inst = new StratoxItem(type);
         return inst.merge(data);
     }
+
+    static getViewName(name) {
+        if(name.indexOf("#") < 0) {
+            name += "#defualt";
+        }
+        return name;
+    }
+
 
     setContainer(container) {
         if(!(container instanceof StratoxContainer)) throw new Error('Must be an intsance of StratoxContainer');

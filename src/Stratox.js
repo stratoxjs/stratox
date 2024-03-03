@@ -28,6 +28,7 @@ export class Stratox {
     #ivt;
     #timestamp;
     #prop = false;
+    #done;
 
     /**
      * Default Configs
@@ -441,8 +442,8 @@ export class Stratox {
      * @return {void}
      */
     execute(call) {
-        let inst = this;
-
+        let inst = this, wait = true;
+        
         // Already created then update view
         if(typeof this.#observer === "object") {
             this.#observer.notify();
@@ -453,16 +454,19 @@ export class Stratox {
         this.#prepareViews();
         this.#observer = new StratoxObserver(this.#components);
         inst.build(function(field) {
-
             inst.#observer.factory(function(jsonData, temp) {
                 Stratox.viewCount++;
                 // If response is not empty, 
                 // then insert, processed components and insert to the document
                 inst.#response = field.get();
-                //console.log(inst.#response);
                 if(inst.#elem && (typeof inst.#response === "string") && inst.#response) {
                     inst.insertHtml();
                 }
+                // Trigger done on update
+                if(typeof inst.#done === "function" && !wait) {
+                    inst.#done.apply(inst, [field, inst.#observer, "update"]);
+                }
+                wait = false;
             });
 
             // Init listener and notify the listener
@@ -476,9 +480,17 @@ export class Stratox {
             if(typeof call === "function") {
                 call.apply(inst, [inst.#observer]);
             }
+            // Trigger done on load
+            if(typeof inst.#done === "function" && !wait) inst.eventOnload(function() {
+                inst.#done.apply(inst, [field, inst.#observer, "load"]);
+            });
         });
 
         return this.getResponse();
+    }
+
+    done(fn) {
+        return this.#done = fn;
     }
 
     /**
@@ -500,7 +512,7 @@ export class Stratox {
      */
     bindGroupEvents(elem) {
         const inst = this;
-        this.eventOnload(function() {
+        this.done(function() {
             inst.bindEvent(elem, "input", function(e) {
                 let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
                 if(type === "checkbox" || type === "radio") {
@@ -520,10 +532,9 @@ export class Stratox {
                 const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
                 inst.deleteGroupField(key, pos, this.classList.contains("after"));
             });
-        }, 1);
+        });
         
     }
-
 
     /**
      * Prepare all views from data

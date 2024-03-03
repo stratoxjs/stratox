@@ -174,8 +174,6 @@ export class StratoxBuilder {
                 let fk = (nestedNames) ? nj+","+nk+","+name : name;
                 fields[fk] = arr;
                 o += inst.#html(fields, false);
-                // Is grp then skip index (see @html and @#build). (Changed)
-                //o += inst.#html(fields, (arr.type === "group"));
                 fields = {};
             };
 

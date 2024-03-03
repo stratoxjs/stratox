@@ -188,8 +188,12 @@ export class StratoxItem {
         return newObj;
     }
 
-    update() {
+    toString() {
+        return this.#container.get("view").execute();
+    }
 
+  
+    update() {
         if(this.#container) {
             this.#container.get("view").update();
         }

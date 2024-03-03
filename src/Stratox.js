@@ -263,6 +263,12 @@ export class Stratox {
         return this.#creator[key];
     }
 
+    viewItem(key, fn, obj) {
+
+        Stratox.setComponent(key, fn);
+        return this.#initItemView(key, obj);
+    }
+
     /**
      * Easily create a form item
      * @param {string} type  Form type (text, textarea, select, checkbox, radio)
@@ -273,8 +279,15 @@ export class Stratox {
     form(name, data) {
         let newObj = (this.#components[name]) ? this.#components[name] : {};
         Object.assign(newObj, data);
+
         this.#creator[name] = StratoxItem.form(name, data);
+        this.#creator[name].setContainer(this.#container);
         return this.#creator[name];
+    }
+
+    getComponent(name, data) {
+        const inst = this.open();
+        return inst.form(name, data);
     }
 
     /**
@@ -443,7 +456,7 @@ export class Stratox {
      */
     execute(call) {
         let inst = this, wait = true;
-        
+
         // Already created then update view
         if(typeof this.#observer === "object") {
             this.#observer.notify();

@@ -29,6 +29,7 @@ export class Stratox {
     #timestamp;
     #prop = false;
     #done;
+    #onload;
 
     /**
      * Default Configs
@@ -472,6 +473,7 @@ export class Stratox {
                 // If response is not empty, 
                 // then insert, processed components and insert to the document
                 inst.#response = field.get();
+                
                 if(inst.#elem && (typeof inst.#response === "string") && inst.#response) {
                     inst.insertHtml();
                 }
@@ -497,9 +499,17 @@ export class Stratox {
             if(typeof inst.#done === "function" && !wait) inst.eventOnload(function() {
                 inst.#done.apply(inst, [field, inst.#observer, "load"]);
             });
+
+            if(typeof inst.#onload === "function") {
+                inst.#onload.apply(inst, [field, inst.#observer]);
+            }
         });
 
         return this.getResponse();
+    }
+
+    onload(fn) {
+        return this.#onload = fn;
     }
 
     done(fn) {
@@ -525,7 +535,7 @@ export class Stratox {
      */
     bindGroupEvents(elem) {
         const inst = this;
-        this.done(function() {
+        this.onload(function() {
             inst.bindEvent(elem, "input", function(e) {
                 let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
                 if(type === "checkbox" || type === "radio") {

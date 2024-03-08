@@ -280,12 +280,17 @@ export class Stratox {
     form(name, data) {
         let newObj = (this.#components[name]) ? this.#components[name] : {};
         Object.assign(newObj, data);
-
         this.#creator[name] = StratoxItem.form(name, data);
         this.#creator[name].setContainer(this.#container);
         return this.#creator[name];
     }
 
+    /**
+     * Form and component is same but bellow while the usage of form is used in the context in unit while component is not.
+     * @param  {string} name The component name
+     * @param  {object} data pass data to component (Not required)
+     * @return {builder}
+     */
     getComponent(name, data) {
         const inst = this.open();
         return inst.form(name, data);
@@ -489,7 +494,7 @@ export class Stratox {
             inst.#prop = false;
 
             // Auto init Magick methods to events if group field is being used
-            inst.startFormEvents(field);
+            //inst.startFormEvents(field);
 
             // Callback
             if(typeof call === "function") {
@@ -500,6 +505,12 @@ export class Stratox {
                 inst.#done.apply(inst, [field, inst.#observer, "load"]);
             });
 
+            if(field.hasGroupEvents()) {
+                if(!inst.startFormEvents(field)) {
+                    inst.bindGroupEvents("body");
+                }
+            }
+            
             if(typeof inst.#onload === "function") {
                 inst.#onload.apply(inst, [field, inst.#observer]);
             }
@@ -525,7 +536,9 @@ export class Stratox {
         const inst = this;
         if(field.hasGroupEvents() && inst.#elem) {
             inst.bindGroupEvents(inst.#elem);
+            return true;
         }
+        return false;
     }
 
     /**

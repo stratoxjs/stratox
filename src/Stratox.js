@@ -40,12 +40,11 @@ export class Stratox {
         handlers: {
             fields: null,
             helper: function(builder) {
-                // GLOBAL container / helper / factory that will be passed on to all views  
+                // GLOBAL container / helper / factory that will be passed on to all views
             }
         },
         cache: false, // Automatically clear cache if is false on dynamic import
         popegation: true, // Automatic DOM popegation protection
-        
     };
     
     /**
@@ -106,12 +105,13 @@ export class Stratox {
         handler.setComponent(key, fn, this);
     }
 
+    /**
+     * Set component with instance
+     * @param  {string}   key
+     * @param  {Function} fn
+     * @return {void}
+     */
     withComponent(key, fn) {
-        Stratox.setComponent(key, fn);
-    }
-
-    // DEPRECATED (Renamed to setComponent)
-    static prepareView(key, fn) {
         Stratox.setComponent(key, fn);
     }
 
@@ -172,7 +172,7 @@ export class Stratox {
     }
 
     /**
-     * Create mutable view
+     * withView shortcut, but will directly return response
      * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
      * @param  {object} data        The view data
      * @param  {object} args        Access container and/or before, complete callbacks
@@ -192,6 +192,14 @@ export class Stratox {
      */
     static withObserver() {
         return StratoxObserver;
+    }
+
+    /**
+     * Observer
+     * @return {StratoxObserver}
+     */
+    observer() {
+        return this.#observer;
     }
 
     /**
@@ -256,20 +264,12 @@ export class Stratox {
             Stratox.setComponent(comp.name, comp.func);
             key = comp.name;
         }
-
         let newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
         Object.assign(newObj, data);
-
         this.#creator[key] = this.#initItemView(key, newObj);
         return this.#creator[key];
     }
-
-    viewItem(key, fn, obj) {
-
-        Stratox.setComponent(key, fn);
-        return this.#initItemView(key, obj);
-    }
-
+    
     /**
      * Easily create a form item
      * @param {string} type  Form type (text, textarea, select, checkbox, radio)
@@ -493,9 +493,6 @@ export class Stratox {
             inst.#observer.listener().notify();
             inst.#prop = false;
 
-            // Auto init Magick methods to events if group field is being used
-            //inst.startFormEvents(field);
-
             // Callback
             if(typeof call === "function") {
                 call.apply(inst, [inst.#observer]);
@@ -511,9 +508,9 @@ export class Stratox {
                 }
             }
             
-            if(typeof inst.#onload === "function") {
+            if(typeof inst.#onload === "function") inst.eventOnload(function() {
                 inst.#onload.apply(inst, [field, inst.#observer]);
-            }
+            });
         });
 
         return this.getResponse();
@@ -603,14 +600,6 @@ export class Stratox {
         }
         const lastKey = keys[keys.length - 1];
         fn(currentObj, lastKey);
-    }
-
-    /**
-     * Observer
-     * @return {StratoxObserver}
-     */
-    observer() {
-        return this.#observer;
     }
 
     /**
@@ -708,18 +697,6 @@ export class Stratox {
     }
 
     /**
-     * Render Mustache
-     * @param  {string} template Template with possible Mustache brackets
-     * @param  {object} data     Object with items to pass to Mustache brackets
-     * @return {string}          Return template with appended object inside of Mustache brackets
-     */
-    renderMustache(template, data) {
-        return template.replace(/{{(.*?)}}/g, function(match, key) {
-            return data[key.trim()] || ""; // Return the corresponding object property or an empty string if not found
-        });
-    }
-
-    /**
      * Set selector/element
      * @param {object}
      */
@@ -814,7 +791,6 @@ export class Stratox {
         return "";
     }
 
-
     /**
      * Return possible component setter 
      * @param  {function|object} key
@@ -828,5 +804,29 @@ export class Stratox {
             return { name: func.name+"#"+keys[0], func: func }
         }
         return { name: key.name, func: key }
+    }
+
+    // DEPRECATED
+    viewItem(key, fn, obj) {
+        Stratox.setComponent(key, fn);
+        return this.#initItemView(key, obj);
+    }
+    
+    // DEPRECATED (Renamed to setComponent)
+    static prepareView(key, fn) {
+        Stratox.setComponent(key, fn);
+    }
+    
+    /**
+     * DEPRECATED
+     * Render Mustache
+     * @param  {string} template Template with possible Mustache brackets
+     * @param  {object} data     Object with items to pass to Mustache brackets
+     * @return {string}          Return template with appended object inside of Mustache brackets
+     */
+    renderMustache(template, data) {
+        return template.replace(/{{(.*?)}}/g, function(match, key) {
+            return data[key.trim()] || ""; // Return the corresponding object property or an empty string if not found
+        });
     }
 }

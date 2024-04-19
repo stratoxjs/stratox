@@ -497,10 +497,7 @@ export class Stratox {
             if(typeof call === "function") {
                 call.apply(inst, [inst.#observer]);
             }
-            // Trigger done on load
-            if(typeof inst.#done === "function" && !wait) inst.eventOnload(function() {
-                inst.#done.apply(inst, [field, inst.#observer, "load"]);
-            });
+            
 
             if(field.hasGroupEvents()) {
                 if(!inst.startFormEvents(field)) {
@@ -508,9 +505,14 @@ export class Stratox {
                 }
             }
             
-            if(typeof inst.#onload === "function") inst.eventOnload(function() {
-                inst.#onload.apply(inst, [field, inst.#observer]);
+            // Trigger done on load
+            inst.eventOnload(function() {
+                if(typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
+
+                if(typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);
             });
+
+            
         });
 
         return this.getResponse();
@@ -525,7 +527,7 @@ export class Stratox {
     }
 
     /**
-     * Strat form events. This should either be called in execute callable or inside a view template
+     * Start form events. This should either be called in execute callable or inside a view template
      * @param  {StratoxBuilder} field   An instance of StratoxBuilder
      * @return {void}
      */

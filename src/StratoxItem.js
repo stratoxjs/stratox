@@ -116,6 +116,7 @@ export class StratoxItem {
         let newObj = {};
         for(const [k, v] of Object.entries(obj)) {
             if(v instanceof StratoxItem ) {
+                
                 newObj[v.getName()] = v.get();
             } else {
                 newObj[k] = v;

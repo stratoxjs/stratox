@@ -152,8 +152,17 @@ export class Stratox {
      * @return {Stratox}
      */
     open(elem) {
-        return new Stratox(elem);
+        return this.clone(elem);
     }    
+
+    /**
+     * Open new Stratox instance
+     * @param  {string} elem String element query selector
+     * @return {Stratox}
+     */
+    clone(elem) {
+        return new Stratox(elem);
+    }
 
     /**
      * Create mutable view
@@ -169,6 +178,20 @@ export class Stratox {
             key = comp.name;
         }
         return Stratox.create(key, data, args);
+    }
+
+    /**
+     * Crete view and return instance of StratoxItem
+     * @param  {object} key
+     * @param  {object} data
+     * @return {StratoxItem}
+     */
+    getViewComponent(key, data) {
+        const item = this.clone();
+        if(typeof key !== "object") {
+            console.error("The getViewComponent function expects argument 1 (key) to be an object e.g. {keyNameID: viewFunction}");
+        }
+        return item.view(key, data);
     }
 
     /**
@@ -462,13 +485,11 @@ export class Stratox {
      */
     execute(call) {
         let inst = this, wait = true;
-
         // Already created then update view
         if(typeof this.#observer === "object") {
             this.#observer.notify();
             return this.getResponse();
         }
-
         // Strat build and create views
         this.#prepareViews();
         this.#observer = new StratoxObserver(this.#components);
@@ -497,8 +518,6 @@ export class Stratox {
             if(typeof call === "function") {
                 call.apply(inst, [inst.#observer]);
             }
-            
-
             if(field.hasGroupEvents()) {
                 if(!inst.startFormEvents(field)) {
                     inst.bindGroupEvents("body");
@@ -508,13 +527,9 @@ export class Stratox {
             // Trigger done on load
             inst.eventOnload(function() {
                 if(typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
-
                 if(typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);
-            });
-
-            
+            }); 
         });
-
         return this.getResponse();
     }
 

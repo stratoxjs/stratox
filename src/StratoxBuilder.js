@@ -23,6 +23,7 @@ export class StratoxBuilder {
     key;
     fields = {};
     attr = {};
+    conAttr = {};
     hasFields = true;
     config = {};
     configList = {};
@@ -75,8 +76,18 @@ export class StratoxBuilder {
      */
     getAttr(defArgs) {
         if(typeof defArgs !== "object") defArgs = {};
-        let attr = "", objFor = Object.assign(defArgs, this.attr);
-        for(const [key, value] of Object.entries(objFor)) attr += ' '+key+'="'+value+'"';
+        let objFor = Object.assign(defArgs, this.attr);
+        return this.getAttrStr(objFor);
+    }
+
+    /**
+     * Will help you create default field attributes that can be overwritable 
+     * @param  {object} defArgs add defaults
+     * @return {string}
+     */
+    getAttrStr(attrObj) {
+        let attr = "";
+        for(const [key, value] of Object.entries(attrObj)) attr += ' '+key+'="'+value+'"';
         return attr;
     }
 
@@ -259,10 +270,11 @@ export class StratoxBuilder {
         this.label = (typeof this.data.label === "string") ? this.data.label : "";
         this.description = (typeof this.data.description === "string") ? this.data.description : "";
         this.attr = (typeof this.data.attr === "object") ? this.data.attr : {};
+        this.conAttr = (typeof this.data.conAttr === "object") ? this.data.conAttr : {};
         this.fields = (typeof this.data.fields === "object") ? this.data.fields : {};
         this.config = (typeof this.data.config === "object") ? this.data.config : {};
         this.hasFields = (typeof this.data.hasFields === "boolean") ? this.data.hasFields : false;
-
+        
         Object.assign(this.configList, this.config);
         this.#buildFieldNames();
         this.attr['data-name'] = this.nameJoin;

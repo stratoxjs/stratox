@@ -8,20 +8,20 @@
 The Stratox template library is created using up-to-date methods, keeping its size at around 6 kb when bundled and minimized (gzipped). It works independently, smoothly running on all platforms without needing anything else. Stratox.js is a smart pick for applications and websites, ensuring great performance and quick load time. It's versatile, letting you load views asynchronously (with optional caching) or bundle them conveniently into your main JavaScript file.
 
 ## Documentation
-**[You can find the full Startox documentation here](https://stratox.wazabii.se/)**
+**[You can find the full Startox documentation here](https://stratox.wazabii.se/v/stratox.js/)**
 
 #### The documentation is divided into several sections:
-* [Why Stratox.js?](https://stratox.wazabii.se/)
-* [Installation](https://stratox.wazabii.se/installation)
-* [Basic example](https://stratox.wazabii.se/template-engine/basic-example)
-* [Show template view](https://stratox.wazabii.se/template-engine/show-templates)
-* [Create template view](https://stratox.wazabii.se/template-engine/create-templates)
-* [Update template view](https://stratox.wazabii.se/template-engine/updating-views)
-* [Install plugins](https://stratox.wazabii.se/template-engine/plugins)
-* [Form builder](https://stratox.wazabii.se/form-builder/form-builder)
-* [Custom form template](https://stratox.wazabii.se/form-builder/custom-form-template)
-* [Container](https://stratox.wazabii.se/advanced-features/container)
-* [Template view functions](https://stratox.wazabii.se/advanced-features/template-view-functions)
+* [Why Stratox.js?](https://stratox.wazabii.se/v/stratox.js/)
+* [Installation](https://stratox.wazabii.se/v/stratox.js/installation)
+* [Basic example](https://stratox.wazabii.se/v/stratox.js/template-engine/basic-example)
+* [Show template view](https://stratox.wazabii.se/v/stratox.js/template-engine/show-templates)
+* [Create template view](https://stratox.wazabii.se/v/stratox.js/template-engine/create-templates)
+* [Update template view](https://stratox.wazabii.se/v/stratox.js/template-engine/updating-views)
+* [Install plugins](https://stratox.wazabii.se/v/stratox.js/template-engine/plugins)
+* [Form builder](https://stratox.wazabii.se/v/stratox.js/form-builder/form-builder)
+* [Custom form template](https://stratox.wazabii.se/v/stratox.js/form-builder/custom-form-template)
+* [Container](https://stratox.wazabii.se/v/stratox.js/advanced-features/container)
+* [Template view functions](https://stratox.wazabii.se/v/stratox.js/advanced-features/template-view-functions)
 
 ## Why Startox
 
@@ -54,7 +54,7 @@ Moreover, by allowing developers to write regular HTML with the right semantics,
 - **Backend Language Integration:** Easily integrates with various backend languages.
 
 ## Example
-Below is a just **basic** example to demonstrate how easy it is to build a template view/component. There are a lot more examples in the [documentation](https://stratox.wazabii.se/).
+Below is a just **basic** example to demonstrate how easy it is to build a template view/component. There are a lot more examples in the [documentation](https://stratox.wazabii.se/v/stratox.js/).
 ```php
 Stratox.setComponent("ingress", function(data, container, helper, builder) {
     let out = `

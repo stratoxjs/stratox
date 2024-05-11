@@ -1,6 +1,6 @@
 {
   "name": "stratox",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "JavaScript template library designed for the effortless creation of component, views and user interfaces (UI).",
   "main": "src/index.js",
   "directories": {
@@ -17,7 +17,7 @@
     "url": "https://stratox.wazabii.se/issues",
     "email": "daniel.ronkainen@wazabii.se"
   },
-  "homepage": "https://stratox.wazabii.se/",
+  "homepage": "https://stratox.wazabii.se/v/stratox.js",
   "keywords": [
     "javascript",
     "template",

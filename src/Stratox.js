@@ -207,6 +207,58 @@ export class Stratox {
     }
 
     /**
+     * Get a some what unique identifier
+     * @param  {string} prefix Add a prefix to view count
+     * @return {string}
+     */
+    getID(prefix) {
+        if(typeof prefix !== "string") {
+            prefix = "el";
+        }
+        return "stratox-"+prefix+"-"+this.getViewCount();
+    }
+
+    /**
+     * Attach a view to specifed element string
+     * @example this.attachViewToEl("#table", table, data.table)
+     * @param  {string} el   Element has string
+     * @param  {function} view Expected view function
+     * @param  {object} data Data passed to view
+     * @return {self}
+     */
+    attachViewToEl(el, view, data, call) {
+        const clone = this.clone();
+        this.eventOnload(function() {
+            const item = clone.view(view, data);
+            clone.setElement(el);
+            clone.execute();
+            if(typeof call === "function") {
+                call.apply(clone, [item, el]);
+            }
+        });
+        return clone;
+    }
+
+    /**
+     * Attach view is the same as attachViewToEl
+     * EXCEPT for that it will also prepare the element container!
+     */
+    attachView(view, data, call) {
+        const elID = this.getID(this.genRandStr(6));
+        this.attachViewToEl("#"+elID, view, data, call);
+        return `<div id="${elID}"></div>`;
+    }
+
+    /**
+     * Get a random string
+     * @param  {int} length lenght
+     * @return {string}
+     */
+    genRandStr(length) {
+        return (Math.random().toString(36).substring(2, 2 + length));
+    }
+
+    /**
      * withObserver Immutable
      * used to either create a new instance or access global callbacks
      * Oberver has a Global notify callback listner that will be triggered
@@ -823,19 +875,7 @@ export class Stratox {
         return { name: key.name, func: key }
     }
 
-    // DEPRECATED
-    viewItem(key, fn, obj) {
-        Stratox.setComponent(key, fn);
-        return this.#initItemView(key, obj);
-    }
-    
-    // DEPRECATED (Renamed to setComponent)
-    static prepareView(key, fn) {
-        Stratox.setComponent(key, fn);
-    }
-    
     /**
-     * DEPRECATED
      * Render Mustache
      * @param  {string} template Template with possible Mustache brackets
      * @param  {object} data     Object with items to pass to Mustache brackets

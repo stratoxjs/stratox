@@ -11,7 +11,6 @@ import { StratoxObserver } from './StratoxObserver.js';
 import { StratoxItem } from './StratoxItem.js';
 
 export class Stratox {
-
     static viewCount = 0;
 
     #bindKey;
@@ -30,6 +29,7 @@ export class Stratox {
     #prop = false;
     #done;
     #onload;
+    #ready;
 
     /**
      * Default Configs
@@ -53,7 +53,7 @@ export class Stratox {
      * @return {self}
      */
     constructor(elem) {
-        if(typeof elem === "string") {
+        if (typeof elem === "string") {
             this.#elem = elem;
         }
         this.#values = {};
@@ -63,7 +63,7 @@ export class Stratox {
 
     /**
      * Configurations
-     * @param {object}
+     * @param {object} configs
      */
     static setConfigs(configs) {
         Object.assign(this.#configs, configs);
@@ -79,15 +79,15 @@ export class Stratox {
     }
 
     /**
-     * Get form handeler
+     * Get form handler
      * @return {StratoxBuilder} instance of StratoxBuilder
      */
     static getFormHandler() {
         const handler = Stratox.getConfigs("handlers").fields;
-        if(handler === null || handler === undefined) {
+        if (handler === null || handler === undefined) {
             return StratoxBuilder;
         }
-        if(typeof handler?.setComponent !== "function") {
+        if (typeof handler?.setComponent !== "function") {
             throw new Error("The form handler needs to be extending to the class StratoxBuilder!");
         }
         return handler;
@@ -100,7 +100,7 @@ export class Stratox {
      * @return {void}
      */
     static setComponent(key, fn) {
-        if(typeof fn !== "function") throw new Error("The argument 2 in @setComponent has to be a callable");
+        if (typeof fn !== "function") throw new Error("The argument 2 in @setComponent has to be a callable");
         const handler = Stratox.getFormHandler();
         handler.setComponent(key, fn, this);
     }
@@ -116,30 +116,29 @@ export class Stratox {
     }
 
     /**
-     * Create a immutable view (self contained instance, for e.g. modals)
+     * Create an immutable view (self-contained instance, e.g. modals)
      * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
      * @param  {object} data        The view data
      * @param  {object} args        Access container and/or before, complete callbacks
      * @return {StratoxItem}
      */
     static create(key, data, args) {
-        const obj = this.#getIdentifiers(key), 
-        inst = new Stratox(obj.elem);
+        const obj = this.#getIdentifiers(key);
+        const inst = new Stratox(obj.elem);
 
-        let config = { container: false, before: false, complete: false }, 
-        item = inst.view(obj.name, data);
+        let config = { container: false, before: false, complete: false };
+        const item = inst.view(obj.name, data);
         item.setContainer(inst.#container);
 
-        if(typeof args === "function") {
+        if (typeof args === "function") {
             config.complete = args;
-
         } else {
             Object.assign(config, args);
-            if(typeof config.container === "object") 
-                for(const [key, value] of Object.entries(config.container)) {
-                inst.container().set(key, value);
-            }
-            if(typeof config.before === "function") config.before(inst, data);
+            if (typeof config.container === "object") 
+                for (const [key, value] of Object.entries(config.container)) {
+                    inst.container().set(key, value);
+                }
+            if (typeof config.before === "function") config.before(inst, data);
         }
 
         inst.execute(config.complete);
@@ -172,7 +171,7 @@ export class Stratox {
      * @return {static}
      */
     withView(key, data, args) {
-        if(typeof key === "function" || typeof key === "object") {
+        if (typeof key === "function" || typeof key === "object") {
             const comp = this.#getSetCompFromKey(key);
             Stratox.setComponent(comp.name, comp.func);
             key = comp.name;
@@ -181,14 +180,14 @@ export class Stratox {
     }
 
     /**
-     * Crete view and return instance of StratoxItem
+     * Create view and return instance of StratoxItem
      * @param  {object} key
      * @param  {object} data
      * @return {StratoxItem}
      */
     getViewComponent(key, data) {
         const item = this.clone();
-        if(typeof key !== "object") {
+        if (typeof key !== "object") {
             console.error("The getViewComponent function expects argument 1 (key) to be an object e.g. {keyNameID: viewFunction}");
         }
         return item.view(key, data);
@@ -207,19 +206,22 @@ export class Stratox {
     }
 
     /**
-     * Get a some what unique identifier
-     * @param  {string} prefix Add a prefix to view count
-     * @return {string}
+     * Attach view is the same as attachViewToEl
+     * EXCEPT for that it will also prepare the element container!
      */
-    getID(prefix) {
-        if(typeof prefix !== "string") {
-            prefix = "el";
-        }
-        return "stratox-"+prefix+"-"+this.getViewCount();
+    attachPartial(view, data, call) {
+        const elID = this.getID(this.genRandStr(6));
+        const clone = this.attachViewToEl(`#${elID}`, view, data, call);
+        return `<div id="${elID}"></div>`;
+    }
+
+    // DEPRECATED
+    attachView(view, data, call) {
+        return this.attachPartial(...arguments);
     }
 
     /**
-     * Attach a view to specifed element string
+     * Attach a view to specified element string
      * @example this.attachViewToEl("#table", table, data.table)
      * @param  {string} el   Element has string
      * @param  {function} view Expected view function
@@ -228,40 +230,50 @@ export class Stratox {
      */
     attachViewToEl(el, view, data, call) {
         const clone = this.clone();
-        this.eventOnload(function() {
-            const item = clone.view(view, data);
-            clone.setElement(el);
+        const item = clone.view(view, data);
+        clone.setElement(el);
+        // Ready should not be called outside of stratox class!
+        this.#ready = function() {
             clone.execute();
-            if(typeof call === "function") {
+            if (typeof call === "function") {
                 call.apply(clone, [item, el]);
             }
-        });
+        };
         return clone;
     }
 
     /**
-     * Attach view is the same as attachViewToEl
-     * EXCEPT for that it will also prepare the element container!
+     * Get a somewhat unique identifier
+     * @param  {string} prefix Add a prefix to view count
+     * @return {string}
      */
-    attachView(view, data, call) {
-        const elID = this.getID(this.genRandStr(6));
-        this.attachViewToEl("#"+elID, view, data, call);
-        return `<div id="${elID}"></div>`;
+    getID(prefix) {
+        if (typeof prefix !== "string") {
+            prefix = "el";
+        }
+        return `stratox-${prefix}-${this.getViewCount()}`;
+    }
+
+    getUniqueElem(prefix) {
+        if (typeof prefix !== "string") {
+            prefix = "el";
+        }
+        return this.getID(`${this.genRandStr(8)}-${prefix}`);
     }
 
     /**
      * Get a random string
-     * @param  {int} length lenght
+     * @param  {int} length
      * @return {string}
      */
     genRandStr(length) {
-        return (Math.random().toString(36).substring(2, 2 + length));
+        return Math.random().toString(36).substring(2, 2 + length);
     }
 
     /**
      * withObserver Immutable
      * used to either create a new instance or access global callbacks
-     * Oberver has a Global notify callback listner that will be triggered
+     * Observer has a Global notify callback listener that will be triggered
      * every time observer is updated
      * @return {StratoxObserver}
      */
@@ -289,7 +301,7 @@ export class Stratox {
 
     /**
      * You can set element later. 
-     * E.g. If you set it in your template view then it will start to auto update on observer change!
+     * E.g. If you set it in your template view then it will start to auto-update on observer change!
      * @param {string|object} elem (#elem, .elem, .elem[data-id="test"], $("#elem"))
      */
     setElement(elem) {
@@ -297,8 +309,8 @@ export class Stratox {
     }
 
     /**
-     * You can pass objects, instances and factories to you views
-     * Re-name it to getContainer????
+     * You can pass objects, instances, and factories to your views
+     * Re-name it to getContainer?
      * @return {StratoxContainer}
      */
     container() {
@@ -306,7 +318,7 @@ export class Stratox {
     }
 
     /**
-     * You can group a view and contain it inside a parent HTML tags
+     * You can group a view and contain it inside a parent HTML tag
      * @param  {string} key
      * @param  {callable} callable
      * @return {StratoxItem}
@@ -315,11 +327,11 @@ export class Stratox {
         const inst = this;
         Stratox.setComponent(key, function(data, container, helper, builder) {
             let out = callable.apply(inst.open(), [...arguments]);
-            if(out instanceof Stratox) {
+            if (out instanceof Stratox) {
                 out = out.execute();
             }
-            if(typeof out !== "string") {
-                throw new Error("The Stratox @group method needs to return a string or and instance of Stratox.");
+            if (typeof out !== "string") {
+                throw new Error("The Stratox @group method needs to return a string or an instance of Stratox.");
             }
             return out;
         });
@@ -331,15 +343,15 @@ export class Stratox {
      * Easily create a view
      * @param {string} key  View key/name
      * @param {object} data Object data to pass on to the view
-     * @return StratoxItem (will return an instance of StratoxItem)
+     * @return {StratoxItem} (will return an instance of StratoxItem)
      */
     view(key, data) {
-        if(typeof key === "function" || typeof key === "object") {
+        if (typeof key === "function" || typeof key === "object") {
             const comp = this.#getSetCompFromKey(key);
             Stratox.setComponent(comp.name, comp.func);
             key = comp.name;
         }
-        let newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
+        const newObj = (this.#components[key] && this.#components[key].data) ? this.#components[key].data : {};
         Object.assign(newObj, data);
         this.#creator[key] = this.#initItemView(key, newObj);
         return this.#creator[key];
@@ -347,13 +359,12 @@ export class Stratox {
     
     /**
      * Easily create a form item
-     * @param {string} type  Form type (text, textarea, select, checkbox, radio)
      * @param {string} name  Field name
-     * @param {string} label Add label to field
-     * @return StratoxItem (will  return an instance of StratoxItem)
+     * @param {object} data  The form data
+     * @return {StratoxItem} (will return an instance of StratoxItem)
      */
     form(name, data) {
-        let newObj = (this.#components[name]) ? this.#components[name] : {};
+        const newObj = (this.#components[name]) ? this.#components[name] : {};
         Object.assign(newObj, data);
         this.#creator[name] = StratoxItem.form(name, data);
         this.#creator[name].setContainer(this.#container);
@@ -361,10 +372,10 @@ export class Stratox {
     }
 
     /**
-     * Form and component is same but bellow while the usage of form is used in the context in unit while component is not.
+     * Form and component are the same, but below while the usage of the form is used in the context in a unit, component is not.
      * @param  {string} name The component name
-     * @param  {object} data pass data to component (Not required)
-     * @return {builder}
+     * @param  {object} data Pass data to the component (Not required)
+     * @return {StratoxItem}
      */
     getComponent(name, data) {
         const inst = this.open();
@@ -372,7 +383,7 @@ export class Stratox {
     }
 
     /**
-     * Get componet object in its pure form
+     * Get component object in its pure form
      * @return {object}
      */
     read() {
@@ -381,23 +392,21 @@ export class Stratox {
 
     /**
      * Update view (will only execute changes to the view)
-     * @param  {string} key  compontent name/key
-     * @param  {object} data component data
+     * @param  {string} key  Component name/key
+     * @param  {object} data Component data
      * @return {void}
      */
     update(key, data) {
-
-        if(key === undefined) {
+        if (key === undefined) {
             this.#observer.notify();
             return this;
         }
 
-        if(key instanceof StratoxItem) {
+        if (key instanceof StratoxItem) {
             this.#components[key.getName()] = key;
-
         } else {
             key = StratoxItem.getViewName(key);
-            if(typeof data === "function") {
+            if (typeof data === "function") {
                 data(this.#components[key])
             } else {
                 this.#components[key] = data;
@@ -427,21 +436,19 @@ export class Stratox {
     /**
      * Trigger callback when script is ready
      * @param  {Function} fn
+     * @param  {number} time
      * @return {void}
      */
-    eventOnload(fn, time) {
-        if(typeof time !== "number") {
-            time = 0;
-        }
+    eventOnload(fn, time = 0) {
         setTimeout(fn, time);
     }
 
     /**
      * Set form values
-     * @param {object}
+     * @param {object} values
      */
     setValues(values) {
-        if(typeof values !== "object") throw new Error("The argument 1 has to be an object");
+        if (typeof values !== "object") throw new Error("The argument 1 has to be an object");
         this.#values = values;
     }
     
@@ -451,7 +458,7 @@ export class Stratox {
      * @param {object} data Pass data to view
      */
     add(key, data) {
-        if(key instanceof StratoxItem) {
+        if (key instanceof StratoxItem) {
             this.#components[key.getName()] = key;
         } else {
             this.#components[key] = data;
@@ -464,7 +471,7 @@ export class Stratox {
      * @return {StratoxDom}
      */
     getElement() {
-        if(typeof this.#elem === "string") {
+        if (typeof this.#elem === "string") {
             this.#elem = this.setSelector(this.#elem);
         }
         return this.#elem;
@@ -479,55 +486,52 @@ export class Stratox {
     }
 
     /**
-     * Build the reponse
+     * Build the response
      * @param  {callable} call
      * @return {void}
      */
     async build(call) {
-      
-        let inst = this, dir = "";
+        const inst = this;
+        let dir = "";
         const handler = Stratox.getFormHandler();
         this.#field = new handler(this.#components, "view", Stratox.getConfigs(), this.#container);
 
-        // Values are used to trigger magick methods
+        // Values are used to trigger magic methods
         this.#field.setValues(this.#values);
 
         dir = Stratox.getConfigs("directory");
-        if(!dir.endsWith('/')) dir += '/';
+        if (!dir.endsWith('/')) dir += '/';
 
         for (const [key, data] of Object.entries(this.#components)) {
-            if(inst.#field.hasComponent(data.type)) {
+            if (inst.#field.hasComponent(data.type)) {
                 // Component is loaded...
-                
             } else {
-                if(data.compType !== "form") {
+                if (data.compType !== "form") {
                     const extractFileName = key.split("#"), 
-                    file = extractFileName[0],
-                    compo = inst.#field.hasComponent(file);
+                          file = extractFileName[0],
+                          compo = inst.#field.hasComponent(file);
                     inst.#incremented.push(false);
 
-                    if(typeof compo === "function") {
+                    if (typeof compo === "function") {
                         handler.setComponent(key, compo);
                     } else {
-                        const module = await import(/* @vite-ignore */dir+file+".js"+inst.#cacheParam());
-                        for(const [k, fn] of Object.entries(module)) {
+                        const module = await import(/* @vite-ignore */ `${dir}${file}.js${inst.#cacheParam()}`);
+                        for (const [k, fn] of Object.entries(module)) {
                             handler.setComponent(key, fn);
                         }
                     }
-                    inst.#incremented[inst.#incremented.length-1] = true;
+                    inst.#incremented[inst.#incremented.length - 1] = true;
                     inst.#imported[file] = true;
-
                 } else {
                     console.warn(`To use the field item ${data.type} you need to specify a formHandler in config!`);
                 }
             }
         }
 
-        if(typeof call === "function" && 
-            (inst.#incremented[inst.#incremented.length-1] || inst.#incremented.length === 0 && inst.#field)) {
+        if (typeof call === "function" && 
+            (inst.#incremented[inst.#incremented.length - 1] || inst.#incremented.length === 0 && inst.#field)) {
             call(inst.#field);
         }
-       
     }
 
     /**
@@ -536,13 +540,15 @@ export class Stratox {
      * @return {void}
      */
     execute(call) {
-        let inst = this, wait = true;
+        const inst = this;
+        let wait = true;
         // Already created then update view
-        if(typeof this.#observer === "object") {
+        if (typeof this.#observer === "object") {
             this.#observer.notify();
             return this.getResponse();
         }
-        // Strat build and create views
+        
+        // Start build and create views
         this.#prepareViews();
         this.#observer = new StratoxObserver(this.#components);
         inst.build(function(field) {
@@ -552,12 +558,16 @@ export class Stratox {
                 // then insert, processed components and insert to the document
                 inst.#response = field.get();
                 
-                if(inst.#elem && (typeof inst.#response === "string") && inst.#response) {
+                if (inst.#elem && (typeof inst.#response === "string") && inst.#response) {
                     inst.insertHtml();
                 }
                 // Trigger done on update
-                if(typeof inst.#done === "function" && !wait) {
+                if (typeof inst.#done === "function" && !wait) {
                     inst.#done.apply(inst, [field, inst.#observer, "update"]);
+                }
+
+                if (typeof inst.#ready === "function" && !wait) {
+                    inst.#ready.apply(inst, [field, inst.#observer]);
                 }
                 wait = false;
             });
@@ -567,30 +577,33 @@ export class Stratox {
             inst.#prop = false;
 
             // Callback
-            if(typeof call === "function") {
+            if (typeof call === "function") {
                 call.apply(inst, [inst.#observer]);
             }
-            if(field.hasGroupEvents()) {
-                if(!inst.startFormEvents(field)) {
+            if (field.hasGroupEvents()) {
+                if (!inst.startFormEvents(field)) {
                     inst.bindGroupEvents("body");
                 }
             }
-            
+
             // Trigger done on load
+
             inst.eventOnload(function() {
-                if(typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
-                if(typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);
-            }); 
+                if (typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
+                if (typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);
+                if (typeof inst.#ready === "function") inst.#ready.apply(inst, [field, inst.#observer]);
+            });
+
         });
         return this.getResponse();
     }
 
     onload(fn) {
-        return this.#onload = fn;
+        this.#onload = fn;
     }
 
     done(fn) {
-        return this.#done = fn;
+        this.#done = fn;
     }
 
     /**
@@ -600,7 +613,7 @@ export class Stratox {
      */
     startFormEvents(field) {
         const inst = this;
-        if(field.hasGroupEvents() && inst.#elem) {
+        if (field.hasGroupEvents() && inst.#elem) {
             inst.bindGroupEvents(inst.#elem);
             return true;
         }
@@ -614,28 +627,31 @@ export class Stratox {
      */
     bindGroupEvents(elem) {
         const inst = this;
-        this.onload(function() {
+        this.onload(() => {
             inst.bindEvent(elem, "input", function(e) {
-                let key = this.dataset['name'], type = this.getAttribute("type"), value = (this.value ?? "");
-                if(type === "checkbox" || type === "radio") {
-                    value = (this.checked) ? value : 0;
+                const key = this.dataset.name;
+                const type = this.getAttribute("type");
+                let value = (this.value ?? "");
+                if (type === "checkbox" || type === "radio") {
+                    value = this.checked ? value : 0;
                 }
                 inst.editFieldValue(key, value);
             });
 
             inst.bindEvent(elem, "click", ".wa-field-group-btn", function(e) {
                 e.preventDefault();
-                const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
+                const key = this.dataset.name;
+                const pos = parseInt(this.dataset.position, 10);
                 inst.addGroupField(key, pos, this.classList.contains("after"));
             });
 
             inst.bindEvent(elem, "click", ".wa-field-group-delete-btn", function(e) {
                 e.preventDefault();
-                const key = this.dataset['name'], pos = parseInt(this.dataset['position']);
-                inst.deleteGroupField(key, pos, this.classList.contains("after"));
+                const key = this.dataset.name;
+                const pos = parseInt(this.dataset.position, 10);
+                inst.deleteGroupField(key, pos);
             });
         });
-        
     }
 
     /**
@@ -644,15 +660,15 @@ export class Stratox {
      */
     #prepareViews() {
         const inst = this;
-        if(Object.keys(this.#creator).length > 0) {
-            for(const [k, v] of Object.entries(this.#creator)) {
+        if (Object.keys(this.#creator).length > 0) {
+            for (const [k, v] of Object.entries(this.#creator)) {
                 inst.add(v);
             }
         }
     }
 
     /**
-     * Traverse teh values from jointName
+     * Traverse the values from jointName
      * @param  {object}   obj
      * @param  {Array}   keys
      * @param  {Function} fn   Used to make changes to value
@@ -672,17 +688,19 @@ export class Stratox {
     }
 
     /**
-     * Create a groupped field
+     * Create a grouped field
      * @param {string} key
      * @param {int} pos
-     * @param {bool} after (before (false) / after (true))
+     * @param {boolean} after (before (false) / after (true))
      */
     addGroupField(key, pos, after) {
-        let inst = this, nameArr = key.split(","), values = this.#values;
+        const inst = this;
+        const nameArr = key.split(",");
+        const values = this.#values;
 
-        if(after) pos += 1;
-        this.modifyValue(values, nameArr, function(obj, key) {
-            if(!inst.isArray(obj[key])) obj[key] = Object.values(obj[key]);
+        if (after) pos += 1;
+        this.modifyValue(values, nameArr, (obj, key) => {
+            if (!inst.isArray(obj[key])) obj[key] = Object.values(obj[key]);
             obj[key].splice(pos, 0, {});
         });
 
@@ -691,16 +709,17 @@ export class Stratox {
     }
 
     /**
-     * Delete a groupped field
+     * Delete a grouped field
      * @param  {string} key
      * @param  {int} pos
      * @return {object}
      */
     deleteGroupField(key, pos) {
-        let nameArr = key.split(","), values = this.#values;
+        const nameArr = key.split(",");
+        const values = this.#values;
 
-        this.modifyValue(values, nameArr, function(obj, key) {
-            if(obj[key].length > 1) obj[key].splice(pos, 1);
+        this.modifyValue(values, nameArr, (obj, key) => {
+            if (obj[key].length > 1) obj[key].splice(pos, 1);
         });
 
         this.#observer.notify(); 
@@ -714,51 +733,50 @@ export class Stratox {
      * @return {object}
      */
     editFieldValue(key, value) {
-        let nameArr = Array(), values = this.#values;
-        if(typeof key === "string") nameArr = key.split(",");
-        this.modifyValue(values, nameArr, function(obj, key) {
+        const nameArr = Array.isArray(key) ? key : key.split(",");
+        this.modifyValue(this.#values, nameArr, (obj, key) => {
             obj[key] = value;
         });
-        return values;
+        return this.#values;
     }
 
     /**
-     * Get Indentifiers
+     * Get Identifiers
      * @param  {object|string} data Should be string (view name) or object ({ viewName: "#element" })
      * @return {object}
      */
     static #getIdentifiers(data) {
-        let name, el = null, keys;
-        if(typeof data === "object") {
-            keys = Object.keys(data);
-            if(typeof keys[0] !== "string") throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
+        let name, el = null;
+        if (typeof data === "object") {
+            const keys = Object.keys(data);
+            if (typeof keys[0] !== "string") throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
             name = keys[0];
-            el = (data[name] ?? null);
+            el = data[name] ?? null;
         } else {
-            if(typeof data === "string") {
+            if (typeof data === "string") {
                 name = data;
             } else {
                 throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
             }
         }
-        return { name: name, elem: el };
+        return { name, elem: el };
     }
 
     /**
      * Insert HTML, will protect you from unintended DOM Propagation and 
-     * keep High performance even tho DOM would be stuck in a 100000 loop!
+     * keep High performance even though DOM would be stuck in a 100000 loop!
      * @return {void}
      */
     insertHtml() {
-        let inst = this;
-        if(Stratox.getConfigs("popegation") === false || !inst.#prop) {
+        const inst = this;
+        if (Stratox.getConfigs("popegation") === false || !inst.#prop) {
             inst.#prop = true;
             inst.html(inst.#response);
         } else {
             // DOM Propagation protection
             // Will be triggered if same DOM el is trigger consequently
-            if(inst.#ivt !== undefined) clearTimeout(inst.#ivt);
-            inst.#ivt = setTimeout(function() {
+            if (inst.#ivt !== undefined) clearTimeout(inst.#ivt);
+            inst.#ivt = setTimeout(() => {
                 inst.#prop = false;
                 inst.html(inst.#response);
             }, 0);
@@ -770,10 +788,10 @@ export class Stratox {
      * @param {object}
      */
     setSelector(elem) {
-        if(typeof elem === "object") {
+        if (typeof elem === "object") {
             return [elem];
         }
-        if(elem.indexOf("#") === 0) {
+        if (elem.indexOf("#") === 0) {
             return [document.getElementById(elem.substring(1))];
         }
         return document.querySelectorAll(elem);
@@ -785,8 +803,8 @@ export class Stratox {
      * @return {void}
      */
     html(out) {
-        this.getElement().forEach(function(el) {
-            if(el) el.innerHTML = out;
+        this.getElement().forEach(el => {
+            if (el) el.innerHTML = out;
         });
     }
 
@@ -795,22 +813,22 @@ export class Stratox {
      * @param  {array|spread} argument
      * @return {void}
      */
-    bindEvent(...argument) {
-        let call, elem, [selector, event, ...args] = argument;
-        if(typeof selector === "string") selector = this.setSelector(selector);
-        elem = call = args[0];
-        if (typeof call !== "function") call = args[1];
-        
-        selector.forEach(function(el) {
-            if(el) {
-                const callable = function(e) {
-                    let btn = e.target;
-                    if (typeof elem === "string") btn = e.target.closest(elem);
-                    if(btn) call.apply(btn, [e, btn]);
-                }
-                el.addEventListener(event, callable);
-                el.off = function() {
-                    el.removeEventListener(event, callable);
+    bindEvent(...args) {
+        const [selector, event, elem, call] = args;
+        const elements = typeof selector === "string" ? this.setSelector(selector) : selector;
+        const callback = typeof elem === "function" ? elem : call;
+        const target = typeof elem === "string" ? elem : null;
+
+        elements.forEach(el => {
+            if (el) {
+                const eventHandler = function(e) {
+                    let targetElem = e.target;
+                    if (target) targetElem = e.target.closest(target);
+                    if (targetElem) callback.apply(targetElem, [e, targetElem]);
+                };
+                el.addEventListener(event, eventHandler);
+                el.off = () => {
+                    el.removeEventListener(event, eventHandler);
                 };
             }
         });
@@ -822,7 +840,6 @@ export class Stratox {
      * @return {bool}
      */
     isArray(item) {
-        if(typeof item !== "object") return false;
         return Array.isArray(item);
     }
     
@@ -833,7 +850,7 @@ export class Stratox {
      * @return {StratoxItem}
      */
     #initItemView(key, obj) {
-        let inst = StratoxItem.view(key, obj);
+        const inst = StratoxItem.view(key, obj);
         inst.setContainer(this.#container);
         return inst;
     }
@@ -843,7 +860,7 @@ export class Stratox {
      * @return {int}
      */
     #getTime() {
-        if(!this.#timestamp) {
+        if (!this.#timestamp) {
             this.#timestamp = new Date().getTime();
         }
         return this.#timestamp;
@@ -854,10 +871,7 @@ export class Stratox {
      * @return {string}
      */
     #cacheParam() {
-        if(Stratox.getConfigs("cache") === false) {
-            return "?v="+this.#getTime();
-        }
-        return "";
+        return Stratox.getConfigs("cache") === false ? `?v=${this.#getTime()}` : "";
     }
 
     /**
@@ -866,13 +880,12 @@ export class Stratox {
      * @return {object}
      */
     #getSetCompFromKey(key) {
-        let func, name;
-        if(typeof key === "object") {
+        if (typeof key === "object") {
             const keys = Object.keys(key);
             const func = key[keys[0]];
-            return { name: func.name+"#"+keys[0], func: func }
+            return { name: `${func.name}#${keys[0]}`, func };
         }
-        return { name: key.name, func: key }
+        return { name: key.name, func: key };
     }
 
     /**
@@ -882,8 +895,6 @@ export class Stratox {
      * @return {string}          Return template with appended object inside of Mustache brackets
      */
     renderMustache(template, data) {
-        return template.replace(/{{(.*?)}}/g, function(match, key) {
-            return data[key.trim()] || ""; // Return the corresponding object property or an empty string if not found
-        });
+        return template.replace(/{{(.*?)}}/g, (match, key) => data[key.trim()] || "");
     }
 }

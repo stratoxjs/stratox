@@ -1,10 +1,9 @@
 import { StratoxContainer } from './StratoxContainer.js';
 
 export class StratoxItem {
-
+    
     compType = "";
     #container;
-
     type = "";
     label = "";
     description = "";
@@ -55,7 +54,6 @@ export class StratoxItem {
         }
         return name;
     }
-
 
     setContainer(container) {
         if(!(container instanceof StratoxContainer)) throw new Error('Must be an intsance of StratoxContainer');
@@ -192,12 +190,10 @@ export class StratoxItem {
     toString() {
         return this.#container.get("view").execute();
     }
-
   
     update() {
         if(this.#container) {
             this.#container.get("view").update();
         }
     }
-
 }

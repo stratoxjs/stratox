@@ -209,11 +209,13 @@ export class Stratox {
      * Attach view is the same as attachViewToEl
      * EXCEPT for that it will also prepare the element container!
      */
+    /*
     attachPartial(view, data, call) {
         const elID = this.getID(this.genRandStr(6));
         const clone = this.attachViewToEl(`#${elID}`, view, data, call);
         return `<div id="${elID}"></div>`;
     }
+     */
 
     // DEPRECATED
     attachView(view, data, call) {
@@ -345,7 +347,11 @@ export class Stratox {
      * @param {object} data Object data to pass on to the view
      * @return {StratoxItem} (will return an instance of StratoxItem)
      */
-    view(key, data) {
+    view(...args) {
+        return this._view(...args);
+    }
+
+    _view(key, data) {
         if (typeof key === "function" || typeof key === "object") {
             const comp = this.#getSetCompFromKey(key);
             Stratox.setComponent(comp.name, comp.func);
@@ -587,7 +593,6 @@ export class Stratox {
             }
 
             // Trigger done on load
-
             inst.eventOnload(function() {
                 if (typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
                 if (typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);

@@ -200,6 +200,18 @@ export class StratoxBuilder {
         }
         return out;
     }
+
+    /**
+     * Build and get all form compontent
+     * @return {string}
+     */
+    getFields() {
+        let out = "";
+        this.groupFactory(function (o, val) {
+            out += o;
+        });
+        return out;
+    }
     
     /**
      * Get field html code  
@@ -389,5 +401,5 @@ export class StratoxBuilder {
         }
         return fnName+"(event, '" + this.name + "')";
     }
-    
+
 }

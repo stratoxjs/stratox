@@ -268,8 +268,14 @@ export class Stratox {
      * @param  {int} length
      * @return {string}
      */
-    genRandStr(length) {
-        return Math.random().toString(36).substring(2, 2 + length);
+    genRandStr(length, pad, pad2) {
+        if(typeof pad !== "string") {
+            pad = "";
+        }
+        if(typeof pad2 !== "string") {
+            pad2 = "";
+        }
+        return pad + Math.random().toString(36).substring(2, 2 + length) + pad2;
     }
 
     /**
@@ -413,7 +419,7 @@ export class Stratox {
         } else {
             key = StratoxItem.getViewName(key);
             if (typeof data === "function") {
-                data(this.#components[key])
+                data(this.#components[key]?.data, this.#components[key])
             } else {
                 this.#components[key] = data;
             }
@@ -520,6 +526,7 @@ export class Stratox {
 
                     if (typeof compo === "function") {
                         handler.setComponent(key, compo);
+
                     } else {
                         const module = await import(/* @vite-ignore */ `${dir}${file}.js${inst.#cacheParam()}`);
                         for (const [k, fn] of Object.entries(module)) {

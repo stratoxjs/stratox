@@ -10,6 +10,7 @@ import { StratoxItem } from './StratoxItem.js';
 export class StratoxBuilder {
 
     static _factory = {};
+    static _funcIndex = 0;
     
     json;
     value = "";
@@ -199,6 +200,18 @@ export class StratoxBuilder {
         }
         return out;
     }
+
+    /**
+     * Build and get all form compontent
+     * @return {string}
+     */
+    getFields() {
+        let out = "";
+        this.groupFactory(function (o, val) {
+            out += o;
+        });
+        return out;
+    }
     
     /**
      * Get field html code  
@@ -368,6 +381,25 @@ export class StratoxBuilder {
             }
             this.name = newName;
         }
+    }
+
+    /**
+     * Bind a event to a click function
+     * @param  {Function} fn event callable
+     * @return {string}      string handler
+     */
+    bind(fn) {
+        const inst = this;
+        const view = this.containerInst.get("view");
+        const fnName = view.genRandStr(8, "func_", "_" + StratoxBuilder._funcIndex);
+        StratoxBuilder._funcIndex++;
+        window[fnName] = function(event, name) {
+            event.preventDefault();
+            view.update(name, function(data, component) {
+                fn.apply(inst, [event, data, name])
+            });
+        }
+        return fnName+"(event, '" + this.name + "')";
     }
 
 }

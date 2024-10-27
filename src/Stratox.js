@@ -29,7 +29,7 @@ export class Stratox {
     #prop = false;
     #done;
     #onload;
-    #ready;
+    #blockStates = [];
 
     /**
      * Default Configs
@@ -164,7 +164,7 @@ export class Stratox {
     }
 
     /**
-     * Create mutable view
+     * DEPRECTAED: Create mutable view (still used in tb component)
      * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
      * @param  {object} data        The view data
      * @param  {object} args        Access container and/or before, complete callbacks
@@ -194,35 +194,6 @@ export class Stratox {
     }
 
     /**
-     * withView shortcut, but will directly return response
-     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
-     * @param  {object} data        The view data
-     * @param  {object} args        Access container and/or before, complete callbacks
-     * @return {static}
-     */
-    partial(key, data, args) {
-        const view = this.withView(...arguments);
-        return view.getResponse();
-    }
-
-    /**
-     * Attach view is the same as attachViewToEl
-     * EXCEPT for that it will also prepare the element container!
-     */
-    /*
-    attachPartial(view, data, call) {
-        const elID = this.getID(this.genRandStr(6));
-        const clone = this.attachViewToEl(`#${elID}`, view, data, call);
-        return `<div id="${elID}"></div>`;
-    }
-     */
-
-    // DEPRECATED
-    attachView(view, data, call) {
-        return this.attachPartial(...arguments);
-    }
-
-    /**
      * Attach a view to specified element string
      * @example this.attachViewToEl("#table", table, data.table)
      * @param  {string} el   Element has string
@@ -230,17 +201,24 @@ export class Stratox {
      * @param  {object} data Data passed to view
      * @return {self}
      */
-    attachViewToEl(el, view, data, call) {
+    attachViewToEl(el, view, data, call, before) {
         const clone = this.clone();
         const item = clone.view(view, data);
         clone.setElement(el);
+
+        if (typeof before === "function") {
+            before.apply(clone, [item, el]);
+        }
+
         // Ready should not be called outside of stratox class!
-        this.#ready = function() {
+        const func = function() {
             clone.execute();
             if (typeof call === "function") {
                 call.apply(clone, [item, el]);
             }
         };
+
+        this.#blockStates.push(func);
         return clone;
     }
 
@@ -357,6 +335,26 @@ export class Stratox {
         return this._view(...args);
     }
 
+    /**
+     * Create a partial to the view meaning it is not self contained 
+     * but rather a part of the view maiking it a static component but as better performance
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {object} args        Access container and/or before, complete callbacks
+     * @return {static}
+     */
+    partial(...args) {
+        const inst = this.clone();
+        const view = inst.view(...args);
+        return inst.execute();
+    }
+
+    /**
+     * The view engine
+     * @param  {string|function|object} key
+     * @param  {object|StratoxFetch} data
+     * @return {StratoxItem}
+     */
     _view(key, data) {
         if (typeof key === "function" || typeof key === "object") {
             const comp = this.#getSetCompFromKey(key);
@@ -565,25 +563,39 @@ export class Stratox {
         this.#prepareViews();
         this.#observer = new StratoxObserver(this.#components);
         inst.build(function(field) {
+            let propCheck = {}, ivtPropCheck;
             inst.#observer.factory(function(jsonData, temp) {
-                Stratox.viewCount++;
-                // If response is not empty, 
-                // then insert, processed components and insert to the document
-                inst.#response = field.get();
-                
-                if (inst.#elem && (typeof inst.#response === "string") && inst.#response) {
-                    inst.insertHtml();
-                }
-                // Trigger done on update
-                if (typeof inst.#done === "function" && !wait) {
-                    inst.#done.apply(inst, [field, inst.#observer, "update"]);
-                }
+                if(!propCheck?.[field.name]) {
+                    Stratox.viewCount++;
+                    // If response is not empty, 
+                    // then insert, processed components and insert to the document
+                    inst.#response = field.get();
+                    propCheck[field.name] = true;
 
-                if (typeof inst.#ready === "function" && !wait) {
-                    inst.#ready.apply(inst, [field, inst.#observer]);
+                    if (inst.#elem && (typeof inst.#response === "string") && inst.#response) {
+                        inst.insertHtml();
+                    }
+                    // Trigger done on update
+                    if (typeof inst.#done === "function" && !wait) {
+                        inst.#done.apply(inst, [field, inst.#observer, "update"]);
+                    }
+
+                    if (inst.#blockStates.length > 0 && !wait) {
+                        inst.#loadBlockStates(field);
+                    }
+                    wait = false;
+
+                    // Will make sure each unique view is not spammed 
+                    if(ivtPropCheck !== undefined) {
+                        clearTimeout(ivtPropCheck);
+                    }
+                    ivtPropCheck = setTimeout(function() {
+                        propCheck = {};
+                    }, 0)
                 }
-                wait = false;
             });
+
+            
 
             // Init listener and notify the listener
             inst.#observer.listener().notify();
@@ -603,7 +615,7 @@ export class Stratox {
             inst.eventOnload(function() {
                 if (typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
                 if (typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);
-                if (typeof inst.#ready === "function") inst.#ready.apply(inst, [field, inst.#observer]);
+                inst.#loadBlockStates(field);
             });
 
         });
@@ -677,6 +689,22 @@ export class Stratox {
                 inst.add(v);
             }
         }
+    }
+
+    /**
+     * This will load all block states when they are ready
+     * @param  {object} field
+     * @return {void}
+     */
+    #loadBlockStates(field) {
+        let i;
+        const inst = this;
+        if (inst.#blockStates.length > 0) {
+            for(i = 0; i < inst.#blockStates.length; i++) {
+                inst.#blockStates[i].apply(inst, [field, inst.#observer]);
+            }
+        }
+        inst.#blockStates = [];
     }
 
     /**

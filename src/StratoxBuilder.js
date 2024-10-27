@@ -388,16 +388,20 @@ export class StratoxBuilder {
      * @param  {Function} fn event callable
      * @return {string}      string handler
      */
-    bind(fn) {
+    bind(fn, update) {
         const inst = this;
         const view = this.containerInst.get("view");
         const fnName = view.genRandStr(8, "func_", "_" + StratoxBuilder._funcIndex);
         StratoxBuilder._funcIndex++;
         window[fnName] = function(event, name) {
             event.preventDefault();
-            view.update(name, function(data, component) {
-                fn.apply(inst, [event, data, name])
-            });
+            if(update === undefined || update) {
+                view.update(name, function(data, component) {
+                    fn.apply(inst, [event, data, name])
+                });
+            } else {
+                fn.apply(inst, [event, {}, name])
+            }
         }
         return fnName+"(event, '" + this.name + "')";
     }

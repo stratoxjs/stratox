@@ -64,8 +64,13 @@ export class StratoxContainer {
                 return service;
             }
         } else {
-            throw new Error('Tring to get a container ('+key+') that does not exists');
+            throw new Error('Tring to get a container ('+key+') that does not exists. Either create it with @set or check if it exists with @has to avoid this message.');
         }
+    }
+
+    read(key, defaultValue) {
+        return this.has(key) ? this.get(key) : (defaultValue ?? "") 
+
     }
 
     /**

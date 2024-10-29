@@ -1,5 +1,5 @@
 /**
- * Stratox
+ * Stratox - UI component library
  * Author: Daniel Ronkainen
  * Description: A modern JavaScript template library that redefines how developers can effortlessly create dynamic views.
  * Copyright: Apache License 2.0
@@ -39,7 +39,7 @@ export class Stratox {
         directory: "",
         handlers: {
             fields: null,
-            helper: function(builder) {
+            helper: (builder) => {
                 // GLOBAL container / helper / factory that will be passed on to all views
             }
         },
@@ -116,147 +116,6 @@ export class Stratox {
     }
 
     /**
-     * Create an immutable view (self-contained instance, e.g. modals)
-     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
-     * @param  {object} data        The view data
-     * @param  {object} args        Access container and/or before, complete callbacks
-     * @return {StratoxItem}
-     */
-    static create(key, data, args) {
-        const obj = this.#getIdentifiers(key);
-        const inst = new Stratox(obj.elem);
-
-        let config = { container: false, before: false, complete: false };
-        const item = inst.view(obj.name, data);
-        item.setContainer(inst.#container);
-
-        if (typeof args === "function") {
-            config.complete = args;
-        } else {
-            Object.assign(config, args);
-            if (typeof config.container === "object") 
-                for (const [key, value] of Object.entries(config.container)) {
-                    inst.container().set(key, value);
-                }
-            if (typeof config.before === "function") config.before(inst, data);
-        }
-
-        inst.execute(config.complete);
-        return inst;
-    }
-    
-    /**
-     * Open new Stratox instance
-     * @param  {string} elem String element query selector
-     * @return {Stratox}
-     */
-    open(elem) {
-        return this.clone(elem);
-    }    
-
-    /**
-     * Open new Stratox instance
-     * @param  {string} elem String element query selector
-     * @return {Stratox}
-     */
-    clone(elem) {
-        return new Stratox(elem);
-    }
-
-    /**
-     * DEPRECTAED: Create mutable view (still used in tb component)
-     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
-     * @param  {object} data        The view data
-     * @param  {object} args        Access container and/or before, complete callbacks
-     * @return {static}
-     */
-    withView(key, data, args) {
-        if (typeof key === "function" || typeof key === "object") {
-            const comp = this.#getSetCompFromKey(key);
-            Stratox.setComponent(comp.name, comp.func);
-            key = comp.name;
-        }
-        return Stratox.create(key, data, args);
-    }
-
-    /**
-     * Create view and return instance of StratoxItem
-     * @param  {object} key
-     * @param  {object} data
-     * @return {StratoxItem}
-     */
-    getViewComponent(key, data) {
-        const item = this.clone();
-        if (typeof key !== "object") {
-            console.error("The getViewComponent function expects argument 1 (key) to be an object e.g. {keyNameID: viewFunction}");
-        }
-        return item.view(key, data);
-    }
-
-    /**
-     * Attach a view to specified element string
-     * @example this.attachViewToEl("#table", table, data.table)
-     * @param  {string} el   Element has string
-     * @param  {function} view Expected view function
-     * @param  {object} data Data passed to view
-     * @return {self}
-     */
-    attachViewToEl(el, view, data, call, before) {
-        const clone = this.clone();
-        const item = clone.view(view, data);
-        clone.setElement(el);
-
-        if (typeof before === "function") {
-            before.apply(clone, [item, el]);
-        }
-
-        // Ready should not be called outside of stratox class!
-        const func = function() {
-            clone.execute();
-            if (typeof call === "function") {
-                call.apply(clone, [item, el]);
-            }
-        };
-
-        this.#blockStates.push(func);
-        return clone;
-    }
-
-    /**
-     * Get a somewhat unique identifier
-     * @param  {string} prefix Add a prefix to view count
-     * @return {string}
-     */
-    getID(prefix) {
-        if (typeof prefix !== "string") {
-            prefix = "el";
-        }
-        return `stratox-${prefix}-${this.getViewCount()}`;
-    }
-
-    getUniqueElem(prefix) {
-        if (typeof prefix !== "string") {
-            prefix = "el";
-        }
-        return this.getID(`${this.genRandStr(8)}-${prefix}`);
-    }
-
-    /**
-     * Get a random string
-     * @param  {int} length
-     * @return {string}
-     */
-    genRandStr(length, pad, pad2) {
-        if(typeof pad !== "string") {
-            pad = "";
-        }
-        if(typeof pad2 !== "string") {
-            pad2 = "";
-        }
-        return pad + Math.random().toString(36).substring(2, 2 + length) + pad2;
-    }
-
-    /**
      * withObserver Immutable
      * used to either create a new instance or access global callbacks
      * Observer has a Global notify callback listener that will be triggered
@@ -304,14 +163,100 @@ export class Stratox {
     }
 
     /**
+     * Create an immutable view (self-contained instance, e.g. modals)
+     * Might become deprected in the future
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {object} args        Access container and/or before, complete callbacks
+     * @return {StratoxItem}
+     */
+    static create(key, data, args) {
+        const obj = this.#getIdentifiers(key);
+        const inst = new Stratox(obj.elem);
+
+        let config = { container: false, before: false, complete: false };
+        const item = inst.view(obj.name, data);
+        item.setContainer(inst.#container);
+
+        if (typeof args === "function") {
+            config.complete = args;
+        } else {
+            Object.assign(config, args);
+            if (typeof config.container === "object") 
+                for (const [key, value] of Object.entries(config.container)) {
+                    inst.container().set(key, value);
+                }
+            if (typeof config.before === "function") config.before(inst, data);
+        }
+
+        inst.execute(config.complete);
+        return inst;
+    }   
+
+    /**
+     * Open new Stratox instance
+     * @param  {string} elem String element query selector
+     * @return {Stratox}
+     */
+    clone(elem) {
+        return new Stratox(elem);
+    }
+
+    /**
+     * DEPRECTAED: Create mutable view (still used in tb component)
+     * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
+     * @param  {object} data        The view data
+     * @param  {object} args        Access container and/or before, complete callbacks
+     * @return {static}
+     */
+    withView(key, data, args) {
+        if (typeof key === "function" || typeof key === "object") {
+            const comp = this.#getSetCompFromKey(key);
+            Stratox.setComponent(comp.name, comp.func);
+            key = comp.name;
+        }
+        return Stratox.create(key, data, args);
+    }
+
+    /**
+     * Attach a view to specified element string
+     * @example this.attachViewToEl("#table", table, data.table)
+     * @param  {string} el   Element has string
+     * @param  {function} view Expected view function
+     * @param  {object} data Data passed to view
+     * @return {self}
+     */
+    attachViewToEl(el, view, data, call, before) {
+        const clone = this.clone();
+        const item = clone.view(view, data);
+        clone.setElement(el);
+
+        if (typeof before === "function") {
+            before.apply(clone, [item, el]);
+        }
+
+        // Ready should not be called outside of stratox class!
+        const func = () => {
+            clone.execute();
+            if (typeof call === "function") {
+                call.apply(clone, [item, el]);
+            }
+        };
+
+        this.#blockStates.push(func);
+        return clone;
+    }
+
+    /**
      * You can group a view and contain it inside a parent HTML tag
+     * DO I STILL NEED THIS???
      * @param  {string} key
      * @param  {callable} callable
      * @return {StratoxItem}
      */
     group(key, callable) {
         const inst = this;
-        Stratox.setComponent(key, function(data, container, helper, builder) {
+        Stratox.setComponent(key, (data, container, helper, builder) => {
             let out = callable.apply(inst.open(), [...arguments]);
             if (out instanceof Stratox) {
                 out = out.execute();
@@ -340,13 +285,49 @@ export class Stratox {
      * but rather a part of the view maiking it a static component but as better performance
      * @param  {string|object} key  View key/name, either use it as a string or { viewName: "#element" }.
      * @param  {object} data        The view data
-     * @param  {object} args        Access container and/or before, complete callbacks
-     * @return {static}
+     * @param  {callable|object} call
+     * @return {object|string}
      */
-    partial(...args) {
-        const inst = this.clone();
-        const view = inst.view(...args);
-        return inst.execute();
+    partial(key, data, call) {
+        const view = this.clone();
+        const item = view.view(key, data);
+        if (typeof call?.modify === "function") {
+            call.modify.apply(view, [item]);
+        }
+        const output = view.execute(typeof call?.response === "function" ? call.response : call);
+        return {
+            output,
+            view,
+            item,
+            toString() {
+                return output;
+            }
+        };
+    }
+
+    /**
+     * Create a self contained block within a view
+     * @param  {callable} view
+     * @param  {object|StratoxFetch} data
+     * @param  {object} config
+     * @return {string}
+     */
+    block(view, data, config) {
+        const elID = this.getID(this.genRandStr(6));
+        const output = `<div id="${elID}"></div>`;
+        const inst = this.attachViewToEl(`#${elID}`, view, data, (item, el) => {
+            if(typeof config?.response === "function") {
+                config.response(item.data, item, el);
+            }
+        }, config?.modify);
+
+        return {
+            output,
+            view: inst,
+            toString() {
+                return output;
+            }
+        };
     }
 
     /**
@@ -433,6 +414,45 @@ export class Stratox {
      */
     hasView() {
         return (typeof this.#response === "string");
+    }
+
+    /**
+     * Get a somewhat unique identifier
+     * @param  {string} prefix Add a prefix to view count
+     * @return {string}
+     */
+    getID(prefix) {
+        if (typeof prefix !== "string") {
+            prefix = "el";
+        }
+        return `stratox-${prefix}-${this.getViewCount()}`;
+    }
+
+    /**
+     * Get a unique elemnt string name
+     * @param  {string} prefix
+     * @return {string}
+     */
+    getUniqueElem(prefix) {
+        if (typeof prefix !== "string") {
+            prefix = "el";
+        }
+        return this.getID(`${this.genRandStr(8)}-${prefix}`);
+    }
+
+    /**
+     * Get a random string
+     * @param  {int} length
+     * @return {string}
+     */
+    genRandStr(length, pad, pad2) {
+        if(typeof pad !== "string") {
+            pad = "";
+        }
+        if(typeof pad2 !== "string") {
+            pad2 = "";
+        }
+        return pad + Math.random().toString(36).substring(2, 2 + length) + pad2;
     }
 
     /**
@@ -562,9 +582,9 @@ export class Stratox {
         // Start build and create views
         this.#prepareViews();
         this.#observer = new StratoxObserver(this.#components);
-        inst.build(function(field) {
+        inst.build((field) => {
             let propCheck = {}, ivtPropCheck;
-            inst.#observer.factory(function(jsonData, temp) {
+            inst.#observer.factory((jsonData, temp) => {
                 if(!propCheck?.[field.name]) {
                     Stratox.viewCount++;
                     // If response is not empty, 
@@ -589,9 +609,7 @@ export class Stratox {
                     if(ivtPropCheck !== undefined) {
                         clearTimeout(ivtPropCheck);
                     }
-                    ivtPropCheck = setTimeout(function() {
-                        propCheck = {};
-                    }, 0)
+                    ivtPropCheck = setTimeout(() => propCheck = {}, 0);
                 }
             });
 
@@ -612,7 +630,7 @@ export class Stratox {
             }
 
             // Trigger done on load
-            inst.eventOnload(function() {
+            inst.eventOnload(() => {
                 if (typeof inst.#done === "function" && !wait) inst.#done.apply(inst, [field, inst.#observer, "load"]);
                 if (typeof inst.#onload === "function") inst.#onload.apply(inst, [field, inst.#observer]);
                 inst.#loadBlockStates(field);
@@ -652,7 +670,7 @@ export class Stratox {
     bindGroupEvents(elem) {
         const inst = this;
         this.onload(() => {
-            inst.bindEvent(elem, "input", function(e) {
+            inst.bindEvent(elem, "input", (e) => {
                 const key = this.dataset.name;
                 const type = this.getAttribute("type");
                 let value = (this.value ?? "");
@@ -662,14 +680,14 @@ export class Stratox {
                 inst.editFieldValue(key, value);
             });
 
-            inst.bindEvent(elem, "click", ".wa-field-group-btn", function(e) {
+            inst.bindEvent(elem, "click", ".wa-field-group-btn", (e) => {
                 e.preventDefault();
                 const key = this.dataset.name;
                 const pos = parseInt(this.dataset.position, 10);
                 inst.addGroupField(key, pos, this.classList.contains("after"));
             });
 
-            inst.bindEvent(elem, "click", ".wa-field-group-delete-btn", function(e) {
+            inst.bindEvent(elem, "click", ".wa-field-group-delete-btn", (e) => {
                 e.preventDefault();
                 const key = this.dataset.name;
                 const pos = parseInt(this.dataset.position, 10);
@@ -861,7 +879,7 @@ export class Stratox {
 
         elements.forEach(el => {
             if (el) {
-                const eventHandler = function(e) {
+                const eventHandler = (e) => {
                     let targetElem = e.target;
                     if (target) targetElem = e.target.closest(target);
                     if (targetElem) callback.apply(targetElem, [e, targetElem]);
@@ -930,6 +948,7 @@ export class Stratox {
 
     /**
      * Render Mustache
+     * DEPRECATED: Might tho move it to a Helper
      * @param  {string} template Template with possible Mustache brackets
      * @param  {object} data     Object with items to pass to Mustache brackets
      * @return {string}          Return template with appended object inside of Mustache brackets
@@ -937,4 +956,28 @@ export class Stratox {
     renderMustache(template, data) {
         return template.replace(/{{(.*?)}}/g, (match, key) => data[key.trim()] || "");
     }
+
+    /**
+     * DEPRECATED: Create view and return instance of StratoxItem
+     * @param  {object} key
+     * @param  {object} data
+     * @return {StratoxItem}
+     */
+    getViewComponent(key, data) {
+        const item = this.clone();
+        if (typeof key !== "object") {
+            console.error("The getViewComponent function expects argument 1 (key) to be an object e.g. {keyNameID: viewFunction}");
+        }
+        return item.view(key, data);
+    }
+
+    /**
+     * Open new Stratox instance
+     * DEPRECATED: Use clone instead!
+     * @param  {string} elem String element query selector
+     * @return {Stratox}
+     */
+    open(elem) {
+        return this.clone(elem);
+    } 
 }

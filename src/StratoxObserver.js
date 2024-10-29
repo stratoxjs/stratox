@@ -48,7 +48,7 @@ export class StratoxObserver {
     listener() {
         let inst = this;
         this.#proxyData = new Proxy(this.#data, {
-            set: function (target, property, value) {
+            set: (target, property, value) => {
                 target[property] = value;
                 inst.notify();
                 return true;

@@ -267,7 +267,7 @@ export class StratoxBuilder {
         let build = "";
         if(fields) for(const [name, data] of Object.entries(fields)) {
             this.data = data;
-            this.name = (typeof this.data.name === "string") ? this.data.name : name;
+            this.name = (typeof this.data?.name === "string") ? this.data.name : name;
             build += this.#build(formatData);
         }
         return build;
@@ -393,14 +393,14 @@ export class StratoxBuilder {
         const view = this.containerInst.get("view");
         const fnName = view.genRandStr(8, "func_", "_" + StratoxBuilder._funcIndex);
         StratoxBuilder._funcIndex++;
-        window[fnName] = function(event, name) {
+        window[fnName] = (event, name) => {
             event.preventDefault();
             if(update === undefined || update) {
-                view.update(name, function(data, component) {
-                    fn.apply(inst, [event, data, name])
+                view.update(name, (data, component) => {
+                    fn.apply(inst, [event, data, name]);
                 });
             } else {
-                fn.apply(inst, [event, {}, name])
+                fn.apply(inst, [event, {}, name]);
             }
         }
         return fnName+"(event, '" + this.name + "')";

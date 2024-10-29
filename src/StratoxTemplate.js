@@ -39,7 +39,7 @@ export class StratoxTemplate extends StratoxBuilder {
      * @param  {object} attributes Add attr to input tag
      * @return {string}
      */
-    input(attributes) {
+    input(helper, attributes) {
         if(typeof attributes !== "object") attributes = {};
 
         // Default
@@ -69,67 +69,58 @@ export class StratoxTemplate extends StratoxBuilder {
      * Regular input field
      * @return {string}
      */
-    text(arg) {
+    text(helper) {
         let inst = this;
-        return this.container(function() {
-            return inst.input();
-        });
+        return this.container(() => inst.input());
     }
 
     /**
      * Password input field
      * @return {string}
      */
-    password() {
+    password(helper) {
         let inst = this;
-        return this.container(function() {
-            let out =  inst.input({ type: "password" });
-            return out;
-        });
+        return this.container(() => inst.input(helper, { type: "password" }));
     }
 
     /**
      * Date input field
      * @return {string}
      */
-    date() {
+    date(helper) {
         let inst = this;
-        return this.container(function() {
-            return inst.input({ type: "date" });
-        });
+        return this.container(() => inst.input(helper, { type: "date" }));
     }
 
     /**
      * Date time input field
      * @return {string}
      */
-    datetime() {
+    datetime(helper) {
         let inst = this;
-        return this.container(function() {
-            return inst.input({ type: "datetime-local" });
-        });
+        return this.container(() => inst.input(helper, { type: "datetime-local" }));
     }
 
     /**
      * Hidden input field
      * @return {string}
      */
-    hidden() {
+    hidden(helper) {
         let inst = this;
-        return inst.input({ type: "hidden" });
+        return inst.input(helper, { type: "hidden" });
     }
 
     /**
      * Textarea field
      * @return {string}
      */
-    textarea() {
+    textarea(helper) {
         let inst = this, attr = this.getAttr({
             name: this.name,
             "data-index": this.index
         });
         
-        return this.container(function() {
+        return this.container(() => {
             return '<textarea'+attr+'>'+inst.value+'</textarea>';
         }); 
     }
@@ -138,14 +129,14 @@ export class StratoxTemplate extends StratoxBuilder {
      * Select field
      * @return {string}
      */
-    select() {
+    select(helper) {
         let inst = this, attrName = ((this.attr && this.attr.multiple) ? this.name+"[]" : this.name), 
         attr = this.getAttr({
             name: attrName,
             "data-index": this.index
         });
 
-        return this.container(function() {
+        return this.container(() => {
             let out = '<select'+attr+' autocomplete="off">';
             if(typeof inst.data.items === "object") {
                 for(const [value, name] of Object.entries(inst.data.items)) {
@@ -164,14 +155,14 @@ export class StratoxTemplate extends StratoxBuilder {
      * Radio input field
      * @return {string}
      */
-    radio() {
+    radio(helper) {
         let inst = this, attr = this.getAttr({
             type: "radio",
             name: this.name,
             "data-index": this.index
         });
 
-        return this.container(function() {
+        return this.container(() => {
             let out = '';
             if(typeof inst.data.items === "object") {
                 for(const [value, name] of Object.entries(inst.data.items)) {
@@ -189,14 +180,14 @@ export class StratoxTemplate extends StratoxBuilder {
      * Checkbox input field
      * @return {string}
      */
-    checkbox() {
+    checkbox(helper) {
         let inst = this, length = Object.keys(inst.data.items).length, attr = this.getAttr({
             type: "checkbox",
             name: ((length > 1) ? this.name+"[]" : this.name),
             "data-index": this.index
         });
-
-        return this.container(function() {
+        
+        return this.container(() => {
             let out = '';
             if(typeof inst.data.items === "object") {
                 for(const [value, name] of Object.entries(inst.data.items)) {
@@ -214,31 +205,36 @@ export class StratoxTemplate extends StratoxBuilder {
      * Submit button field
      * @return {string}
      */
-    submit(attributes) {
+    submit(helper) {
+        let attributes = {};
         let inst = this, 
-
         args = Object.assign({
             type: "submit",
+            class: "button bg-primary",
             name: this.name,
             value: this.value
         }, attributes),
         attr = this.getAttr(args);
-
-        return '<input'+attr+'>';
+        return '<div class="submit grow flex justify-end"><input'+attr+'></div>';
     }
 
     /**
      * Group field(s)
+     * @TailwindClasses relative card-3 mb-15 rounded border border-primary inline-block pad absolute z-10
+     * @TailwindClasses top-0 bottom-0 right-0 left-1/2 -translate-x-2/4 translate-y-2/4 -translate-y-2/4
      * @return {string}
      */
     group() {
-        let out = '';
-        out += '<div class="mb-20 wa-advanced-grouped-field">';
-        this.groupFactory(function(o, val) {
-            out += o;
-        }, true);
-        out += '</div>';
-        return out;
+        const inst = this;
+        return this.container(() => {
+            let out = '';
+            out += '<div id="'+inst.getFieldID()+'" class="mb-20 wa-advanced-grouped-field">';
+            inst.groupFactory((o, val) => {
+                out += o;
+            }, true);
+            out += '</div>';
+            return out;
+        });
     }
 
 }

@@ -10,6 +10,6 @@
     "requireConfigFile": false
   },
   "rules": {
-    // Add custom rules here if needed
+    "no-unused-vars": "off"
   }
 }

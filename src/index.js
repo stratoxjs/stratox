@@ -10,4 +10,6 @@ import { StratoxContainer } from './StratoxContainer.js';
 import { StratoxObserver } from './StratoxObserver.js';
 import { StratoxTemplate } from './StratoxTemplate.js';
 
-export { Stratox, StratoxContainer, StratoxObserver, StratoxTemplate };
+export {
+  Stratox, StratoxContainer, StratoxObserver, StratoxTemplate,
+};

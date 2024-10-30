@@ -12,6 +12,7 @@ import { StratoxObserver } from './StratoxObserver';
 import { StratoxItem } from './StratoxItem';
 
 export class Stratox {
+
   static viewCount = 0;
 
   #bindKey;
@@ -217,7 +218,7 @@ export class Stratox {
    * @param  {string} elem String element query selector
    * @return {Stratox}
    */
-  clone(elem) {
+  static clone(elem) {
     return new Stratox(elem);
   }
 
@@ -684,27 +685,27 @@ export class Stratox {
   bindGroupEvents(elem) {
     const inst = this;
     this.onload(() => {
-      inst.bindEvent(elem, 'input', (e) => {
-        const key = this.dataset.name;
-        const type = this.getAttribute('type');
-        let value = (this.value ?? '');
+      inst.bindEvent(elem, 'input', (e, target) => {
+        const key = target.dataset.name;
+        const type = target.getAttribute('type');
+        let value = (target.value ?? '');
         if (type === 'checkbox' || type === 'radio') {
-          value = this.checked ? value : 0;
+          value = target.checked ? value : 0;
         }
         inst.editFieldValue(key, value);
       });
 
-      inst.bindEvent(elem, 'click', '.wa-field-group-btn', (e) => {
+      inst.bindEvent(elem, 'click', '.wa-field-group-btn', (e, target) => {
         e.preventDefault();
-        const key = this.dataset.name;
-        const pos = parseInt(this.dataset.position, 10);
-        inst.addGroupField(key, pos, this.classList.contains('after'));
+        const key = target.dataset.name;
+        const pos = parseInt(target.dataset.position, 10);
+        inst.addGroupField(key, pos, target.classList.contains('after'));
       });
 
-      inst.bindEvent(elem, 'click', '.wa-field-group-delete-btn', (e) => {
+      inst.bindEvent(elem, 'click', '.wa-field-group-delete-btn', (e, target) => {
         e.preventDefault();
-        const key = this.dataset.name;
-        const pos = parseInt(this.dataset.position, 10);
+        const key = target.dataset.name;
+        const pos = parseInt(target.dataset.position, 10);
         inst.deleteGroupField(key, pos);
       });
     });

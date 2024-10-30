@@ -29,6 +29,7 @@ export class StratoxBuilder {
     config = {};
     configList = {};
     settings = {}
+    data = {}
     containerInst;
 
     #values = {};
@@ -211,6 +212,26 @@ export class StratoxBuilder {
             out += o;
         });
         return out;
+    }
+
+    /**
+     * Get a field
+     * @param  {string} name The field name
+     * @param  {string} type The Expected field type
+     * @param  {object} data The field data e.g. label, attributes
+     * @return {string}      Get the field html
+     */
+    getField(name, type, data) {
+        if(typeof data !== "object") {
+            data = {};
+        }
+        const fieldData = {
+            [name]: {
+                type: type,
+                ...data
+            }
+        };
+        return this.#html(fieldData);
     }
     
     /**

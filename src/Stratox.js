@@ -331,7 +331,7 @@ export class Stratox {
   }
 
   /**
-   * Easily create a form item
+   * Easily create and get multiple fields
    * @param {string} name  Field name
    * @param {object} data  The form data
    * @return {StratoxItem} (will return an instance of StratoxItem)
@@ -342,6 +342,22 @@ export class Stratox {
     this.#creator[name] = StratoxItem.form(name, data);
     this.#creator[name].setContainer(this.#container);
     return this.#creator[name];
+  }
+
+  /**
+   * Get a field
+   * @param  {string} name The field name
+   * @param  {string} type The Expected field type
+   * @param  {object} data The field data e.g. label, attributes
+   * @return {StratoxItem|string}
+   */
+  getField(name, type, data) {
+    let newData = data;
+    if (typeof data !== 'object') {
+      newData = {};
+    }
+    newData.type = type;
+    return this.clone().form(name, newData);
   }
 
   /**

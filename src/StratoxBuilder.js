@@ -260,20 +260,10 @@ export class StratoxBuilder {
    * @param  {string} name The field name
    * @param  {string} type The Expected field type
    * @param  {object} data The field data e.g. label, attributes
-   * @return {string}      Get the field html
+   * @return {StratoxItem|string}      Get the field html
    */
   getField(name, type, data) {
-    let newData = data;
-    if (typeof data !== 'object') {
-      newData = {};
-    }
-    const fieldData = {
-      [name]: {
-        type,
-        ...newData,
-      },
-    };
-    return this.#html(fieldData);
+    return this.containerInst.get('view').getField(name, type, data);
   }
 
   /**
@@ -403,9 +393,12 @@ export class StratoxBuilder {
    */
   #padFieldValues() {
     if (this.values) this.#values = this.values;
-    const inst = this; let valueObj = this.#values; const hasAVal = false; let key;
-    const { nameSplit } = this; const li = (nameSplit.length - 1); const
-      last = nameSplit[li];
+    const inst = this;
+    const hasAVal = false;
+    const { nameSplit } = this; const li = (nameSplit.length - 1);
+    const last = nameSplit[li];
+    let key;
+    let valueObj = this.#values;
 
     if (!valueObj) valueObj = {};
 
@@ -436,8 +429,8 @@ export class StratoxBuilder {
    */
   #buildFieldNames() {
     this.nameJoin = this.name;
-    const nameSplit = this.name.split(','); let
-      newName = '';
+    const nameSplit = this.name.split(',');
+    let newName = '';
     this.nameSplit = this.name.split(',');
     if (nameSplit.length > 1) {
       newName = nameSplit.shift();

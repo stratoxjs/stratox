@@ -1,11 +1,12 @@
 /**
  * Stratox template
  * Author: Daniel Ronkainen
- * Description: A modern JavaScript template library that redefines how developers can effortlessly create dynamic views.
+ * Description: A modern JavaScript template library that redefines how developers
+ *              can effortlessly create dynamic views.
  * Copyright: Apache License 2.0
  */
 
-import { StratoxBuilder } from './StratoxBuilder.js';
+import { StratoxBuilder } from './StratoxBuilder';
 
 export class StratoxTemplate extends StratoxBuilder {
   /**
@@ -41,7 +42,8 @@ export class StratoxTemplate extends StratoxBuilder {
      * @return {string}
      */
   input(helper, attributes) {
-    if (typeof attributes !== 'object') attributes = {};
+    let newAttr = attributes;
+    if (typeof newAttr !== 'object') newAttr = {};
 
     // Default
     let out = '';
@@ -50,7 +52,7 @@ export class StratoxTemplate extends StratoxBuilder {
       name: this.name,
       value: this.value,
       'data-index': this.index,
-      ...attributes,
+      ...newAttr,
     };
     const type = (typeof this.attr.type === 'string' ? this.attr.type : null);
     const attr = this.getAttr(args);
@@ -140,10 +142,10 @@ export class StratoxTemplate extends StratoxBuilder {
     return this.container(() => {
       let out = `<select${attr} autocomplete="off">`;
       if (typeof inst.data.items === 'object') {
-        for (const [value, name] of Object.entries(inst.data.items)) {
+        Object.entries(inst.data.items).forEach(([value, name]) => {
           const selected = (inst.isChecked(value)) ? ' selected="selected"' : '';
           out += `<option value="${value}"${selected}>${name}</option>`;
-        }
+        });
       } else {
         console.warn('Object items parameter is missing.');
       }
@@ -167,10 +169,10 @@ export class StratoxTemplate extends StratoxBuilder {
     return this.container(() => {
       let out = '';
       if (typeof inst.data.items === 'object') {
-        for (const [value, name] of Object.entries(inst.data.items)) {
+        Object.entries(inst.data.items).forEach(([value, name]) => {
           const checked = (inst.isChecked(value)) ? ' checked="checked"' : '';
           out += `<label class="radio items small"><input${attr} value="${value}"${checked}><span class="title">${name}</span></label>`;
-        }
+        });
       } else {
         console.warn('Object items parameter is missing.');
       }
@@ -193,10 +195,10 @@ export class StratoxTemplate extends StratoxBuilder {
     return this.container(() => {
       let out = '';
       if (typeof inst.data.items === 'object') {
-        for (const [value, name] of Object.entries(inst.data.items)) {
+        Object.entries(inst.data.items).forEach(([value, name]) => {
           const checked = (inst.isChecked(value)) ? ' checked="checked"' : '';
           out += `<label class="checkbox items small"><input${attr} value="${value}"${checked}><span class="title">${name}</span></label>`;
-        }
+        });
       } else {
         console.warn('Object items parameter is missing.');
       }
@@ -224,8 +226,9 @@ export class StratoxTemplate extends StratoxBuilder {
 
   /**
      * Group field(s)
-     * @TailwindClasses relative card-3 mb-15 rounded border border-primary inline-block pad absolute z-10
-     * @TailwindClasses top-0 bottom-0 right-0 left-1/2 -translate-x-2/4 translate-y-2/4 -translate-y-2/4
+     * @TailwindClasses relative card-3 mb-15 rounded border border-primary inline-block pad
+     * @TailwindClasses absolute z-10 top-0 bottom-0 right-0 left-1/2
+     * @TailwindClasses -translate-x-2/4 translate-y-2/4 -translate-y-2/4
      * @return {string}
      */
   group() {

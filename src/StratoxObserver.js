@@ -1,7 +1,8 @@
 /**
  * Stratox observer
  * Author: Daniel Ronkainen
- * Description: A modern JavaScript template library that redefines how developers can effortlessly create dynamic views.
+ * Description: A modern JavaScript template library that redefines how developers
+ *              can effortlessly create dynamic views.
  * Copyright: Apache License 2.0
  */
 
@@ -12,7 +13,7 @@ export class StratoxObserver {
 
   #callables = [];
 
-  _notified;
+  notified;
 
   constructor(defaults) {
     if (typeof defaults === 'object') this.#data = defaults;
@@ -52,7 +53,8 @@ export class StratoxObserver {
     const inst = this;
     this.#proxyData = new Proxy(this.#data, {
       set: (target, property, value) => {
-        target[property] = value;
+        const newTarget = target;
+        newTarget[property] = value;
         inst.notify();
         return true;
       },
@@ -67,12 +69,12 @@ export class StratoxObserver {
   notify() {
     const inst = this;
     if (typeof this.#callables === 'object') {
-      for (const [k, fn] of Object.entries(this.#callables)) {
+      this.#callables.forEach((fn) => {
         fn(inst.#data);
-      }
+      });
     }
-    if (typeof StratoxObserver._notified === 'function') {
-      StratoxObserver._notified(inst.#data);
+    if (typeof StratoxObserver.notified === 'function') {
+      StratoxObserver.notified(inst.#data);
     }
   }
 
@@ -82,7 +84,7 @@ export class StratoxObserver {
      * @return {void}
      */
   static notified(call) {
-    StratoxObserver._notified = call;
+    StratoxObserver.notified = call;
   }
 
   /**

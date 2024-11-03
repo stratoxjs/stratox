@@ -6,7 +6,7 @@
  * Copyright: Apache License 2.0
  */
 
-export class StratoxContainer {
+export default class StratoxContainer {
   #service = {};
 
   static #im;

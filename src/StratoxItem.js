@@ -1,6 +1,6 @@
-import { StratoxContainer } from './StratoxContainer';
+import StratoxContainer from './StratoxContainer';
 
-export class StratoxItem {
+export default class StratoxItem {
   compType = '';
 
   #container;

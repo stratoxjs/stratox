@@ -6,7 +6,7 @@
  * Copyright: Apache License 2.0
  */
 
-export class StratoxObserver {
+export default class StratoxObserver {
   #data = {};
 
   #proxyData = {};

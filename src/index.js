@@ -6,10 +6,10 @@
  * Copyright: Apache License 2.0
  */
 
-import { Stratox } from './Stratox';
-import { StratoxContainer } from './StratoxContainer';
-import { StratoxObserver } from './StratoxObserver';
-import { StratoxTemplate } from './StratoxTemplate';
+import Stratox from './Stratox';
+import StratoxContainer from './StratoxContainer';
+import StratoxObserver from './StratoxObserver';
+import StratoxTemplate from './StratoxTemplate';
 
 export {
   Stratox, StratoxContainer, StratoxObserver, StratoxTemplate,

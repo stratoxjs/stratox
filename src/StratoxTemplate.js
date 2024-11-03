@@ -6,9 +6,9 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxBuilder } from './StratoxBuilder';
+import StratoxBuilder from './StratoxBuilder';
 
-export class StratoxTemplate extends StratoxBuilder {
+export default class StratoxTemplate extends StratoxBuilder {
   /**
      * Create a container for you form item
      * @param  {callable} call return form item inside the callable

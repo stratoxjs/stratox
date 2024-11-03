@@ -6,12 +6,12 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxContainer } from './StratoxContainer';
-import { StratoxBuilder } from './StratoxBuilder';
-import { StratoxObserver } from './StratoxObserver';
-import { StratoxItem } from './StratoxItem';
+import StratoxContainer from './StratoxContainer';
+import StratoxBuilder from './StratoxBuilder';
+import StratoxObserver from './StratoxObserver';
+import StratoxItem from './StratoxItem';
 
-export class Stratox {
+export default class Stratox {
   static viewCount = 0;
 
   #bindKey;

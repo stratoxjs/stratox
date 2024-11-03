@@ -6,9 +6,9 @@
  * Copyright: Apache License 2.0
  */
 
-import { StratoxItem } from './StratoxItem';
+import StratoxItem from './StratoxItem';
 
-export class StratoxBuilder {
+export default class StratoxBuilder {
   static factory = {};
 
   static funcIndex = 0;

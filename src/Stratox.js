@@ -14,6 +14,8 @@ import StratoxItem from './StratoxItem';
 export default class Stratox {
   static viewCount = 0;
 
+  static funcIndex = 0;
+
   #bindKey;
 
   #field;
@@ -235,14 +237,14 @@ export default class Stratox {
     clone.setElement(el);
 
     if (typeof before === 'function') {
-      before.apply(clone, [item, el]);
+      before.apply(clone, [clone, item, el]);
     }
 
     // Ready should not be called outside of stratox class!
     const func = () => {
       clone.execute();
       if (typeof call === 'function') {
-        call.apply(clone, [item, el]);
+        call.apply(clone, [clone, item, el]);
       }
     };
 
@@ -295,9 +297,9 @@ export default class Stratox {
   block(view, data, config) {
     const elID = this.getID(this.genRandStr(6));
     const output = `<div id="${elID}"></div>`;
-    const inst = this.attachViewToEl(`#${elID}`, view, data, (item, el) => {
+    const inst = this.attachViewToEl(`#${elID}`, view, data, (instArg, item, el) => {
       if (typeof config?.response === 'function') {
-        config.response(item.data, item, el);
+        config.response(item.data, instArg, item, el);
       }
     }, config?.modify);
 
@@ -382,11 +384,14 @@ export default class Stratox {
 
   /**
    * Update view (will only execute changes to the view)
-   * @param  {string} key  Component name/key
-   * @param  {object} data Component data
+   * @param  {string|StratoxItem} key  Component name/key
+   * @param  {object|callable} data Component data
    * @return {void}
    */
   update(key, data) {
+    if (typeof key === 'function') {
+      return this.updateAll(key);
+    }
     if (key === undefined) {
       this.#observer.notify();
       return this;
@@ -401,9 +406,41 @@ export default class Stratox {
         this.#components[viewKey] = data;
       }
     }
-
     this.#observer.set(this.#components);
     return this;
+  }
+
+  /**
+   * Will update all views in instance
+   * @param  {callable} fn
+   * @return {self}
+   */
+  updateAll(fn, update) {
+    Object.entries(this.#components).forEach(([name, row]) => {
+      fn(row?.data, row);
+    });
+    if (update !== false) {
+      this.#observer.set(this.#components);
+    }
+    return this;
+  }
+
+  /**
+   * Bind a event to a click function
+   * @param  {Function} fn event callable
+   * @return {string}      string handler
+   */
+  bind(fn, update) {
+    const inst = this;
+    const fnName = this.genRandStr(8, 'func_', `_${Stratox.funcIndex}`);
+    Stratox.funcIndex++;
+    window[fnName] = (event, name) => {
+      event.preventDefault();
+      inst.updateAll((data, item) => {
+        fn.apply(inst, [data, inst, item, event]);
+      }, (update !== false));
+    };
+    return `${fnName}(event)`;
   }
 
   /**

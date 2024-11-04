@@ -442,6 +442,37 @@ export default class StratoxBuilder {
   }
 
   /**
+   * Set default data values
+   * @param {object} defaultArg
+   */
+  setDefault(defaultArg) {
+    if (typeof defaultArg !== 'object') {
+      throw new Error('The first argument of the Stratox builder "setDefault" must be an object!');
+    }
+    Object.entries(defaultArg).forEach(([key, row]) => {
+      if (!(key in this.data.data)) {
+        this.data.data[key] = defaultArg[key];
+      }
+    });
+  }
+
+  /**
+   * Check if loading
+   * @return {Boolean}
+   */
+  isLoading() {
+    return (this.data?.isLoading === true);
+  }
+
+  /**
+   * Set loading to true or false
+   * @param {Boolean} bool
+   */
+  setLoading(bool) {
+    this.data.isLoading = bool;
+  }
+
+  /**
    * Bind a event to a click function
    * @param  {Function} fn event callable
    * @return {string}      string handler
@@ -450,6 +481,8 @@ export default class StratoxBuilder {
     const inst = this;
     const view = this.containerInst.get('view');
     const fnName = view.genRandStr(8, 'func_', `_${StratoxBuilder.funcIndex}`);
+    const viewName = (typeof update === 'string') ? StratoxItem.getViewName(update) : this.name;
+
     StratoxBuilder.funcIndex++;
     window[fnName] = (event, name) => {
       event.preventDefault();
@@ -461,6 +494,6 @@ export default class StratoxBuilder {
         fn.apply(inst, [event, {}, name]);
       }
     };
-    return `${fnName}(event, '${this.name}')`;
+    return `${fnName}(event, '${viewName}')`;
   }
 }

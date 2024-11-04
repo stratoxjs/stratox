@@ -25,6 +25,8 @@ export default class StratoxItem {
 
   hasFields = false;
 
+  isLoading = false;
+
   data = {}; // Merge all values to data
 
   constructor(type) {
@@ -84,6 +86,10 @@ export default class StratoxItem {
       newName += '#defualt';
     }
     return newName;
+  }
+
+  setLoading(bool) {
+    this.isLoading = bool;
   }
 
   /**
@@ -305,7 +311,7 @@ export default class StratoxItem {
     if (this.#container) {
       let newKey = key;
       let newData = data;
-      if (typeof key !== 'string') {
+      if (key !== undefined && typeof key !== 'string') {
         newKey = this.getName();
         newData = key;
       }

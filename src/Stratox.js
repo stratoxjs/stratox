@@ -50,6 +50,8 @@ export default class Stratox {
 
   #blockStates = [];
 
+  #item = {};
+
   /**
    * Default Configs
    * @type {object}
@@ -321,6 +323,7 @@ export default class Stratox {
    */
   viewEngine(key, data) {
     let viewKey = key;
+
     if (typeof key === 'function' || typeof key === 'object') {
       const comp = this.#getSetCompFromKey(key);
       Stratox.setComponent(comp.name, comp.func);
@@ -329,7 +332,12 @@ export default class Stratox {
     const newObj = this.#components[viewKey]?.data || {};
     Object.assign(newObj, data);
     this.#creator[viewKey] = this.#initItemView(viewKey, newObj);
-    return this.#creator[viewKey];
+    this.#item = this.#creator[viewKey];
+    return this.#item;
+  }
+
+  getItem() {
+    return this.#item;
   }
 
   /**
@@ -620,8 +628,8 @@ export default class Stratox {
     this.#prepareViews();
     this.#observer = new StratoxObserver(this.#components);
     inst.build((field) => {
-      let propCheck = {}; let
-        ivtPropCheck;
+      let propCheck = {};
+      let ivtPropCheck;
       inst.#observer.factory((jsonData, temp) => {
         if (!propCheck?.[field.name]) {
           Stratox.viewCount++;
@@ -644,12 +652,16 @@ export default class Stratox {
           wait = false;
 
           // Will make sure each unique view is not spammed
+          propCheck = {};
+          /*
           if (ivtPropCheck !== undefined) {
             clearTimeout(ivtPropCheck);
           }
+
           ivtPropCheck = setTimeout(() => {
             propCheck = {};
           }, 0);
+           */
         }
       });
 
@@ -988,80 +1000,5 @@ export default class Stratox {
       return { name: `${func.name}#${keys[0]}`, func };
     }
     return { name: key.name, func: key };
-  }
-
-  /**
-   * You can group a view and contain it inside a parent HTML tag
-   * DEPRECTED DO I STILL NEED THIS???
-   * @param  {string} key
-   * @param  {callable} callable
-   * @return {StratoxItem}
-   */
-  group(key, callable) {
-    const inst = this;
-    Stratox.setComponent(key, (data, container, helper, builder, ...args) => {
-      let out = callable.apply(inst.open(), [...args]);
-      if (out instanceof Stratox) {
-        out = out.execute();
-      }
-      if (typeof out !== 'string') {
-        throw new Error('The Stratox @group method needs to return a string or an instance of Stratox.');
-      }
-      return out;
-    });
-    this.view(key);
-    return inst;
-  }
-
-  /**
-   * Render Mustache
-   * DEPRECATED: Might tho move it to a Helper
-   * @param  {string} template Template with possible Mustache brackets
-   * @param  {object} data     Object with items to pass to Mustache brackets
-   * @return {string}          Return template with appended object inside of Mustache brackets
-   */
-  renderMustache(template, data) {
-    return template.replace(/{{(.*?)}}/g, (match, key) => data[key.trim()] || '');
-  }
-
-  /**
-   * DEPRECATED: Create view and return instance of StratoxItem
-   * @param  {object} key
-   * @param  {object} data
-   * @return {StratoxItem}
-   */
-  getViewComponent(key, data) {
-    const item = this.clone();
-    if (typeof key !== 'object') {
-      console.error('The getViewComponent function expects argument 1 (key) to be an object e.g. {keyNameID: viewFunction}');
-    }
-    return item.view(key, data);
-  }
-
-  /**
-   * Open new Stratox instance
-   * DEPRECATED: Use clone instead!
-   * @param  {string} elem String element query selector
-   * @return {Stratox}
-   */
-  open(elem) {
-    return this.clone(elem);
-  }
-
-  /**
-   * DEPRECTAED: Create mutable view (still used in tb component)
-   * @param  {string|object} key  View key/name, use it as a string or {viewName: "#element"}.
-   * @param  {object} data        The view data
-   * @param  {object} args        Access container and/or before, complete callbacks
-   * @return {static}
-   */
-  withView(key, data, args) {
-    let viewKey = key;
-    if (typeof key === 'function' || typeof key === 'object') {
-      const comp = this.#getSetCompFromKey(key);
-      Stratox.setComponent(comp.name, comp.func);
-      viewKey = comp.name;
-    }
-    return Stratox.create(viewKey, data, args);
   }
 }

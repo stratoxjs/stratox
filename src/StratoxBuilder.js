@@ -51,17 +51,20 @@ export default class StratoxBuilder {
 
   containerInst;
 
+  view;
+
   #values = {};
 
   #helper;
 
   #hasGroupEvents = false;
 
-  constructor(json, key, settings, container) {
+  constructor(json, key, settings, view, container) {
     this.json = json;
     this.key = key;
     this.settings = settings;
     this.containerInst = container;
+    this.view = view;
   }
 
   /**
@@ -154,7 +157,7 @@ export default class StratoxBuilder {
    * @return {Boolean}
    */
   isChecked(value) {
-    if (this.containerInst.get('view').isArray(this.value)) {
+    if (this.view.isArray(this.value)) {
       return this.value.includes(value);
     }
     return (this.value === value);
@@ -201,7 +204,7 @@ export default class StratoxBuilder {
     const length = this.getValueLength(1);
     const { config } = this;
 
-    if (!this.containerInst.get('view').isArray(this.value)) {
+    if (!this.view.isArray(this.value)) {
       this.value = Array('');
     }
 
@@ -263,7 +266,7 @@ export default class StratoxBuilder {
    * @return {StratoxItem|string}      Get the field html
    */
   getField(name, type, data) {
-    return this.containerInst.get('view').getField(name, type, data);
+    return this.view.getField(name, type, data);
   }
 
   /**
@@ -305,7 +308,7 @@ export default class StratoxBuilder {
    */
   getValueLength(minVal) {
     let length = 0;
-    if (this.value && this.containerInst.get('view').isArray(this.value)) length = this.value.length;
+    if (this.value && this.view.isArray(this.value)) length = this.value.length;
     if (typeof minVal === 'number' && length <= minVal) length = minVal;
     return length;
   }
@@ -353,14 +356,14 @@ export default class StratoxBuilder {
     if ((typeof this[this.data.type] === 'function') || fn) {
       const helper = this.#getHelper();
       if (typeof fn === 'function') {
-        out = fn.apply(this.containerInst.get('view'), [(this.data.data ?? {}), this.containerInst, helper, this]);
+        out = fn.apply(this.view, [(this.data.data ?? {}), this.containerInst, helper, this]);
       } else {
         out = this.#getField(this.data.type);
       }
       this.index++;
       return (out || '');
     }
-    this.containerInst.get('view').observer().stop();
+    this.view.observer().stop();
     console.error(`The component/view named "${this.data.type}" does not exist.`);
     return '';
   }
@@ -381,7 +384,7 @@ export default class StratoxBuilder {
    */
   #getHelper() {
     if (!this.#helper) {
-      this.#helper = this.containerInst.get('view').getConfig('handlers').helper;
+      this.#helper = this.view.getConfig('handlers').helper;
       if (typeof this.#helper === 'function') this.#helper = this.#helper(this);
     }
     return this.#helper;
@@ -479,7 +482,7 @@ export default class StratoxBuilder {
    */
   bind(fn, update) {
     const inst = this;
-    const view = this.containerInst.get('view');
+    const { view } = this;
     const fnName = view.genRandStr(8, 'func_', `_${StratoxBuilder.funcIndex}`);
     const viewName = (typeof update === 'string') ? StratoxItem.getViewName(update) : this.name;
 

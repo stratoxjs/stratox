@@ -16,6 +16,8 @@ export default class Stratox {
 
   static funcIndex = 0;
 
+  static container;
+
   #bindKey;
 
   #field;
@@ -79,6 +81,11 @@ export default class Stratox {
       this.#elem = elem;
     }
     this.#values = {};
+    // This is the main container that is a singleton
+    if (!(Stratox.container instanceof StratoxContainer)) {
+      Stratox.container = new StratoxContainer();
+    }
+    // This is a container instance of Stratox passed to StratoxItem
     this.#container = new StratoxContainer();
     this.#container.set('view', this);
   }
@@ -181,7 +188,7 @@ export default class Stratox {
    * @return {StratoxContainer}
    */
   container() {
-    return this.#container;
+    return Stratox.container;
   }
 
   /**
@@ -298,10 +305,11 @@ export default class Stratox {
    */
   block(view, data, config) {
     const elID = this.getID(this.genRandStr(6));
+    const doneCall = (typeof config === 'function') ? config : config?.response;
     const output = `<div id="${elID}"></div>`;
     const inst = this.attachViewToEl(`#${elID}`, view, data, (instArg, item, el) => {
-      if (typeof config?.response === 'function') {
-        config.response(item.data, instArg, item, el);
+      if (typeof doneCall === 'function') {
+        doneCall(item.data, instArg, item, el);
       }
     }, config?.modify);
 
@@ -571,7 +579,8 @@ export default class Stratox {
     const inst = this;
     let dir = '';
     const Handler = Stratox.getFormHandler();
-    this.#field = new Handler(this.#components, 'view', Stratox.getConfigs(), this.#container);
+
+    this.#field = new Handler(this.#components, 'view', Stratox.getConfigs(), inst, Stratox.container);
 
     // Values are used to trigger magic methods
     this.#field.setValues(this.#values);

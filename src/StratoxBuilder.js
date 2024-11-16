@@ -59,6 +59,8 @@ export default class StratoxBuilder {
 
   #hasGroupEvents = false;
 
+  #styles = {};
+
   constructor(json, key, settings, view, container) {
     this.json = json;
     this.key = key;
@@ -326,6 +328,15 @@ export default class StratoxBuilder {
         this.name = (typeof this.data?.name === 'string') ? this.data.name : name;
         build += this.#build(formatData);
       });
+
+      const styleEntries = Object.entries(this.#styles);
+      if (styleEntries.length) {
+        build += '<style type="text/css">';
+        Object.entries(this.#styles).forEach(([key, value]) => {
+          build += value;
+        });
+        build += '</style>';
+      }
     }
     return build;
   }
@@ -498,5 +509,55 @@ export default class StratoxBuilder {
       }
     };
     return `${fnName}(event, '${viewName}')`;
+  }
+
+  /**
+   * A light weight css component builder
+   * @param  {object} cssStyles
+   * @param  {string} key Add a identifier so that it can trigger on duplicate component names
+   * @return {void}
+   */
+  addStyles(cssStyles, key) {
+    if (!cssStyles || typeof cssStyles !== 'object') {
+      throw new Error('Argument 1 in styles needs to be a non-null object!');
+    }
+
+    const styledKey = key ? `${key}-` : '';
+    const styleId = `styled-${styledKey}${this.name.split('#', 1)[0].toLowerCase()}-component`;
+
+    if (!this.#styles?.[styleId]) {
+      let styleStr = '';
+      Object.entries(cssStyles).forEach(([selector, properties]) => {
+        let propertiesStr = '';
+        Object.entries(properties).forEach(([property, value]) => {
+          propertiesStr += `${this.#camelToKebabCase(property)}: ${value}; `;
+        });
+        styleStr += `${selector} { ${propertiesStr}} `;
+      });
+      this.#styles[styleId] = styleStr;
+    }
+  }
+
+  /**
+   * Clear added styles from view
+   * @param  {string} key Add a identifier so that it can trigger on duplicate component names
+   * @return {void}
+   */
+  clearStyles(key) {
+    const styledKey = key ? `${key}-` : '';
+    const styleId = `styled-${styledKey}${this.name.split('#', 1)[0].toLowerCase()}-component`;
+
+    if (this.#styles?.[styleId]) {
+      delete this.#styles[styleId];
+    }
+  }
+
+  /**
+   * Camel case to kebab case helper function
+   * @param  {string} str
+   * @return {string}
+   */
+  #camelToKebabCase(str) {
+    return str.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
   }
 }

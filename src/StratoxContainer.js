@@ -58,7 +58,7 @@ export default class StratoxContainer {
    */
   get(key, ...args) {
     const service = this.#getService(key);
-    if (service) {
+    if (service !== false) {
       if (this.isFactory(key)) {
         return service.apply(this, args);
       }
@@ -110,6 +110,21 @@ export default class StratoxContainer {
 
     this.#service[key] = call;
     return this;
+  }
+
+  /**
+   * Will reset the container
+   * @return {void}
+   */
+  resetAll(exclude) {
+    const inst = this;
+    const newService = {};
+    exclude.forEach((keyValue) => {
+      if(inst.has(keyValue)) {
+        newService[keyValue] = inst.get(keyValue);
+      }
+    });
+    this.#service = newService;
   }
 
   /**

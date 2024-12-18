@@ -367,7 +367,19 @@ export default class StratoxBuilder {
     if ((typeof this[this.data.type] === 'function') || fn) {
       const helper = this.#getHelper();
       if (typeof fn === 'function') {
-        out = fn.apply(this.view, [(this.data.data ?? {}), this.containerInst, helper, this]);
+        const dataArg = this.data.data ?? {};
+        const isNewStyle = typeof fn === 'function' && fn.length === 1;
+        const args = isNewStyle
+          ? [
+            {
+              props: dataArg,
+              container: this.containerInst,
+              helper,
+              context: this,
+            },
+          ]
+          : [dataArg, this.containerInst, helper, this];
+        out = fn.apply(this.view, args);
       } else {
         out = this.#getField(this.data.type);
       }

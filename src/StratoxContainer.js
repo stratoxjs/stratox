@@ -120,7 +120,7 @@ export default class StratoxContainer {
     const inst = this;
     const newService = {};
     exclude.forEach((keyValue) => {
-      if(inst.has(keyValue)) {
+      if (inst.has(keyValue)) {
         newService[keyValue] = inst.get(keyValue);
       }
     });

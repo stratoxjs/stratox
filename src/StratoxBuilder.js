@@ -369,8 +369,9 @@ export default class StratoxBuilder {
       const helper = this.#getHelper();
       if (typeof fn === 'function') {
         const dataArg = this.data.data ?? {};
-        const isNewStyle = typeof fn === 'function' && fn.length === 1;
-
+        // The destructured validation check will be removed in version 4?
+        const fnParams = fn.toString().match(/\(([^)]*)\)/)[1];
+        const isNewStyle = typeof fn === 'function' && fn.length === 1 && /\{.*\}/.test(fnParams);
         const args = isNewStyle
           ? [
             {

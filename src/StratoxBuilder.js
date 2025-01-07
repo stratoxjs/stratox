@@ -347,6 +347,7 @@ export default class StratoxBuilder {
    */
   #build(formatData) {
     // Set some defaults
+    const inst = this;
     this.value = (typeof this.data.value === 'string') ? this.data.value : '';
     this.label = (typeof this.data.label === 'string') ? this.data.label : '';
     this.description = (typeof this.data.description === 'string') ? this.data.description : '';
@@ -369,13 +370,23 @@ export default class StratoxBuilder {
       if (typeof fn === 'function') {
         const dataArg = this.data.data ?? {};
         const isNewStyle = typeof fn === 'function' && fn.length === 1;
+
         const args = isNewStyle
           ? [
             {
               props: dataArg,
-              container: this.containerInst,
+              services: this.containerInst,
               helper,
               context: this,
+              update: (...updArgs) => {
+                if (typeof updArgs[0] === 'object') {
+                  inst.view.update(inst.name, ...updArgs);
+                } else {
+                  inst.view.update(...updArgs);
+                }
+              },
+              view: inst.view,
+              ...this.containerInst.list(),
             },
           ]
           : [dataArg, this.containerInst, helper, this];

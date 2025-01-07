@@ -2,12 +2,13 @@
   "name": "stratox",
   "version": "3.2.0",
   "description": "JavaScript template library designed for the effortless creation of component, views and user interfaces (UI).",
+  "type": "module",
   "main": "src/index.js",
   "directories": {
     "src": "src"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --import=./test.js ./node_modules/jasmine/bin/jasmine.js",
     "lint": "eslint .",
     "lint:fix": "eslint --fix ."
   },
@@ -39,11 +40,13 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
+    "esbuild": "^0.24.2",
     "eslint": "^8.57.1",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-react-hooks": "^4.6.2"
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "jasmine": "^5.1.0"
   }
 }

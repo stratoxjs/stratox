@@ -128,6 +128,14 @@ export default class StratoxContainer {
   }
 
   /**
+   * List all services
+   * @return {object}
+   */
+  list() {
+    return this.#service;
+  }
+
+  /**
    * Get service
    * @param  {string} key
    * @return {mixed} False if none

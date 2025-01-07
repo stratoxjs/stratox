@@ -241,7 +241,7 @@ export default class Stratox {
    * @return {self}
    */
   attachViewToEl(el, view, data, call, before) {
-    const clone = this.clone();
+    const clone = this.constructor.clone();
     const item = clone.view(view, data);
     clone.setElement(el);
 
@@ -280,7 +280,7 @@ export default class Stratox {
    * @return {object|string}
    */
   partial(key, data, call) {
-    const view = this.clone();
+    const view = this.constructor.clone();
     const item = view.view(key, data);
     if (typeof call?.modify === 'function') {
       call.modify.apply(view, [item]);
@@ -298,6 +298,7 @@ export default class Stratox {
 
   /**
    * Create a self contained block
+   * This is a special method that need exta implementation to work!
    * @param  {callable} view
    * @param  {object|StratoxFetch} data
    * @param  {object} config
@@ -375,7 +376,7 @@ export default class Stratox {
       newData = {};
     }
     newData.type = type;
-    return this.clone().form(name, newData);
+    return this.constructor.clone().form(name, newData);
   }
 
   /**
@@ -419,7 +420,7 @@ export default class Stratox {
       if (typeof data === 'function') {
         data(this.#components[viewKey]?.data, this.#components[viewKey]);
       } else {
-        this.#components[viewKey] = data;
+        Object.assign(this.#components[viewKey].data, data);
       }
     }
     this.#observer.set(this.#components);
@@ -909,13 +910,16 @@ export default class Stratox {
    * @param {object}
    */
   setSelector(elem) {
-    if (typeof elem === 'object') {
-      return [elem];
+    if (typeof document === 'object') {
+      if (typeof elem === 'object') {
+        return [elem];
+      }
+      if (elem.indexOf('#') === 0) {
+        return [document.getElementById(elem.substring(1))];
+      }
+      return document.querySelectorAll(elem);
     }
-    if (elem.indexOf('#') === 0) {
-      return [document.getElementById(elem.substring(1))];
-    }
-    return document.querySelectorAll(elem);
+    return null;
   }
 
   /**
@@ -924,10 +928,13 @@ export default class Stratox {
    * @return {void}
    */
   html(out) {
-    this.getElement().forEach((elem) => {
-      const el = elem;
-      if (el) el.innerHTML = out;
-    });
+    const myElem = this.getElement();
+    if (myElem) {
+      myElem.forEach((elem) => {
+        const el = elem;
+        if (el) el.innerHTML = out;
+      });
+    }
   }
 
   /**

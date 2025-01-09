@@ -75,8 +75,11 @@ export default class StratoxBuilder {
    * @param {callable} fn
    */
   static setComponent(key, fn) {
-    if (typeof fn !== 'function') throw new Error('The argument 2 in @setComponent has to be a callable');
-    this.factory[key] = fn;
+    const callable = (typeof fn === 'function') ? fn : ((fn?.length === 2 && typeof fn[1] === 'function') ? fn[1] : false)
+    if (typeof callable !== 'function') {
+      throw new Error('The argument 2 in @setComponent has to be a callable');
+    }
+    this.factory[key] = callable;
   }
 
   /**

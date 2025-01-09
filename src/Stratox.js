@@ -129,7 +129,6 @@ export default class Stratox {
    * @return {void}
    */
   static setComponent(key, fn) {
-    if (typeof fn !== 'function') throw new Error('The argument 2 in @setComponent has to be a callable');
     const handler = Stratox.getFormHandler();
     handler.setComponent(key, fn, this);
   }
@@ -596,28 +595,31 @@ export default class Stratox {
         const extractFileName = key.split('#');
         const file = extractFileName[0];
         const compo = inst.#field.hasComponent(file);
+        
         inst.#incremented.push(false);
 
         if (typeof compo === 'function') {
           Handler.setComponent(key, compo);
+          inst.#incremented[inst.#incremented.length - 1] = true;
         } else {
           const module = await import(/* @vite-ignore */ `${dir}${file}.js${inst.#cacheParam()}`);
           Object.entries(module).forEach((fn) => {
             Handler.setComponent(key, fn);
           });
+          call(inst.#field);
         }
-        inst.#incremented[inst.#incremented.length - 1] = true;
         inst.#imported[file] = true;
       } else {
         console.warn(`To use the field item ${data.type} you need to specify a formHandler in config!`);
       }
     });
-
+    
     if (typeof call === 'function'
     && (inst.#incremented[inst.#incremented.length - 1]
     || (inst.#incremented.length === 0 && inst.#field))) {
       call(inst.#field);
     }
+  
   }
 
   /**
@@ -663,15 +665,6 @@ export default class Stratox {
 
           // Will make sure each unique view is not spammed
           propCheck = {};
-          /*
-          if (ivtPropCheck !== undefined) {
-            clearTimeout(ivtPropCheck);
-          }
-
-          ivtPropCheck = setTimeout(() => {
-            propCheck = {};
-          }, 0);
-           */
         }
       });
 

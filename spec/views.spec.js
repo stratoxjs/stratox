@@ -86,10 +86,10 @@ test('Pre loaded component', () => {
 test('Async loaded component', async () => {
     const stratox = new Stratox();
     stratox.view("AsyncComponent", { title: "HasAsyncLoaded" });
-    stratox.execute();
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    await delay(200); // Wait for 2 seconds
-    expect(stratox.getResponse()).toBe("HasAsyncLoaded");
+    stratox.execute(() => {
+      // Wait for results
+      expect(stratox.getResponse()).toBe("HasAsyncLoaded");
+    });
   }
 );
 
@@ -109,12 +109,12 @@ test('Update view from a service provider', async(done) => {
     }
     return props.test;
   }, { test: 1 });
-  stratox.execute();
 
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  await delay(200);
-  expect(stratox.getResponse()).toBe("12");
-
+  stratox.execute(() => {
+    // Wait for results
+    expect(stratox.getResponse()).toBe("12");
+  });
+  
 });
 
 

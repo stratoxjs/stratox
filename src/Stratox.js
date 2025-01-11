@@ -191,38 +191,6 @@ export default class Stratox {
   }
 
   /**
-   * Create an immutable view (self-contained instance, e.g. modals)
-   * Might become deprected in the future
-   * @param  {string|object} key  View key/name, use it as a string or {viewName: "#element"}.
-   * @param  {object} data        The view data
-   * @param  {object} args        Access container and/or before, complete callbacks
-   * @return {StratoxItem}
-   */
-  static create(key, data, args) {
-    const obj = this.#getIdentifiers(key);
-    const inst = new Stratox(obj.elem);
-
-    const config = { container: false, before: false, complete: false };
-    const item = inst.view(obj.name, data);
-    item.setContainer(inst.#container);
-
-    if (typeof args === 'function') {
-      config.complete = args;
-    } else {
-      Object.assign(config, args);
-      if (typeof config.container === 'object') {
-        Object.entries(config.container).forEach(([conKey, value]) => {
-          inst.container().set(conKey, value);
-        });
-      }
-      if (typeof config.before === 'function') config.before(inst, data);
-    }
-
-    inst.execute(config.complete);
-    return inst;
-  }
-
-  /**
    * Open new Stratox instance
    * @param  {string} elem String element query selector
    * @return {Stratox}
@@ -240,7 +208,7 @@ export default class Stratox {
    * @return {self}
    */
   attachViewToEl(el, view, data, call, before) {
-    const clone = this.constructor.clone();
+    const clone = this.clone();
     const item = clone.view(view, data);
     clone.setElement(el);
 
@@ -262,64 +230,10 @@ export default class Stratox {
 
   /**
    * Easily create a view
-   * @param {string} key  View key/name
-   * @param {object} data Object data to pass on to the view
-   * @return {StratoxItem} (will return an instance of StratoxItem)
+   * @param see "viewEngine" method
    */
   view(...args) {
     return this.viewEngine(...args);
-  }
-
-  /**
-   * Create a partial to the view meaning it is not self contained
-   * but rather a part of the view making it a static component but has better performance
-   * @param  {string|object} key  View key/name, use it as a string or {viewName: "#element"}.
-   * @param  {object} data        The view data
-   * @param  {callable|object} call
-   * @return {object|string}
-   */
-  partial(key, data, call) {
-    const view = this.constructor.clone();
-    const item = view.view(key, data);
-    if (typeof call?.modify === 'function') {
-      call.modify.apply(view, [item]);
-    }
-    const output = view.execute(typeof call?.response === 'function' ? call.response : call);
-    return {
-      output,
-      view,
-      item,
-      toString() {
-        return output;
-      },
-    };
-  }
-
-  /**
-   * Create a self contained block
-   * This is a special method that need exta implementation to work!
-   * @param  {callable} view
-   * @param  {object|StratoxFetch} data
-   * @param  {object} config
-   * @return {string}
-   */
-  block(view, data, config) {
-    const elID = this.getID(this.genRandStr(6));
-    const doneCall = (typeof config === 'function') ? config : config?.response;
-    const output = `<div id="${elID}"></div>`;
-    const inst = this.attachViewToEl(`#${elID}`, view, data, (instArg, item, el) => {
-      if (typeof doneCall === 'function') {
-        doneCall(item.data, instArg, item, el);
-      }
-    }, config?.modify);
-
-    return {
-      output,
-      view: inst,
-      toString() {
-        return output;
-      },
-    };
   }
 
   /**
@@ -342,6 +256,67 @@ export default class Stratox {
     this.#creator[viewKey] = this.#initItemView(viewKey, newObj);
     this.#item = this.#creator[viewKey];
     return this.#item;
+  }
+
+  /**
+   * Create a partial to the view meaning it is not self contained
+   * but rather a part of the view making it a static component but has better performance
+   * @param see "partialEngine" method
+   */
+  partial(key, data, call) {
+    return this.partialEngine(key, data, call);
+  }
+
+  /**
+   * The partial view engine
+   * Should ONLY be used in view method and extending classes
+   * @param  {string|object|function} key  View key/name, use it as a string or {viewName: "#element"}.
+   * @param  {object} data The view data
+   * @param  {callable|object} call
+   * @return {object|string}
+   */
+  partialEngine(key, data, call) {
+    const view = this.clone();
+    const item = view.view(key, data);
+    if (typeof call?.modify === 'function') {
+      call.modify.apply(view, [item]);
+    }
+    const output = view.execute(typeof call?.response === 'function' ? call.response : call);
+    return {
+      output,
+      view,
+      item,
+      toString() {
+        return output;
+      },
+    };
+  }
+
+  /**
+   * Create a self contained block
+   * This is a special method that need exta implementation to work!
+   * @param  {string|object|function} view  View key/name, use it as a string or {viewName: "#element"}.
+   * @param  {object|StratoxFetch} data
+   * @param  {object} config
+   * @return {string}
+   */
+  block(view, data, config) {
+    const elID = this.getID(this.genRandStr(6));
+    const doneCall = (typeof config === 'function') ? config : config?.response;
+    const output = `<div id="${elID}"></div>`;
+    const inst = this.attachViewToEl(`#${elID}`, view, data, (instArg, item, el) => {
+      if (typeof doneCall === 'function') {
+        doneCall(item.data, instArg, item, el);
+      }
+    }, config?.modify);
+
+    return {
+      output,
+      view: inst,
+      toString() {
+        return output;
+      },
+    };
   }
 
   getItem() {
@@ -375,7 +350,7 @@ export default class Stratox {
       newData = {};
     }
     newData.type = type;
-    return this.constructor.clone().form(name, newData);
+    return this.clone().form(name, newData);
   }
 
   /**

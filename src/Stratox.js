@@ -18,8 +18,6 @@ export default class Stratox {
 
   static container;
 
-  #bindKey;
-
   #field;
 
   #components = {};
@@ -195,7 +193,7 @@ export default class Stratox {
    * @param  {string} elem String element query selector
    * @return {Stratox}
    */
-  static clone(elem) {
+  clone(elem) {
     return new Stratox(elem);
   }
 
@@ -832,27 +830,6 @@ export default class Stratox {
   }
 
   /**
-   * Get Identifiers
-   * @param  {object|string} data Should be string (view name) or object ({ viewName: "#element" })
-   * @return {object}
-   */
-  static #getIdentifiers(data) {
-    let name;
-    let el = null;
-    if (typeof data === 'object') {
-      const keys = Object.keys(data);
-      if (typeof keys[0] !== 'string') throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
-      [name] = keys;
-      el = data[name] ?? null;
-    } else if (typeof data === 'string') {
-      name = data;
-    } else {
-      throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
-    }
-    return { name, elem: el };
-  }
-
-  /**
    * Insert HTML, will protect you from unintended DOM Propagation and
    * keep High performance even though DOM would be stuck in a 100000 loop!
    * @return {void}
@@ -984,5 +961,13 @@ export default class Stratox {
       return { name: `${func.name}#${keys[0]}`, func };
     }
     return { name: key.name, func: key };
+  }
+
+  /**
+   * Has been deprecated and removed
+   */
+  static create(key, data, args) {
+    console.error("The static create function was removed from the Stratox library in version 3.");
+    return this;
   }
 }

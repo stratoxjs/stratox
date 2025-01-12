@@ -1,78 +1,40 @@
 
+# Stratox.js ![npm](https://img.shields.io/npm/v/create-stratox)
+
+![enter image description here](http://wazabii.se/github-assets/installation-prompt-1.png)
+
+Stratox.js is a versatile JavaScript solution that empowers developers to create everything from high-quality Single-Page Applications (SPAs), developing full-scale applications to enhancing static HTML with dynamic components—effortlessly. Whether you opt for the framework or the template library, Stratox.js provides a robust foundation for modern web development.
+
+Delivering outstanding performance and fast response times across platforms, Stratox.js operates independently of external dependencies. Its UI engine and form builder align with HTML semantics, ensuring simplicity and accessibility. 
+
+Stratox.js is built to be  user-friendly, that simplifies the creation of applications.
 
 
-# Stratox.js - template engine ![npm](https://img.shields.io/npm/v/stratox)
+## Stratox: Library or Framework? 
+Are you looking for the Stratox Library or the Stratox Framework? Stratox is available as both a library and a framework, catering to different development needs.
 
-**Stratox.js is a user-friendly JavaScript template engine that helps you easily build template components and views.**
+### Startox: Framework
+Stratox also comes as a fully-featured framework, offering a comprehensive solution for building modern, dynamic applications from the ground up. The framework simplifies complex tasks with built-in tools and structured workflows, making it ideal for creating full-fledged web apps with minimal setup. If you’re seeking a robust foundation to kickstart your project, the Stratox Framework is your go-to choice.
 
-The Stratox template library is created using up-to-date methods, keeping its size at around 6 kb when bundled and minimized (gzipped). It works independently, smoothly running on all platforms without needing anything else. Stratox.js is a smart pick for applications and websites, ensuring great performance and quick load time. It's versatile, letting you load views asynchronously (with optional caching) or bundle them conveniently into your main JavaScript file.
+[Stratox Framework documentation](https://stratox.wazabii.se)
 
-## Documentation
-**[You can find the full Startox documentation here](https://stratox.wazabii.se/v/stratox.js/)**
+### Startox: Library
+The library version provides a lightweight, flexible tool that integrates seamlessly with your existing scripts, giving you full control over implementation. It’s an excellent choice for enhancing static websites with dynamic content, allowing you to add interactivity without overhauling your entire setup.
 
-#### The documentation is divided into several sections:
-* [Why Stratox.js?](https://stratox.wazabii.se/v/stratox.js/)
-* [Installation](https://stratox.wazabii.se/v/stratox.js/installation)
-* [Basic example](https://stratox.wazabii.se/v/stratox.js/template-engine/basic-example)
-* [Show template view](https://stratox.wazabii.se/v/stratox.js/template-engine/show-templates)
-* [Create template view](https://stratox.wazabii.se/v/stratox.js/template-engine/create-templates)
-* [Update template view](https://stratox.wazabii.se/v/stratox.js/template-engine/updating-views)
-* [Install plugins](https://stratox.wazabii.se/v/stratox.js/template-engine/plugins)
-* [Form builder](https://stratox.wazabii.se/v/stratox.js/form-builder/form-builder)
-* [Custom form template](https://stratox.wazabii.se/v/stratox.js/form-builder/custom-form-template)
-* [Container](https://stratox.wazabii.se/v/stratox.js/advanced-features/container)
-* [Template view functions](https://stratox.wazabii.se/v/stratox.js/advanced-features/template-view-functions)
-
-## Why Startox
-
-### User-Friendly
-Stratox is very user-friendly because it lets you prioritize JavaScript and HTML instead of grappling with the complexities of new markup and platform-specific functions, which in the end only lead to the burden of unnecessary abstractions. Stratox harnesses JavaScript's core capabilities, promoting a practical and fundamental approach to modern web development.
-
-### Platform-agnostic nature
-Stratox.js doesn't discriminate or judge based on the platform you use, and it works seamlessly on all platforms and depends on nothing but it self.
-
-### Full accessibility support
-Moreover, by allowing developers to write regular HTML with the right semantics, Stratox.js ensures that the resulting interfaces are fully **accessible**. This dual emphasis on simplicity and accessibility makes Stratox.js a powerful tool for creating user-friendly and inclusive web applications.
-
-### Why Stratox.js?
-- **High Performance:** Stratox.js is optimized for performance.
-- **Great Load Speed:** Experience swift loading times for a seamless user experience.
-- **Optimized:** A finely-tuned library that prioritizes efficiency.
-- **User-Friendly:** Easy to use, making development a breeze.
-- **Platform-Agnostic:** Works seamlessly across all platforms.
-- **Template Engine:** Facilitates the creation of Views, components, and UI elements.
-- **Form Builder:** Follows HTML semantics, supporting nested form names.
-- **HTML Semantics:** Follow HTML semantics if you wish
-- **Full Accessibility Support:** You can make your app inclusive and accessible for all.
-- **Container Library:** Designed for seamless communication between template views and your project.
-- **Async and bundle:** Support asynchronous loading of or bundling of views
-
-### Targeting
-- **Single-Page Application (SPA):** Ideal for creating SPAs with enhanced user experiences.
-- **Cross-Platform Compatibility:** Apache Cordova (PhoneGap), Xamarin, Electron, Ionic, and similar.
-- **Enhancing Static HTML:** Easily integrates with existing static HTML structures.
-- **Backend Language Integration:** Easily integrates with various backend languages.
+[Stratox Library documentation](https://stratox.wazabii.se/stratox.js)
 
 ## Example
-Below is a just **basic** example to demonstrate how easy it is to build a template view/component. There are a lot more examples in the [documentation](https://stratox.wazabii.se/v/stratox.js/).
-```php
-Stratox.setComponent("ingress", function(data, container, helper, builder) {
-    let out = `
-    <header class="mb-50 align-center">
-        <h1>${data.headline}</h1>
-        <p>${data.content}</p>
+Below is a just **basic** example to demonstrate how easy it is to build a component. 
+```js
+export default function MyTextComponent({ props }) {
+    return `
+    <header>
+        <h1>${props.headline}</h1>
+        <p>${props.content}</p>
     </header>
     `;
-    return out;
-});
-
-const stratox = new Stratox("#app");
-
-stratox.view("ingress", {
-  headline: "Lorem ipsum dolor",
-  content: "Lorem ipsum dolor sit amet"
-});
-
-stratox.execute();
+}
 ```
-*[Click here to see the result](https://codepen.io/wazabii8/pen/bGZgPNo)*
+### Resulting in
+
+![enter image description here](https://wazabii.se/github-assets/example-result-about.png)

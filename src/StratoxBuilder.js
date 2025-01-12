@@ -483,7 +483,7 @@ export default class StratoxBuilder {
   }
 
   /**
-   * Set default data values
+   * Set default data/props values
    * @param {object} defaultArg
    */
   setDefault(defaultArg) {

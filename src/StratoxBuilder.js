@@ -75,8 +75,11 @@ export default class StratoxBuilder {
    * @param {callable} fn
    */
   static setComponent(key, fn) {
-    if (typeof fn !== 'function') throw new Error('The argument 2 in @setComponent has to be a callable');
-    this.factory[key] = fn;
+    const callable = (typeof fn === 'function') ? fn : ((fn?.length === 2 && typeof fn[1] === 'function') ? fn[1] : false)
+    if (typeof callable !== 'function') {
+      throw new Error('The argument 2 in @setComponent has to be a callable');
+    }
+    this.factory[key] = callable;
   }
 
   /**
@@ -347,6 +350,7 @@ export default class StratoxBuilder {
    */
   #build(formatData) {
     // Set some defaults
+    const inst = this;
     this.value = (typeof this.data.value === 'string') ? this.data.value : '';
     this.label = (typeof this.data.label === 'string') ? this.data.label : '';
     this.description = (typeof this.data.description === 'string') ? this.data.description : '';
@@ -367,7 +371,30 @@ export default class StratoxBuilder {
     if ((typeof this[this.data.type] === 'function') || fn) {
       const helper = this.#getHelper();
       if (typeof fn === 'function') {
-        out = fn.apply(this.view, [(this.data.data ?? {}), this.containerInst, helper, this]);
+        const dataArg = this.data.data ?? {};
+        // The destructured validation check will be removed in version 4?
+        const fnParams = fn.toString().match(/\(([^)]*)\)/)[1];
+        const isNewStyle = typeof fn === 'function' && fn.length === 1 && /\{.*\}/.test(fnParams);
+        const args = isNewStyle
+          ? [
+            {
+              props: dataArg,
+              services: this.containerInst,
+              helper,
+              context: this,
+              update: (...updArgs) => {
+                if (typeof updArgs[0] === 'object') {
+                  inst.view.update(inst.name, ...updArgs);
+                } else {
+                  inst.view.update(...updArgs);
+                }
+              },
+              view: inst.view,
+              ...this.containerInst.list(),
+            },
+          ]
+          : [dataArg, this.containerInst, helper, this];
+        out = fn.apply(this.view, args);
       } else {
         out = this.#getField(this.data.type);
       }
@@ -456,7 +483,7 @@ export default class StratoxBuilder {
   }
 
   /**
-   * Set default data values
+   * Set default data/props values
    * @param {object} defaultArg
    */
   setDefault(defaultArg) {

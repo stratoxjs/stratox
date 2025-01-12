@@ -18,8 +18,6 @@ export default class Stratox {
 
   static container;
 
-  #bindKey;
-
   #field;
 
   #components = {};
@@ -129,7 +127,6 @@ export default class Stratox {
    * @return {void}
    */
   static setComponent(key, fn) {
-    if (typeof fn !== 'function') throw new Error('The argument 2 in @setComponent has to be a callable');
     const handler = Stratox.getFormHandler();
     handler.setComponent(key, fn, this);
   }
@@ -192,43 +189,11 @@ export default class Stratox {
   }
 
   /**
-   * Create an immutable view (self-contained instance, e.g. modals)
-   * Might become deprected in the future
-   * @param  {string|object} key  View key/name, use it as a string or {viewName: "#element"}.
-   * @param  {object} data        The view data
-   * @param  {object} args        Access container and/or before, complete callbacks
-   * @return {StratoxItem}
-   */
-  static create(key, data, args) {
-    const obj = this.#getIdentifiers(key);
-    const inst = new Stratox(obj.elem);
-
-    const config = { container: false, before: false, complete: false };
-    const item = inst.view(obj.name, data);
-    item.setContainer(inst.#container);
-
-    if (typeof args === 'function') {
-      config.complete = args;
-    } else {
-      Object.assign(config, args);
-      if (typeof config.container === 'object') {
-        Object.entries(config.container).forEach(([conKey, value]) => {
-          inst.container().set(conKey, value);
-        });
-      }
-      if (typeof config.before === 'function') config.before(inst, data);
-    }
-
-    inst.execute(config.complete);
-    return inst;
-  }
-
-  /**
    * Open new Stratox instance
    * @param  {string} elem String element query selector
    * @return {Stratox}
    */
-  static clone(elem) {
+  clone(elem) {
     return new Stratox(elem);
   }
 
@@ -263,63 +228,10 @@ export default class Stratox {
 
   /**
    * Easily create a view
-   * @param {string} key  View key/name
-   * @param {object} data Object data to pass on to the view
-   * @return {StratoxItem} (will return an instance of StratoxItem)
+   * @param see "viewEngine" method
    */
   view(...args) {
     return this.viewEngine(...args);
-  }
-
-  /**
-   * Create a partial to the view meaning it is not self contained
-   * but rather a part of the view making it a static component but has better performance
-   * @param  {string|object} key  View key/name, use it as a string or {viewName: "#element"}.
-   * @param  {object} data        The view data
-   * @param  {callable|object} call
-   * @return {object|string}
-   */
-  partial(key, data, call) {
-    const view = this.clone();
-    const item = view.view(key, data);
-    if (typeof call?.modify === 'function') {
-      call.modify.apply(view, [item]);
-    }
-    const output = view.execute(typeof call?.response === 'function' ? call.response : call);
-    return {
-      output,
-      view,
-      item,
-      toString() {
-        return output;
-      },
-    };
-  }
-
-  /**
-   * Create a self contained block
-   * @param  {callable} view
-   * @param  {object|StratoxFetch} data
-   * @param  {object} config
-   * @return {string}
-   */
-  block(view, data, config) {
-    const elID = this.getID(this.genRandStr(6));
-    const doneCall = (typeof config === 'function') ? config : config?.response;
-    const output = `<div id="${elID}"></div>`;
-    const inst = this.attachViewToEl(`#${elID}`, view, data, (instArg, item, el) => {
-      if (typeof doneCall === 'function') {
-        doneCall(item.data, instArg, item, el);
-      }
-    }, config?.modify);
-
-    return {
-      output,
-      view: inst,
-      toString() {
-        return output;
-      },
-    };
   }
 
   /**
@@ -342,6 +254,67 @@ export default class Stratox {
     this.#creator[viewKey] = this.#initItemView(viewKey, newObj);
     this.#item = this.#creator[viewKey];
     return this.#item;
+  }
+
+  /**
+   * Create a partial to the view meaning it is not self contained
+   * but rather a part of the view making it a static component but has better performance
+   * @param see "partialEngine" method
+   */
+  partial(key, data, call) {
+    return this.partialEngine(key, data, call);
+  }
+
+  /**
+   * The partial view engine
+   * Should ONLY be used in view method and extending classes
+   * @param  {string|object|function} key  View key/name, use it as a string or {viewName: "#element"}.
+   * @param  {object} data The view data
+   * @param  {callable|object} call
+   * @return {object|string}
+   */
+  partialEngine(key, data, call) {
+    const view = this.clone();
+    const item = view.view(key, data);
+    if (typeof call?.modify === 'function') {
+      call.modify.apply(view, [item]);
+    }
+    const output = view.execute(typeof call?.response === 'function' ? call.response : call);
+    return {
+      output,
+      view,
+      item,
+      toString() {
+        return output;
+      },
+    };
+  }
+
+  /**
+   * Create a self contained block
+   * This is a special method that need exta implementation to work!
+   * @param  {string|object|function} view  View key/name, use it as a string or {viewName: "#element"}.
+   * @param  {object|StratoxFetch} data
+   * @param  {object} config
+   * @return {string}
+   */
+  block(view, data, config) {
+    const elID = this.getID(this.genRandStr(6));
+    const doneCall = (typeof config === 'function') ? config : config?.response;
+    const output = `<div id="${elID}"></div>`;
+    const inst = this.attachViewToEl(`#${elID}`, view, data, (instArg, item, el) => {
+      if (typeof doneCall === 'function') {
+        doneCall(item.data, instArg, item, el);
+      }
+    }, config?.modify);
+
+    return {
+      output,
+      view: inst,
+      toString() {
+        return output;
+      },
+    };
   }
 
   getItem() {
@@ -419,7 +392,7 @@ export default class Stratox {
       if (typeof data === 'function') {
         data(this.#components[viewKey]?.data, this.#components[viewKey]);
       } else {
-        this.#components[viewKey] = data;
+        Object.assign(this.#components[viewKey].data, data);
       }
     }
     this.#observer.set(this.#components);
@@ -595,28 +568,31 @@ export default class Stratox {
         const extractFileName = key.split('#');
         const file = extractFileName[0];
         const compo = inst.#field.hasComponent(file);
+        
         inst.#incremented.push(false);
 
         if (typeof compo === 'function') {
           Handler.setComponent(key, compo);
+          inst.#incremented[inst.#incremented.length - 1] = true;
         } else {
           const module = await import(/* @vite-ignore */ `${dir}${file}.js${inst.#cacheParam()}`);
           Object.entries(module).forEach((fn) => {
             Handler.setComponent(key, fn);
           });
+          call(inst.#field);
         }
-        inst.#incremented[inst.#incremented.length - 1] = true;
         inst.#imported[file] = true;
       } else {
         console.warn(`To use the field item ${data.type} you need to specify a formHandler in config!`);
       }
     });
-
+    
     if (typeof call === 'function'
     && (inst.#incremented[inst.#incremented.length - 1]
     || (inst.#incremented.length === 0 && inst.#field))) {
       call(inst.#field);
     }
+  
   }
 
   /**
@@ -662,15 +638,6 @@ export default class Stratox {
 
           // Will make sure each unique view is not spammed
           propCheck = {};
-          /*
-          if (ivtPropCheck !== undefined) {
-            clearTimeout(ivtPropCheck);
-          }
-
-          ivtPropCheck = setTimeout(() => {
-            propCheck = {};
-          }, 0);
-           */
         }
       });
 
@@ -863,27 +830,6 @@ export default class Stratox {
   }
 
   /**
-   * Get Identifiers
-   * @param  {object|string} data Should be string (view name) or object ({ viewName: "#element" })
-   * @return {object}
-   */
-  static #getIdentifiers(data) {
-    let name;
-    let el = null;
-    if (typeof data === 'object') {
-      const keys = Object.keys(data);
-      if (typeof keys[0] !== 'string') throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
-      [name] = keys;
-      el = data[name] ?? null;
-    } else if (typeof data === 'string') {
-      name = data;
-    } else {
-      throw new Error('Unrecognizable identifier type. Should be string (view name) or { viewName: "#element" }');
-    }
-    return { name, elem: el };
-  }
-
-  /**
    * Insert HTML, will protect you from unintended DOM Propagation and
    * keep High performance even though DOM would be stuck in a 100000 loop!
    * @return {void}
@@ -909,13 +855,16 @@ export default class Stratox {
    * @param {object}
    */
   setSelector(elem) {
-    if (typeof elem === 'object') {
-      return [elem];
+    if (typeof document === 'object') {
+      if (typeof elem === 'object') {
+        return [elem];
+      }
+      if (elem.indexOf('#') === 0) {
+        return [document.getElementById(elem.substring(1))];
+      }
+      return document.querySelectorAll(elem);
     }
-    if (elem.indexOf('#') === 0) {
-      return [document.getElementById(elem.substring(1))];
-    }
-    return document.querySelectorAll(elem);
+    return null;
   }
 
   /**
@@ -924,10 +873,13 @@ export default class Stratox {
    * @return {void}
    */
   html(out) {
-    this.getElement().forEach((elem) => {
-      const el = elem;
-      if (el) el.innerHTML = out;
-    });
+    const myElem = this.getElement();
+    if (myElem) {
+      myElem.forEach((elem) => {
+        const el = elem;
+        if (el) el.innerHTML = out;
+      });
+    }
   }
 
   /**
@@ -1009,5 +961,13 @@ export default class Stratox {
       return { name: `${func.name}#${keys[0]}`, func };
     }
     return { name: key.name, func: key };
+  }
+
+  /**
+   * Has been deprecated and removed
+   */
+  static create(key, data, args) {
+    console.error("The static create function was removed from the Stratox library in version 3.");
+    return this;
   }
 }

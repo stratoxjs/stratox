@@ -1,5 +1,5 @@
 
-# Stratox.js ![npm](https://img.shields.io/npm/v/create-stratox)
+# Stratox.js ![npm](https://img.shields.io/npm/v/stratox)
 
 ![enter image description here](http://wazabii.se/github-assets/installation-prompt-1.png)
 

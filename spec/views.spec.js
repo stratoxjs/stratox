@@ -86,8 +86,12 @@ test('Blocks', () => {
     title: 'hello',
     desc: 'World',
   });
-  const length = stratox.execute().length;
-  expect(length > 40 && length < 48).toBe(true);
+  const response = stratox.execute();
+
+  // The block's element id is "stratox-", a random string and the global view count
+  const wrapper = /^<div id="stratox-[a-z0-9]*-\d+"><\/div>/;
+  expect(response).toMatch(wrapper);
+  expect(response.replace(wrapper, '')).toBe('helloWorld');
 });
 
 test('Pre loaded component', () => {

@@ -20,6 +20,20 @@ function myTestComponentPartial({ props, view }) {
   return `${out1}${out2}`;
 }
 
+/**
+ * Run execute() and wait for its callback, which is called once the views are built.
+ * execute() returns no promise (audit stratox F3), so the callback resolves one instead.
+ * @param  {Stratox} stratox
+ * @return {Promise<string>} the response at the time the callback ran
+ */
+function executeAndWait(stratox) {
+  return new Promise((resolve) => {
+    stratox.execute(() => {
+      resolve(stratox.getResponse());
+    });
+  });
+}
+
 function myTestComponentBlock({ props }) {
   const { output, view } = this.block({ test: myTestComponent }, props);
   return `${output}${view.execute()}`;
@@ -84,16 +98,13 @@ test('Pre loaded component', () => {
 );
 
 test('Async loaded component', async () => {
-    const stratox = new Stratox();
-    stratox.view("AsyncComponent", { title: "HasAsyncLoaded" });
-    stratox.execute(() => {
-      // Wait for results
-      expect(stratox.getResponse()).toBe("HasAsyncLoaded");
-    });
-  }
-);
+  const stratox = new Stratox();
+  stratox.view("AsyncComponent", { title: "HasAsyncLoaded" });
+  const response = await executeAndWait(stratox);
+  expect(response).toBe("HasAsyncLoaded");
+}, 1000);
 
-test('Update view from a service provider', async(done) => {
+test('Update view from a service provider', async () => {
   const stratox = new Stratox();
   stratox.container().set("count", 10);
   stratox.view(({ props, update, view, count }) => {
@@ -110,11 +121,8 @@ test('Update view from a service provider', async(done) => {
     return props.test;
   }, { test: 1 });
 
-  stratox.execute(() => {
-    // Wait for results
-    expect(stratox.getResponse()).toBe("12");
-  });
-  
-});
+  const response = await executeAndWait(stratox);
+  expect(response).toBe("12");
+}, 1000);
 
 

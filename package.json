@@ -10,6 +10,7 @@
   "scripts": {
     "test": "vitest run",
     "test:dev": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint --fix ."
   },
@@ -41,6 +42,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@eslint/js": "^9.18.0",
+    "@vitest/coverage-v8": "^5.0.3",
     "eslint": "^9.18.0",
     "globals": "^17.13.0",
     "vitest": "^5.0.3"

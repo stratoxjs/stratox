@@ -12,7 +12,7 @@ export default [
   },
   pluginJs.configs.recommended,
   {
-    ignores: ['spec/', '*.spec.js', 'node_modules/', 'test.js'],
+    ignores: ['spec/', '*.spec.js', 'node_modules/', 'test.js', 'coverage/'],
   },
   {
     files: ["src/**/*.js"],

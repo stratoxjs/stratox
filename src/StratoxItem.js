@@ -1,4 +1,4 @@
-import StratoxContainer from './StratoxContainer';
+import StratoxContainer from './StratoxContainer.js';
 
 export default class StratoxItem {
   compType = '';

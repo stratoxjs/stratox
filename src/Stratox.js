@@ -6,10 +6,10 @@
  * Copyright: Apache License 2.0
  */
 
-import StratoxContainer from './StratoxContainer';
-import StratoxBuilder from './StratoxBuilder';
-import StratoxObserver from './StratoxObserver';
-import StratoxItem from './StratoxItem';
+import StratoxContainer from './StratoxContainer.js';
+import StratoxBuilder from './StratoxBuilder.js';
+import StratoxObserver from './StratoxObserver.js';
+import StratoxItem from './StratoxItem.js';
 
 export default class Stratox {
   static viewCount = 0;

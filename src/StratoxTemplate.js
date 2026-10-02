@@ -6,7 +6,7 @@
  * Copyright: Apache License 2.0
  */
 
-import StratoxBuilder from './StratoxBuilder';
+import StratoxBuilder from './StratoxBuilder.js';
 
 export default class StratoxTemplate extends StratoxBuilder {
   /**

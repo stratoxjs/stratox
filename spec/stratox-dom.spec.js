@@ -615,6 +615,24 @@ describe('group fields at runtime', () => {
     expect(values.agree).toBe(0);
   });
 
+  test('getValues returns the values object with what the user typed and the added rows (V-9)', async () => {
+    const values = { rows: [{ title: 'A' }] };
+    const stratox = await mount((form) => form.form('rows', { type: 'group' })
+      .setFields({ title: { type: 'text' } })
+      .setConfig({ nestedNames: true, controls: true }), values);
+
+    typeInto(app().querySelector('input[name="rows[0][title]"]'), 'typed');
+    click(app().querySelector('.wa-field-group-btn.after'));
+    await nextTick();
+
+    expect(stratox.getValues()).toBe(values);
+    expect(stratox.getValues()).toEqual({ rows: [{ title: 'typed' }, {}] });
+  });
+
+  test('getValues returns an empty object before setValues (V-9)', () => {
+    expect(new Stratox().getValues()).toEqual({});
+  });
+
   test('editFieldValue takes a comma path or an array and creates missing objects on the way', () => {
     const stratox = new Stratox();
     const values = {};

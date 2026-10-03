@@ -59,13 +59,28 @@ describe('set, get and has', () => {
     { value: false, label: 'false' },
     { value: null, label: 'null' },
     { value: undefined, label: 'undefined' },
-  ])('treats a stored $label as missing: has is false and get throws (audit stratox F22)', ({ value }) => {
+  ])('stores $label as a value: has is true and get returns it (audit stratox F22, fixed)', ({ value }) => {
     const container = new StratoxContainer();
     container.set('key', value);
 
-    expect(Object.keys(container.list())).toEqual(['key']);
-    expect(container.has('key')).toBe(false);
-    expect(() => container.get('key')).toThrow('does not exists');
+    expect(container.has('key')).toBe(true);
+    expect(container.isContainer('key')).toBe(true);
+    expect(container.get('key')).toBe(value);
+    expect(container.read('key', 'default')).toBe(value);
+  });
+
+  test('a stored false cannot be overwritten without overwrite (audit stratox F22, fixed)', () => {
+    const container = new StratoxContainer();
+    container.set('key', false);
+
+    expect(() => container.set('key', true)).toThrow('The container (key) already defined.');
+  });
+
+  test('keys from Object.prototype are not services (audit stratox F22, fixed)', () => {
+    const container = new StratoxContainer();
+
+    expect(container.has('toString')).toBe(false);
+    expect(() => container.get('toString')).toThrow('does not exists');
   });
 });
 

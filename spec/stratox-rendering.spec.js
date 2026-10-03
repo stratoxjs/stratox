@@ -409,7 +409,7 @@ test('getComponent always throws a TypeError (audit stratox F5)', () => {
   expect(() => new Stratox().getComponent('any')).toThrow('this.open is not a function');
 });
 
-describe('component registry (audit stratox F1)', () => {
+describe('component registry (audit stratox F1, fixed)', () => {
   // Anonymous components are registered under '' and cached under '#defualt' in the
   // static registry, so each test removes those two entries first.
   beforeEach(() => {
@@ -417,7 +417,7 @@ describe('component registry (audit stratox F1)', () => {
     delete StratoxBuilder.factory['#defualt'];
   });
 
-  test('an anonymous component added after another one rendered renders the first one', () => {
+  test('an anonymous component added after another one rendered renders itself (audit stratox F1, fixed)', () => {
     const first = new Stratox();
     first.view(({ props }) => `A${props.n}`, { n: 1 });
     const firstOutput = first.execute();
@@ -425,19 +425,19 @@ describe('component registry (audit stratox F1)', () => {
     second.view(({ props }) => `B${props.n}`, { n: 2 });
 
     expect(firstOutput).toBe('A1');
-    expect(second.execute()).toBe('A2');
+    expect(second.execute()).toBe('B2');
   });
 
-  test('when two anonymous components are added before rendering, the first view renders the second one', () => {
+  test('two anonymous components added before rendering each render themselves (audit stratox F1, fixed)', () => {
     const first = new Stratox();
     first.view(({ props }) => `C${props.n}`, { n: 1 });
     const second = new Stratox();
     second.view(({ props }) => `D${props.n}`, { n: 2 });
 
-    expect([first.execute(), second.execute()]).toEqual(['D1', 'D2']);
+    expect([first.execute(), second.execute()]).toEqual(['C1', 'D2']);
   });
 
-  test('a second function with the same name renders the first one', () => {
+  test('a second function with the same name renders itself (audit stratox F1, fixed)', () => {
     const makeCard = (letter) => {
       function Card({ props }) { return `${letter}${props.n}`; }
       return Card;
@@ -449,7 +449,52 @@ describe('component registry (audit stratox F1)', () => {
     second.view(makeCard('B'), { n: 2 });
 
     expect(firstOutput).toBe('A1');
-    expect(second.execute()).toBe('A2');
+    expect(second.execute()).toBe('B2');
+  });
+
+  test('the first view of a function with the same name still renders the first one after an update', () => {
+    const makeTile = (letter) => {
+      function Tile({ props }) { return `${letter}${props.n}`; }
+      return Tile;
+    };
+    const first = new Stratox();
+    const item = first.view(makeTile('A'), { n: 1 });
+    first.execute();
+    const second = new Stratox();
+    second.view(makeTile('B'), { n: 2 });
+    second.execute();
+
+    item.set({ n: 3 }).update();
+
+    expect(first.getResponse()).toBe('A3');
+  });
+
+  test('both views keep the function name as view name, so update by name works (audit stratox F1, fixed)', () => {
+    const makeBadge = (letter) => {
+      function Badge({ props }) { return `${letter}${props.n}`; }
+      return Badge;
+    };
+    const first = new Stratox();
+    first.view(makeBadge('A'), { n: 1 });
+    first.execute();
+    const second = new Stratox();
+    const item = second.view(makeBadge('B'), { n: 2 });
+    second.execute();
+
+    second.update('Badge', { n: 5 });
+
+    expect(item.getName()).toBe('Badge#defualt');
+    expect(second.getResponse()).toBe('B5');
+  });
+
+  test('the same function in two views renders from one registry key (audit stratox F1, fixed)', () => {
+    function Shared({ props }) { return `S${props.n}`; }
+    const stratox = new Stratox();
+    const first = stratox.view(Shared, { n: 1 });
+    const second = stratox.view({ other: Shared }, { n: 2 });
+
+    expect(stratox.execute()).toBe('S1S2');
+    expect(second.getType()).toBe(first.getType());
   });
 });
 

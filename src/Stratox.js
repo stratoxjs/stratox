@@ -18,6 +18,11 @@ export default class Stratox {
 
   static container;
 
+  // The registry key each component function renders from (audit F1)
+  static #componentKeys = new WeakMap();
+
+  static #componentKeyCount = 0;
+
   #field;
 
   #components = {};
@@ -249,17 +254,46 @@ export default class Stratox {
    */
   viewEngine(key, data) {
     let viewKey = key;
+    let componentKey;
 
     if (typeof key === 'function' || typeof key === 'object') {
       const comp = this.#getSetCompFromKey(key);
       Stratox.setComponent(comp.name, comp.func);
       viewKey = comp.name;
+      componentKey = Stratox.#componentKey(StratoxItem.getViewName(comp.name), comp.func);
     }
     const newObj = this.#components[viewKey]?.data || {};
     Object.assign(newObj, data);
     this.#creator[viewKey] = this.#initItemView(viewKey, newObj);
+    if (componentKey) {
+      // The item keeps its view name for update(); its type says which function renders it
+      this.#creator[viewKey].setType(componentKey);
+    }
     this.#item = this.#creator[viewKey];
     return this.#item;
+  }
+
+  /**
+   * The registry key a component function renders from. Normally its view name ("Card#defualt").
+   * A different function with the same name, or another anonymous function, gets its own key
+   * ("Card#defualt~1"), so it renders itself instead of the first one (audit F1).
+   * @param  {string}   viewName
+   * @param  {function} func
+   * @return {string}
+   */
+  static #componentKey(viewName, func) {
+    let key = Stratox.#componentKeys.get(func);
+    if (!key) {
+      const { factory } = Stratox.getFormHandler();
+      key = viewName;
+      if (factory[key] && factory[key] !== func) {
+        Stratox.#componentKeyCount += 1;
+        key = `${viewName}~${Stratox.#componentKeyCount}`;
+      }
+      Stratox.#componentKeys.set(func, key);
+      Stratox.setComponent(key, func);
+    }
+    return key;
   }
 
   /**

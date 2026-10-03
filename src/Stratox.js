@@ -278,7 +278,8 @@ export default class Stratox {
       viewKey = comp.name;
       componentKey = Stratox.#componentKey(StratoxItem.getViewName(comp.name), comp.func);
     }
-    const newObj = this.#components[viewKey]?.data || {};
+    // A view shown again merges into the rendered view's data; update() then renders it (audit F7)
+    const newObj = this.#components[StratoxItem.getViewName(viewKey)]?.data || {};
     Object.assign(newObj, data);
     this.#creator[viewKey] = this.#initItemView(viewKey, newObj);
     if (componentKey) {

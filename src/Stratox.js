@@ -54,6 +54,8 @@ export default class Stratox {
 
   #onload;
 
+  #ready = Promise.resolve();
+
   #blockStates = [];
 
   #item = {};
@@ -640,7 +642,8 @@ export default class Stratox {
     dir = Stratox.getConfigs('directory');
     if (!dir.endsWith('/')) dir += '/';
 
-    Object.entries(this.#components).forEach(async ([key, data]) => {
+    // Each component may load a module; collect them, so build() settles once all have rendered (V-2)
+    const loading = Object.entries(this.#components).map(async ([key, data]) => {
       if (inst.#field.hasComponent(data.type)) {
         // Component is loaded...
       } else if (data.compType !== 'form') {
@@ -671,6 +674,7 @@ export default class Stratox {
     || (inst.#incremented.length === 0 && inst.#field))) {
       call(inst.#field);
     }
+    await Promise.all(loading);
   
   }
 
@@ -691,7 +695,7 @@ export default class Stratox {
     // Start build and create views
     this.#prepareViews();
     this.#observer = new StratoxObserver(this.#components);
-    inst.build((field) => {
+    this.#ready = inst.build((field) => {
       let propCheck = {};
       let ivtPropCheck;
       inst.#observer.factory((jsonData, temp) => {
@@ -743,6 +747,16 @@ export default class Stratox {
       });
     });
     return this.getResponse();
+  }
+
+  /**
+   * Wait for the last execute(): resolves when every component, also the ones loaded from
+   * the "directory" config, has rendered; rejects with the first error (V-2, audit F3).
+   * Before the first execute() it is already resolved.
+   * @return {Promise<void>}
+   */
+  ready() {
+    return this.#ready.then(() => undefined);
   }
 
   onload(fn) {

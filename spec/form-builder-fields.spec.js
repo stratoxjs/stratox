@@ -284,22 +284,38 @@ describe('values', () => {
   });
 });
 
-describe('no escaping (audit stratox F11)', () => {
-  test('a label is inserted as HTML', () => {
+describe('escaping form values (audit stratox F11)', () => {
+  test('a label is inserted as HTML, so it can hold a link (audit stratox F11, component part)', () => {
     expect(render((form) => form.form('name').setLabel('<b>Name</b>'))).toContain('<label><b>Name</b>');
   });
 
-  test('a quote in a value or an attribute ends the attribute early', () => {
-    const output = render((form) => form.form('quote').setValue('He said "hi"').setAttr({ title: 'a"b' }));
+  test('quotes and < > & in a value or an attribute are escaped (audit stratox F11, fixed)', () => {
+    const output = render((form) => form.form('quote').setValue('He said "hi" & <b>').setAttr({ title: 'a"b' }));
 
-    expect(output).toContain('value="He said "hi""');
-    expect(output).toContain('title="a"b"');
+    expect(output).toContain('value="He said &quot;hi&quot; &amp; &lt;b&gt;"');
+    expect(output).toContain('title="a&quot;b"');
   });
 
-  test('a textarea value can close the textarea and add markup after it', () => {
+  test('a value from setValues is escaped too (audit stratox F11, fixed)', () => {
+    expect(render((form) => form.form('quote'), { quote: '"><script>x</script>' }))
+      .toContain('value="&quot;&gt;&lt;script&gt;x&lt;/script&gt;"');
+  });
+
+  test('textarea content is escaped, so it cannot close the textarea (audit stratox F11, fixed)', () => {
     const output = render((form) => form.form('note').setType('textarea').setValue('</textarea><script>x</script>'));
 
-    expect(output).toContain('<textarea name="note" data-index="0" data-name="note"></textarea><script>x</script></textarea>');
+    expect(output).toContain('<textarea name="note" data-index="0" data-name="note">&lt;/textarea&gt;&lt;script&gt;x&lt;/script&gt;</textarea>');
+  });
+
+  test('escapeHtml escapes & " < > and turns other values into text', () => {
+    let escaped;
+    function EscapeHelper({ context }) {
+      escaped = [context.escapeHtml('a & "b" <c>'), context.escapeHtml(5), context.escapeHtml("it's")];
+      return '';
+    }
+    render((view) => view.view(EscapeHelper, {}));
+
+    expect(escaped).toEqual(['a &amp; &quot;b&quot; &lt;c&gt;', '5', "it's"]);
   });
 });
 

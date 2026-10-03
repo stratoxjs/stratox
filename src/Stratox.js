@@ -75,7 +75,8 @@ export default class Stratox {
    * @return {self}
    */
   constructor(elem) {
-    if (typeof elem === 'string') {
+    // A selector string, one DOM element or a list of elements (audit F9)
+    if (typeof elem === 'string' || (typeof elem === 'object' && elem !== null)) {
       this.#elem = elem;
     }
     this.#values = {};
@@ -545,7 +546,9 @@ export default class Stratox {
    * @return {StratoxDom}
    */
   getElement() {
-    if (typeof this.#elem === 'string') {
+    // A selector and a single element both become a list, so html() can loop over it (audit F39)
+    const isList = typeof this.#elem?.forEach === 'function';
+    if (typeof this.#elem === 'string' || (this.#elem && !isList)) {
       this.#elem = this.setSelector(this.#elem);
     }
     return this.#elem;

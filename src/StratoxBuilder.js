@@ -177,10 +177,11 @@ export default class StratoxBuilder {
    * @return {Boolean}
    */
   isChecked(value) {
+    // Item keys are always strings, so values are compared as text: 1 checks the item "1" (audit F33)
     if (this.view.isArray(this.value)) {
-      return this.value.includes(value);
+      return this.value.map(String).includes(String(value));
     }
-    return (this.value === value);
+    return (String(this.value) === String(value));
   }
 
   /**

@@ -81,7 +81,8 @@ export default class StratoxItem {
    * @return {string}
    */
   static getViewName(name) {
-    let newName = name;
+    // A numeric key is allowed, like in the constructor (audit F26)
+    let newName = String(name);
     if (newName.indexOf('#') < 0) {
       newName += '#defualt';
     }

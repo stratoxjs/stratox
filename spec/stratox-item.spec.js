@@ -140,8 +140,9 @@ describe('constructor and static creators', () => {
       .toThrow('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
   });
 
-  test('view() with a numeric key throws a TypeError, although the constructor takes numbers (audit stratox F26)', () => {
-    expect(() => StratoxItem.view(5, {})).toThrow(TypeError);
+  test('view() with a numeric key names the item like a string key (audit stratox F26, fixed)', () => {
+    expect(StratoxItem.view(5, {}).getName()).toBe('5#defualt');
+    expect(StratoxItem.getViewName(5)).toBe('5#defualt');
   });
 
   test('getViewName adds #defualt only when the name has no #', () => {
@@ -435,8 +436,13 @@ describe('toString and update with a container', () => {
 });
 
 describe('through Stratox', () => {
-  test('view() with a numeric key throws a TypeError (audit stratox F26)', () => {
-    expect(() => new Stratox().view(5, {})).toThrow(TypeError);
+  test('view() with a numeric key renders the component registered under that number (audit stratox F26, fixed)', () => {
+    function NumberedComponent({ props }) { return `n${props.n}`; }
+    Stratox.setComponent(5, NumberedComponent);
+    const stratox = new Stratox();
+    stratox.view(5, { n: 1 });
+
+    expect(stratox.execute()).toBe('n1');
   });
 
   test('form() with a numeric name works', () => {

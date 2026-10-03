@@ -481,7 +481,7 @@ describe('through Stratox', () => {
     expect(stratox.execute()).toBe('<b>three</b>');
   });
 
-  test('an item\'s toString renders the whole view, not only the item, and renders again on every call (audit stratox F27)', () => {
+  test('an item\'s toString renders the whole view, not only the item, and renders again on every call (audit stratox F27, kept by D-029)', () => {
     function ItemFirst() { return '<i>first</i>'; }
     function ItemSecond() { return '<i>second</i>'; }
     let renders = 0;

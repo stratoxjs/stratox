@@ -99,10 +99,16 @@ describe('select', () => {
     expect(chosenValues(output)).toEqual(['s', 'm']);
   });
 
-  test('attr.multiple false keeps the name but still writes multiple="false" (audit stratox F34)', () => {
+  test('attr.multiple false leaves the attribute out and keeps the name (audit stratox F34, fixed)', () => {
     const output = render((form) => form.form('size').setType('select').setItems(sizes).setAttr({ multiple: false }));
 
-    expect(output).toContain('<select name="size" data-index="0" multiple="false"');
+    expect(output).toContain('<select name="size" data-index="0" data-name="size" autocomplete="off">');
+  });
+
+  test('attr.multiple true writes a bare multiple and adds [] to the name (audit stratox F34, fixed)', () => {
+    const output = render((form) => form.form('size').setType('select').setItems(sizes).setAttr({ multiple: true }));
+
+    expect(output).toContain('<select name="size[]" data-index="0" multiple data-name="size" autocomplete="off">');
   });
 
   test('attributes can replace the name', () => {
@@ -266,8 +272,22 @@ describe('escaping (audit stratox F11)', () => {
   });
 });
 
-describe('attribute values (audit stratox F34)', () => {
-  test('false is written as the text "false", so disabled: false still disables the field', () => {
-    expect(render((form) => form.form('name').setAttr({ disabled: false }))).toContain(' disabled="false"');
+describe('attribute values (audit stratox F34, fixed)', () => {
+  test.each([
+    ['false', false],
+    ['null', null],
+    ['undefined', undefined],
+  ])('%s leaves the attribute out (audit stratox F34, fixed)', (name, value) => {
+    expect(render((form) => form.form('name').setAttr({ disabled: value }))).not.toContain('disabled');
+  });
+
+  test('true writes the attribute bare (audit stratox F34, fixed)', () => {
+    expect(render((form) => form.form('name').setAttr({ disabled: true, required: true })))
+      .toContain('<input type="text" name="name" value="" data-index="0" disabled required data-name="name">');
+  });
+
+  test('0 and an empty string are still written', () => {
+    expect(render((form) => form.form('name').setAttr({ tabindex: 0, placeholder: '' })))
+      .toContain(' tabindex="0" placeholder=""');
   });
 });

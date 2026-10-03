@@ -29,7 +29,8 @@ export default class StratoxContainer {
    * @return {Boolean}
    */
   has(key) {
-    return (this.#getService(key) !== false);
+    // The key decides, not the value, so a stored false, null or undefined counts (audit F22)
+    return Object.prototype.hasOwnProperty.call(this.#service, key);
   }
 
   /**
@@ -57,8 +58,8 @@ export default class StratoxContainer {
    * @return {mixed}
    */
   get(key, ...args) {
-    const service = this.#getService(key);
-    if (service !== false) {
+    if (this.has(key)) {
+      const service = this.#getService(key);
       if (this.isFactory(key)) {
         return service.apply(this, args);
       }
@@ -140,9 +141,9 @@ export default class StratoxContainer {
   /**
    * Get service
    * @param  {string} key
-   * @return {mixed} False if none
+   * @return {mixed} Undefined if none; check with has()
    */
   #getService(key) {
-    return (this.#service[key] ?? false);
+    return this.has(key) ? this.#service[key] : undefined;
   }
 }

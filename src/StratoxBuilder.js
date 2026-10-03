@@ -240,7 +240,7 @@ export default class StratoxBuilder {
 
           nk++;
           if (config.controls !== undefined && config.controls === true) {
-            o += `<a class="wa-field-group-btn form-group-icon after inline-block pad bottom-0 left-1/2 -translate-x-2/4 translate-y-2/4 absolute z-10" data-name="${nj}" data-key="${inst.key}" data-index="${btnIndex}" data-position="${k}" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="12" height="12" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"><path d="M16 2 L16 30 M2 16 L30 16" /></a>`;
+            o += `<a class="wa-field-group-btn form-group-icon after inline-block pad bottom-0 left-1/2 -translate-x-2/4 translate-y-2/4 absolute z-10" data-name="${nj}" data-key="${inst.key}" data-index="${btnIndex}" data-position="${k}" href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="12" height="12" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"><path d="M16 2 L16 30 M2 16 L30 16" /></svg></a>`;
             o += '</div>';
           }
           return callback(o, a);

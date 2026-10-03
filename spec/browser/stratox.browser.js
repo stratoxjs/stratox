@@ -6,7 +6,7 @@ import { Stratox, StratoxTemplate } from '../../src/index';
 // Roadmap 2.13: critical paths in real browsers (Chromium, Firefox, WebKit), run with
 // `npm run test:browser`. The same behaviour is tested in more detail in happy-dom;
 // these tests prove it holds where users run it, and cover what happy-dom cannot
-// (inline onclick handlers, the group markup that needs repairing, audit stratox F20).
+// (inline onclick handlers, groups with several rows).
 
 let handlers;
 
@@ -93,7 +93,7 @@ describe('group fields with several rows', () => {
     form.form('after');
   };
 
-  test('the browser repairs the add-after button without </svg>: later rows stay HTML (audit stratox F20)', async () => {
+  test('later rows and fields after a group with controls are HTML elements (audit stratox F20)', async () => {
     await mount(controlledRows, { rows: [{ title: 'A' }, { title: 'B' }] });
 
     const secondRow = app().querySelector('input[name="rows[1][title]"]');

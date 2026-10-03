@@ -135,8 +135,9 @@ describe('constructor and static creators', () => {
       .toThrow('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
   });
 
-  test('view() accepts null as data (audit stratox F25)', () => {
-    expect(StratoxItem.view('box', null).data).toBeNull();
+  test('view() throws its own error for null data (audit stratox F25, fixed)', () => {
+    expect(() => StratoxItem.view('box', null))
+      .toThrow('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
   });
 
   test('view() with a numeric key throws a TypeError, although the constructor takes numbers (audit stratox F26)', () => {
@@ -213,11 +214,17 @@ describe.each([
     expect(() => new StratoxItem('x')[setter](value)).toThrow('Argumnent 1: Is not a object');
   });
 
-  test.each([
-    ['null', null],
-    ['an array', ['a']],
-  ])('accepts %s, because typeof says "object" (audit stratox F25)', (name, value) => {
+  test('throws its own error for null and keeps the old value (audit stratox F25, fixed)', () => {
     const item = new StratoxItem('x');
+    const before = item[property];
+
+    expect(() => item[setter](null)).toThrow('Argumnent 1: Is not a object');
+    expect(item[property]).toBe(before);
+  });
+
+  test('accepts an array', () => {
+    const item = new StratoxItem('x');
+    const value = ['a'];
     item[setter](value);
 
     expect(item[property]).toBe(value);
@@ -253,15 +260,15 @@ describe('setFields', () => {
     expect(() => new StratoxItem('group').setFields(value)).toThrow('Argumnent 1: Is not a object');
   });
 
-  test('sets hasFields before it checks the argument, so a rejected call still sets it (audit stratox F24)', () => {
+  test('checks the argument first, so a rejected call leaves hasFields false (audit stratox F24, fixed)', () => {
     const item = new StratoxItem('group');
 
     expect(() => item.setFields('text')).toThrow('Argumnent 1: Is not a object');
-    expect(item.hasFields).toBe(true);
+    expect(item.hasFields).toBe(false);
   });
 
-  test('throws a TypeError for null instead of its own error (audit stratox F24)', () => {
-    expect(() => new StratoxItem('group').setFields(null)).toThrow(TypeError);
+  test('throws its own error for null (audit stratox F24, fixed)', () => {
+    expect(() => new StratoxItem('group').setFields(null)).toThrow('Argumnent 1: Is not a object');
   });
 });
 
@@ -319,10 +326,6 @@ describe('set and merge', () => {
     item.set('ab');
 
     expect(item.data).toEqual({ 0: 'a', 1: 'b' });
-  });
-
-  test('set on a view item with null data throws a TypeError (audit stratox F25)', () => {
-    expect(() => StratoxItem.view('box', null).set({ a: 1 })).toThrow(TypeError);
   });
 
   test('merge assigns any key onto the item and returns it', () => {
@@ -556,14 +559,14 @@ describe('through the form builder', () => {
     expect(stratox.execute()).toContain('<div class="description legend">12345</div>');
   });
 
-  test('setAttr(null) renders nothing; the TypeError escapes as a rejection (audit stratox F25, F3)', async () => {
+  test('setAttr(null) throws at the call, and the field still renders (audit stratox F25, fixed)', async () => {
     const stratox = new Stratox();
-    stratox.form('email').setAttr(null);
+    const item = stratox.form('email');
 
+    expect(() => item.setAttr(null)).toThrow('Argumnent 1: Is not a object');
     const { output, errors } = await executeAndCatch(stratox);
 
-    expect(output).toBe('');
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toBeInstanceOf(TypeError);
+    expect(output).toContain('name="email"');
+    expect(errors).toEqual([]);
   });
 });

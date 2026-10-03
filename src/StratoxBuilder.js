@@ -280,6 +280,8 @@ export default class StratoxBuilder {
    * @return {string}
    */
   get() {
+    // Count from 0 on every render, so a field keeps its id and data-index across updates (audit F31)
+    this.index = 0;
     return this.#html(this.json);
   }
 

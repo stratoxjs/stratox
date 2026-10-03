@@ -118,16 +118,18 @@ describe('text field and the container', () => {
     ]);
   });
 
-  test('ids and data-index keep counting up when the form renders again (audit stratox F31)', () => {
+  test('ids and data-index stay the same when the form renders again (audit stratox F31, fixed)', () => {
     const stratox = new Stratox();
     const item = stratox.form('name');
-    stratox.execute();
+    stratox.form('city');
+    const first = stratox.execute();
 
     stratox.update(item);
-    expect(stratox.getResponse()).toContain('id="wa-fi-view-1" data-index="1"');
+    expect(stratox.getResponse()).toBe(first);
 
     stratox.update(item);
-    expect(stratox.getResponse()).toContain('id="wa-fi-view-2" data-index="2"');
+    expect(stratox.getResponse()).toBe(first);
+    expect(first).toContain('id="wa-fi-view-1" data-index="1" class="mb-15 field-city');
   });
 
   test('update(item) renders a changed form item again', () => {

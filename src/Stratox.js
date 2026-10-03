@@ -836,7 +836,7 @@ export default class Stratox {
    */
   insertHtml() {
     const inst = this;
-    if (Stratox.getConfigs('popegation') === false || !inst.#prop) {
+    if (Stratox.#isPropagationProtected() === false || !inst.#prop) {
       inst.#prop = true;
       inst.html(inst.#response);
     } else {
@@ -848,6 +848,15 @@ export default class Stratox {
         inst.html(inst.#response);
       }, 0);
     }
+  }
+
+  /**
+   * Is DOM propagation protection on? Reads the config key "propagation", and the
+   * misspelled "popegation" that older code uses. When both are set, "propagation" wins.
+   * @return {boolean}
+   */
+  static #isPropagationProtected() {
+    return Stratox.getConfigs('propagation') ?? Stratox.getConfigs('popegation');
   }
 
   /**

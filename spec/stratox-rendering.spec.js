@@ -1,7 +1,9 @@
 import {
   afterEach, beforeEach, describe, expect, test,
 } from 'vitest';
-import { Stratox, StratoxContainer } from '../src/index';
+import {
+  Stratox, StratoxContainer, StratoxTemplate, html, raw, SafeHtml,
+} from '../src/index';
 import StratoxBuilder from '../src/StratoxBuilder';
 
 // Components are registered globally by function name (audit stratox F1), so every
@@ -160,7 +162,7 @@ describe('component arguments', () => {
   });
 
   test('a container service named props does not replace the props argument (audit stratox F19, fixed)', () => {
-    function ServiceProps({ props }) { return JSON.stringify(props); }
+    function ServiceProps({ props }) { return Object.keys(props).join(','); }
 
     const output = withService('props', { fromService: true }, () => {
       const stratox = new Stratox();
@@ -168,7 +170,7 @@ describe('component arguments', () => {
       return stratox.execute();
     });
 
-    expect(output).toBe('{"fromView":true}');
+    expect(output).toBe('fromView');
   });
 
   test('a container service named view does not replace the view argument (audit stratox F19, fixed)', () => {
@@ -586,5 +588,84 @@ describe('setConfigs', () => {
 
     expect(Stratox.getConfigs('directory')).toBe('/components/');
     expect(Stratox.getConfigs('cache')).toBe(true);
+  });
+});
+
+describe('escaping by default (D-030; audit stratox F11, fixed)', () => {
+  test('a plain string from a component is text: its markup is escaped (audit stratox F11, fixed)', () => {
+    function PlainMarkup({ props }) { return `<b>${props.text}</b>`; }
+    const stratox = new Stratox();
+    stratox.view(PlainMarkup, { text: 'bold' });
+
+    expect(stratox.execute()).toBe('&lt;b&gt;bold&lt;/b&gt;');
+  });
+
+  test('html`...` is markup, and the props inside it are escaped (audit stratox F11, fixed)', () => {
+    function TaggedMarkup({ props, html: tag }) { return tag`<h2>${props.title}</h2>`; }
+    const stratox = new Stratox();
+    stratox.view(TaggedMarkup, { title: '<img src=x onerror=alert(1)>' });
+
+    expect(stratox.execute()).toBe('<h2>&lt;img src=x onerror=alert(1)&gt;</h2>');
+  });
+
+  test('raw() from a component is inserted as it is', () => {
+    function RawMarkup({ props }) { return raw(props.trusted); }
+    const stratox = new Stratox();
+    stratox.view(RawMarkup, { trusted: '<em>trusted</em>' });
+
+    expect(stratox.execute()).toBe('<em>trusted</em>');
+  });
+
+  test('an old-style positional component is escaped the same way (D-030)', () => {
+    function PositionalMarkup(props) { return `<b>${props.text}</b>`; }
+    const stratox = new Stratox();
+    stratox.view(PositionalMarkup, { text: 'x' });
+
+    expect(stratox.execute()).toBe('&lt;b&gt;x&lt;/b&gt;');
+  });
+
+  test('a partial inside html is inserted once, without escaping it again (D-030)', () => {
+    function EscapedInner({ props }) { return html`<i>${props.text}</i>`; }
+    function EscapedOuter({ props, view }) { return html`<p>${view.partial(EscapedInner, props)}</p>`; }
+    const stratox = new Stratox();
+    stratox.view(EscapedOuter, { text: 'a & b' });
+
+    expect(stratox.execute()).toBe('<p><i>a &amp; b</i></p>');
+  });
+
+  test('a partial result is SafeHtml, and its output is still the plain string (D-030)', () => {
+    function PartialString() { return html`<b>x</b>`; }
+    const result = new Stratox().partial(PartialString, {});
+
+    expect(result).toBeInstanceOf(SafeHtml);
+    expect(String(result)).toBe('<b>x</b>');
+    expect(result.output).toBe('<b>x</b>');
+    expect(typeof result.output).toBe('string');
+  });
+
+  test('a component used as a form field is escaped too (D-030)', () => {
+    function EscapedFieldComponent({ props }) { return `<em>${props.text}</em>`; }
+    Stratox.setComponent('escapedFieldComponent', EscapedFieldComponent);
+    const handlers = Stratox.getConfigs('handlers');
+    Stratox.setConfigs({ handlers: { fields: StratoxTemplate } });
+    try {
+      const stratox = new Stratox();
+      stratox.form('x', { type: 'escapedFieldComponent', data: { text: 'y' } });
+
+      expect(stratox.execute()).toBe('&lt;em&gt;y&lt;/em&gt;');
+    } finally {
+      Stratox.setConfigs({ handlers });
+    }
+  });
+
+  test('nothing, null, false and 0 from a component give an empty view', () => {
+    function NothingBack({ props }) { return props.value; }
+    const outputs = [undefined, null, false, 0].map((value) => {
+      const stratox = new Stratox();
+      stratox.view({ [`nothing${String(value)}`]: NothingBack }, { value });
+      return stratox.execute();
+    });
+
+    expect(outputs).toEqual(['', '', '', '']);
   });
 });

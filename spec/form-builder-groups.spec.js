@@ -2,7 +2,9 @@
 import {
   afterAll, beforeAll, describe, expect, test,
 } from 'vitest';
-import { Stratox, StratoxTemplate } from '../src/index';
+import {
+  Stratox, StratoxTemplate, html,
+} from '../src/index';
 import StratoxBuilder from '../src/StratoxBuilder';
 
 // Roadmap 2.10 (c): group fields (repeaters) and the names of their fields, to two levels (D-020).
@@ -122,7 +124,7 @@ describe('a group, one level', () => {
   });
 
   test('a registered component can be a child and gets its data as props', () => {
-    function GroupHeadline({ props }) { return `<h2>${props.headline}</h2>`; }
+    function GroupHeadline({ props }) { return html`<h2>${props.headline}</h2>`; }
     Stratox.setComponent('groupHeadline', GroupHeadline);
     try {
       const output = render((form) => form.form('rows', { type: 'group' })

@@ -1,7 +1,9 @@
 import {
   afterAll, beforeAll, describe, expect, test, vi,
 } from 'vitest';
-import { Stratox } from '../src/index';
+import {
+  Stratox, html,
+} from '../src/index';
 
 // Roadmap 2.12: components loaded with a dynamic import from the "directory" config
 // (fixtures in spec/fixtures/). execute() returns no promise (audit stratox F3), so the
@@ -80,7 +82,7 @@ describe('one async component', () => {
   });
 
   test('a sync component next to it also waits for the import', async () => {
-    function SyncNextToAsync() { return '<sync></sync>'; }
+    function SyncNextToAsync() { return html`<sync></sync>`; }
     const stratox = new Stratox();
     stratox.view(SyncNextToAsync, {});
     stratox.view('AsyncSecond#mixed', { text: 'b' });

@@ -1,7 +1,9 @@
 import {
   afterAll, beforeAll, describe, expect, test,
 } from 'vitest';
-import { Stratox, StratoxContainer, StratoxTemplate } from '../src/index';
+import {
+  Stratox, StratoxContainer, StratoxTemplate, html,
+} from '../src/index';
 import StratoxItem from '../src/StratoxItem';
 
 // StratoxItem is not exported from src/index.js; users get it from view() and form().
@@ -463,7 +465,7 @@ describe('through Stratox', () => {
   });
 
   test('set(object).update() on a view item renders the view again with the new data', () => {
-    function ItemBox({ props }) { return `<b>${props.text}</b>`; }
+    function ItemBox({ props }) { return html`<b>${props.text}</b>`; }
     const stratox = new Stratox();
     const item = stratox.view(ItemBox, { text: 'one' });
     stratox.execute();
@@ -474,7 +476,7 @@ describe('through Stratox', () => {
   });
 
   test('setData before execute replaces the data the view renders', () => {
-    function ItemData({ props }) { return `<b>${props.text}</b>`; }
+    function ItemData({ props }) { return html`<b>${props.text}</b>`; }
     const stratox = new Stratox();
     stratox.view(ItemData, { text: 'one' }).setData({ text: 'three' });
 
@@ -482,8 +484,8 @@ describe('through Stratox', () => {
   });
 
   test('an item\'s toString renders the whole view, not only the item, and renders again on every call (audit stratox F27, kept by D-029)', () => {
-    function ItemFirst() { return '<i>first</i>'; }
-    function ItemSecond() { return '<i>second</i>'; }
+    function ItemFirst() { return html`<i>first</i>`; }
+    function ItemSecond() { return html`<i>second</i>`; }
     let renders = 0;
     function ItemCount() { renders += 1; return ''; }
     const stratox = new Stratox();

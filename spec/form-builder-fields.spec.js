@@ -1,7 +1,9 @@
 import {
   afterAll, afterEach, beforeAll, describe, expect, test, vi,
 } from 'vitest';
-import { Stratox, StratoxTemplate } from '../src/index';
+import {
+  Stratox, StratoxTemplate, html,
+} from '../src/index';
 import StratoxBuilder from '../src/StratoxBuilder';
 
 // Roadmap 2.10 (a): the simple field types of the form builder (text, password, date,
@@ -296,7 +298,7 @@ describe('values', () => {
 });
 
 describe('escaping form values (audit stratox F11)', () => {
-  test('a label is inserted as HTML, so it can hold a link (audit stratox F11, component part)', () => {
+  test('a label is inserted as HTML, so it can hold a link (form labels are outside D-030)', () => {
     expect(render((form) => form.form('name').setLabel('<b>Name</b>'))).toContain('<label><b>Name</b>');
   });
 
@@ -363,7 +365,7 @@ describe('field type lookup', () => {
   });
 
   test('a registered component with the name of a field type replaces that field and gets data.data as props', () => {
-    function textarea({ props }) { return `<custom-textarea>${props.rows}</custom-textarea>`; }
+    function textarea({ props }) { return html`<custom-textarea>${props.rows}</custom-textarea>`; }
     Stratox.setComponent('textarea', textarea);
     try {
       expect(render((form) => form.form('note', { data: { rows: 4 } }).setType('textarea')))
@@ -391,11 +393,11 @@ describe('field type lookup', () => {
 describe('custom template', () => {
   class CustomTemplate extends StratoxTemplate {
     rating(helper) {
-      return this.container(() => `<x-rating name="${this.name}" data-helper="${helper.from}"></x-rating>`);
+      return this.container(() => html`<x-rating name="${this.name}" data-helper="${helper.from}"></x-rating>`);
     }
 
     text() {
-      return `<x-text name="${this.name}"></x-text>`;
+      return html`<x-text name="${this.name}"></x-text>`;
     }
 
     docsPassword() {

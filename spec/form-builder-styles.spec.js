@@ -2,7 +2,9 @@
 import {
   afterAll, beforeAll, describe, expect, test,
 } from 'vitest';
-import { Stratox, StratoxTemplate } from '../src/index';
+import {
+  Stratox, StratoxTemplate, html,
+} from '../src/index';
 import StratoxBuilder from '../src/StratoxBuilder';
 
 // Roadmap 2.10 (d): the builder's style helpers (addStyles, clearStyles), and the other
@@ -50,7 +52,7 @@ describe('addStyles', () => {
   test('writes the styles into one style block after the view, with camelCase properties in kebab-case', () => {
     function StyledBox({ props, context }) {
       context.addStyles({ '.box': { backgroundColor: 'red', fontSize: '2px' }, '.box p': { margin: 0 } });
-      return `<div class="box">${props.text}</div>`;
+      return html`<div class="box">${props.text}</div>`;
     }
 
     expect(render((view) => view.view(StyledBox, { text: 'a' }))).toBe(
@@ -155,7 +157,7 @@ describe('style blocks in groups (audit stratox F18, fixed)', () => {
   test('a styled field in a group writes one block at the end with its rule once (audit stratox F18, fixed)', () => {
     function StyledGroupField({ context }) {
       context.addStyles({ '.f': { color: 'red' } });
-      return '<i>f</i>';
+      return html`<i>f</i>`;
     }
     Stratox.setComponent('styledGroupField', StyledGroupField);
     try {
@@ -177,7 +179,7 @@ describe('style blocks in groups (audit stratox F18, fixed)', () => {
   test('the styles of a view before a group are written once, after everything (audit stratox F18, fixed)', () => {
     function StyledBeforeGroup({ context }) {
       context.addStyles({ '.box': { color: 'red' } });
-      return '<div class="box"></div>';
+      return html`<div class="box"></div>`;
     }
 
     const output = render((form) => {

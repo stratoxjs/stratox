@@ -23,8 +23,8 @@ The library version provides a lightweight, flexible tool that integrates seamle
 ## Example
 Below is a just **basic** example to demonstrate how easy it is to build a component. 
 ```js
-export default function MyTextComponent({ props }) {
-    return `
+export default function MyTextComponent({ props, html }) {
+    return html`
     <header>
         <h1>${props.headline}</h1>
         <p>${props.content}</p>
@@ -32,6 +32,10 @@ export default function MyTextComponent({ props }) {
     `;
 }
 ```
+
+Markup comes from the `html` tag, which escapes every value it inserts, so data from users or servers cannot
+inject HTML. A component that returns a plain string is shown as text. To insert markup you trust, wrap it in
+`raw(...)`; `html`, `raw` and `escape` are also named exports: `import { html, raw, escape } from 'stratox'`.
 ### Resulting in
 
 ![enter image description here](https://wazabii.se/github-assets/example-result-about.png)

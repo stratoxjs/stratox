@@ -8,7 +8,9 @@
 
 import StratoxItem from './StratoxItem.js';
 import { addHandler } from './StratoxHandlers.js';
-import { html, raw, escape } from './StratoxHtml.js';
+import {
+  html, raw, escape, SafeHtml,
+} from './StratoxHtml.js';
 
 export default class StratoxBuilder {
   static factory = {};
@@ -428,7 +430,7 @@ export default class StratoxBuilder {
             },
           ]
           : [dataArg, this.containerInst, helper, this];
-        out = fn.apply(this.view, args);
+        out = this.#componentMarkup(fn.apply(this.view, args));
       } else {
         out = this.#getField(this.data.type);
       }
@@ -449,6 +451,18 @@ export default class StratoxBuilder {
     if (typeof value === 'string') return value;
     if (typeof value === 'number') return String(value);
     return '';
+  }
+
+  /**
+   * What a component returned, as HTML. Markup must come from html`...` or raw(); a plain string
+   * is text, so it is escaped (D-030). Nothing, null and false give nothing.
+   * @param  {mixed} output
+   * @return {string}
+   */
+  #componentMarkup(output) {
+    if (output instanceof SafeHtml) return output.toString();
+    if (!output) return '';
+    return escape(output);
   }
 
   /**

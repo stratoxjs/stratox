@@ -141,12 +141,33 @@ describe('text field and the container', () => {
     expect(stratox.getResponse()).toContain('<label>After');
   });
 
-  test('update(name, data) throws a TypeError for a form item, which has no #defualt suffix (audit stratox F32)', () => {
+  test('update(name, fn) finds a form item by its name and renders it again (audit stratox F32, fixed)', () => {
     const stratox = new Stratox();
-    stratox.form('name');
+    stratox.form('name').setLabel('Before');
     stratox.execute();
 
-    expect(() => stratox.update('name', { label: 'x' })).toThrow(TypeError);
+    stratox.update('name', (data, item) => item.setLabel('After'));
+
+    expect(stratox.getResponse()).toContain('<label>After');
+  });
+
+  test('update(name, data) merges into the form item\'s data, as for a view (audit stratox F32, fixed)', () => {
+    const stratox = new Stratox();
+    const item = stratox.form('name', { data: { a: 1 } });
+    stratox.execute();
+
+    stratox.update('name', { b: 2 });
+
+    expect(item.data).toEqual({ a: 1, b: 2 });
+  });
+
+  test('update(name, fn) before execute finds a form item too (audit stratox F32, fixed)', () => {
+    const stratox = new Stratox();
+    stratox.form('name').setLabel('Before');
+
+    stratox.update('name', (data, item) => item.setLabel('After'));
+
+    expect(stratox.execute()).toContain('<label>After');
   });
 });
 

@@ -215,7 +215,7 @@ describe('setDefault, isLoading and setLoading', () => {
     expect(message).toBe('The first argument of the Stratox builder "setDefault" must be an object!');
   });
 
-  test('setDefault(null) throws a TypeError instead of its own error (audit stratox F38)', () => {
+  test('setDefault(null) throws its own error (audit stratox F38, fixed)', () => {
     let error;
     function DefaultsNull({ context }) {
       try {
@@ -227,7 +227,7 @@ describe('setDefault, isLoading and setLoading', () => {
     }
     render((view) => view.view(DefaultsNull, {}));
 
-    expect(error).toBeInstanceOf(TypeError);
+    expect(error.message).toBe('The first argument of the Stratox builder "setDefault" must be an object!');
   });
 
   test('isLoading is false until setLoading(true)', () => {

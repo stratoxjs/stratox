@@ -55,7 +55,7 @@ export default class StratoxItem {
    * @return {self}
    */
   static view(key, data) {
-    if (typeof data !== 'object') throw new Error('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
+    if (typeof data !== 'object' || data === null) throw new Error('Argumnent 2 (view object data): In StratoxItem.view is required and should be an object');
     const newKey = StratoxItem.getViewName(key);
     const inst = new StratoxItem(newKey);
     inst.compType = 'view';
@@ -170,7 +170,7 @@ export default class StratoxItem {
    * @param {object} obj E.g. {title: "lorem"} = title="lorem"
    */
   setAttr(obj) {
-    if (typeof obj !== 'object') throw new Error('Argumnent 1: Is not a object');
+    if (!StratoxItem.#isObject(obj)) throw new Error('Argumnent 1: Is not a object');
     this.attr = obj;
     return this;
   }
@@ -180,7 +180,7 @@ export default class StratoxItem {
    * @param {object} obj
    */
   setConfig(obj) {
-    if (typeof obj !== 'object') throw new Error('Argumnent 1: Is not a object');
+    if (!StratoxItem.#isObject(obj)) throw new Error('Argumnent 1: Is not a object');
     this.config = obj;
     return this;
   }
@@ -190,8 +190,9 @@ export default class StratoxItem {
    * @param {object} obj
    */
   setFields(obj) {
+    // Check first, so a rejected call leaves hasFields as it was (audit F24)
+    if (!StratoxItem.#isObject(obj)) throw new Error('Argumnent 1: Is not a object');
     this.hasFields = true;
-    if (typeof obj !== 'object') throw new Error('Argumnent 1: Is not a object');
     const newObj = {};
     Object.entries(obj).forEach(([key, value]) => {
       if (value instanceof StratoxItem) {
@@ -209,7 +210,7 @@ export default class StratoxItem {
    * @param {object} obj { value: title }
    */
   setItems(obj) {
-    if (typeof obj !== 'object') throw new Error('Argumnent 1: Is not a object');
+    if (!StratoxItem.#isObject(obj)) throw new Error('Argumnent 1: Is not a object');
     this.items = obj;
     return this;
   }
@@ -229,7 +230,7 @@ export default class StratoxItem {
    * @param {object} obj
    */
   setData(obj) {
-    if (typeof obj !== 'object') throw new Error('Argumnent 1: Is not a object');
+    if (!StratoxItem.#isObject(obj)) throw new Error('Argumnent 1: Is not a object');
     this.data = obj;
     return this;
   }
@@ -251,6 +252,16 @@ export default class StratoxItem {
       Object.assign(this.data, obj);
     }
     return this;
+  }
+
+  /**
+   * An object or an array, not null: typeof null is "object", but null breaks
+   * the render later (audit F24, F25)
+   * @param  {mixed} value
+   * @return {boolean}
+   */
+  static #isObject(value) {
+    return typeof value === 'object' && value !== null;
   }
 
   /**

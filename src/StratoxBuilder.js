@@ -501,7 +501,8 @@ export default class StratoxBuilder {
    * @param {object} defaultArg
    */
   setDefault(defaultArg) {
-    if (typeof defaultArg !== 'object') {
+    // typeof null is "object", so null needs its own check (audit F38)
+    if (typeof defaultArg !== 'object' || defaultArg === null) {
       throw new Error('The first argument of the Stratox builder "setDefault" must be an object!');
     }
     Object.entries(defaultArg).forEach(([key, row]) => {

@@ -159,7 +159,7 @@ describe('component arguments', () => {
     expect(received).toBe('hi');
   });
 
-  test('a container service named props replaces the props argument (audit stratox F19)', () => {
+  test('a container service named props does not replace the props argument (audit stratox F19, fixed)', () => {
     function ServiceProps({ props }) { return JSON.stringify(props); }
 
     const output = withService('props', { fromService: true }, () => {
@@ -168,7 +168,21 @@ describe('component arguments', () => {
       return stratox.execute();
     });
 
-    expect(output).toBe('{"fromService":true}');
+    expect(output).toBe('{"fromView":true}');
+  });
+
+  test('a container service named view does not replace the view argument (audit stratox F19, fixed)', () => {
+    let received;
+    function ServiceView({ view }) { received = view; return ''; }
+
+    const stratox = withService('view', 'from service', () => {
+      const instance = new Stratox();
+      instance.view(ServiceView, {});
+      instance.execute();
+      return instance;
+    });
+
+    expect(received).toBe(stratox);
   });
 
   test('any other component gets positional arguments (props, container, helper, builder)', () => {

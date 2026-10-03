@@ -4,6 +4,9 @@
   "description": "JavaScript template library designed for the effortless creation of component, views and user interfaces (UI).",
   "type": "module",
   "main": "src/index.js",
+  "files": [
+    "src"
+  ],
   "directories": {
     "src": "src"
   },

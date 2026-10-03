@@ -458,7 +458,11 @@ describe('group fields at runtime', () => {
     expect(values).toEqual({ rows: [{ title: 'in body' }] });
   });
 
-  test('every form without a root element handles the group clicks of every other one (audit stratox F42)', async () => {
+  /**
+   * Render two forms without a root element into #first and #second, sharing body for their events.
+   * @return {Promise<object[]>} the values of the first and the second form
+   */
+  async function twoFormsWithoutRoot() {
     document.body.innerHTML = '<div id="first"></div><div id="second"></div>';
     const firstValues = { rows: [{}] };
     const secondValues = { rows: [{}] };
@@ -469,11 +473,46 @@ describe('group fields at runtime', () => {
       document.getElementById(id).innerHTML = stratox.execute();
     });
     await nextTick();
+    return [firstValues, secondValues];
+  }
+
+  test('a group click in one form without a root element changes only that form (audit stratox F42, fixed)', async () => {
+    const [firstValues, secondValues] = await twoFormsWithoutRoot();
 
     click(document.querySelector('#second .wa-field-group-btn.after'));
 
-    expect(firstValues.rows).toEqual([{}, {}]);
+    expect(firstValues.rows).toEqual([{}]);
     expect(secondValues.rows).toEqual([{}, {}]);
+  });
+
+  test('typing in one form without a root element changes only that form (audit stratox F42, fixed)', async () => {
+    const [firstValues, secondValues] = await twoFormsWithoutRoot();
+
+    typeInto(document.querySelector('#first input[name="rows[0][title]"]'), 'first only');
+
+    expect(firstValues.rows).toEqual([{ title: 'first only' }]);
+    expect(secondValues.rows).toEqual([{}]);
+  });
+
+  test('a form without a root element marks its field containers with data-stratox (audit stratox F42, fixed)', async () => {
+    await twoFormsWithoutRoot();
+
+    const first = [...document.querySelectorAll('#first [data-stratox]')].map((el) => el.dataset.stratox);
+    const second = [...document.querySelectorAll('#second [data-stratox]')].map((el) => el.dataset.stratox);
+
+    expect(first).toHaveLength(2);
+    expect(new Set(first).size).toBe(1);
+    expect(second).toEqual([second[0], second[0]]);
+    expect(second[0]).not.toBe(first[0]);
+  });
+
+  test('a form with a root element, or without a group, gets no data-stratox', async () => {
+    await mount((form) => form.form('rows', { type: 'group' }).setFields({ title: { type: 'text' } }));
+    expect(app().querySelector('[data-stratox]')).toBeNull();
+
+    const stratox = new Stratox();
+    stratox.form('name');
+    expect(stratox.execute()).not.toContain('data-stratox');
   });
 
   test('add-after inserts an empty row after the row and renders again; typed text stays', async () => {

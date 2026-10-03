@@ -30,7 +30,9 @@ export default class StratoxTemplate extends StratoxBuilder {
     // conAttr.id replaces the generated id instead of adding a second one (audit F30)
     const { id = this.getFieldID(), ...otherAttr } = this.conAttr;
     const conAttr = this.getAttrStr(otherAttr);
-    out = `<div id="${this.escapeHtml(id)}" data-index="${this.index}"${conAttr}>`;
+    // A form without a root element marks its fields, so its events can tell them apart (audit F42)
+    const marker = this.formMarker ? ` data-stratox="${this.formMarker}"` : '';
+    out = `<div id="${this.escapeHtml(id)}" data-index="${this.index}"${marker}${conAttr}>`;
     if (this.label) out += `<label>${this.label}${reqSymbol}<div class="message hide"></div></label>`;
     if (this.description) out += `<div class="description legend">${this.description}</div>`;
     out += call();

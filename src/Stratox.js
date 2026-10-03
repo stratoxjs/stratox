@@ -56,6 +56,10 @@ export default class Stratox {
 
   #ready = Promise.resolve();
 
+  #formMarker;
+
+  static #formCount = 0;
+
   #blockStates = [];
 
   #item = {};
@@ -641,6 +645,15 @@ export default class Stratox {
     const Handler = Stratox.getFormHandler();
 
     this.#field = new Handler(this.#components, 'view', Stratox.getConfigs(), inst, Stratox.container);
+    const hasGroup = Object.values(this.#components).some((item) => item?.type === 'group');
+    if (!this.#elem && hasGroup) {
+      // Without a root element the group events go to body; the marker tells this form's fields apart (audit F42)
+      if (!this.#formMarker) {
+        Stratox.#formCount += 1;
+        this.#formMarker = String(Stratox.#formCount);
+      }
+      this.#field.formMarker = this.#formMarker;
+    }
 
     // Values are used to trigger magic methods
     this.#field.setValues(this.#values);
@@ -796,13 +809,16 @@ export default class Stratox {
     const inst = this;
     this.onload(() => {
       inst.bindEvent(elem, 'input', (e, target) => {
+        if (!inst.#ownsElement(target)) return;
         const key = target.dataset.name;
         const type = target.getAttribute('type');
         let value = (target.value ?? '');
         if (type === 'checkbox' && target.name.endsWith('[]')) {
           // A checkbox with several items keeps an array of its checked values (audit F40)
           const boxes = [...e.currentTarget.querySelectorAll('input[type="checkbox"]')];
-          value = boxes.filter((box) => box.dataset.name === key && box.checked).map((box) => box.value);
+          value = boxes
+            .filter((box) => box.dataset.name === key && box.checked && inst.#ownsElement(box))
+            .map((box) => box.value);
         } else if (type === 'checkbox' || type === 'radio') {
           value = target.checked ? value : 0;
         }
@@ -810,6 +826,7 @@ export default class Stratox {
       });
 
       inst.bindEvent(elem, 'click', '.wa-field-group-btn', (e, target) => {
+        if (!inst.#ownsElement(target)) return;
         e.preventDefault();
         const key = target.dataset.name;
         const pos = parseInt(target.dataset.position, 10);
@@ -817,12 +834,24 @@ export default class Stratox {
       });
 
       inst.bindEvent(elem, 'click', '.wa-field-group-delete-btn', (e, target) => {
+        if (!inst.#ownsElement(target)) return;
         e.preventDefault();
         const key = target.dataset.name;
         const pos = parseInt(target.dataset.position, 10);
         inst.deleteGroupField(key, pos);
       });
     });
+  }
+
+  /**
+   * Is the element one of this form's? Forms without a root element share body for their events,
+   * so an element marked by another form is not this one's. Unmarked elements count as this form's (audit F42).
+   * @param  {Element} element
+   * @return {boolean}
+   */
+  #ownsElement(element) {
+    const marked = element.closest('[data-stratox]');
+    return !marked || marked.dataset.stratox === this.#formMarker;
   }
 
   /**

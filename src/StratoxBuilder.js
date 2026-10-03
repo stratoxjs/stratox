@@ -40,6 +40,8 @@ export default class StratoxBuilder {
 
   conAttr = {};
 
+  formMarker = null; // Set for a form without a root element; container() writes it as data-stratox (audit F42)
+
   hasFields = true;
 
   config = {};

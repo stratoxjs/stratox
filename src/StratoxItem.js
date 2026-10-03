@@ -27,6 +27,8 @@ export default class StratoxItem {
 
   isLoading = false;
 
+  inGroup = false; // Set by setFields: the item renders inside a group, not on its own (audit F37)
+
   data = {}; // Merge all values to data
 
   constructor(type) {
@@ -197,7 +199,9 @@ export default class StratoxItem {
     const newObj = {};
     Object.entries(obj).forEach(([key, value]) => {
       if (value instanceof StratoxItem) {
-        newObj[value.getName()] = value.get();
+        const item = value;
+        item.inGroup = true;
+        newObj[item.getName()] = item.get();
       } else {
         newObj[key] = value;
       }

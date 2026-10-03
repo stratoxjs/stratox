@@ -813,7 +813,8 @@ export default class Stratox {
     const inst = this;
     if (Object.keys(this.#creator).length > 0) {
       Object.entries(this.#creator).forEach(([k, v]) => {
-        inst.add(v);
+        // An item passed to a group's setFields renders inside the group only (audit F37)
+        if (!v.inGroup) inst.add(v);
       });
     }
   }

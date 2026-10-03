@@ -236,11 +236,18 @@ describe('controls', () => {
     expect(output).toContain('data-length="2"');
   });
 
-  test('the add-after button has no closing </svg> (audit stratox F20)', () => {
+  test('the add-after button closes its svg (audit stratox F20, fixed)', () => {
     const output = render(controlled);
     const afterButton = output.slice(output.indexOf('wa-field-group-btn form-group-icon after'));
 
-    expect(afterButton).toContain('<path d="M16 2 L16 30 M2 16 L30 16" /></a>');
+    expect(afterButton).toContain('<path d="M16 2 L16 30 M2 16 L30 16" /></svg></a>');
+  });
+
+  test('every svg in a group with controls is closed (audit stratox F20, fixed)', () => {
+    const output = render(controlled, { rows: [{}, {}] });
+
+    expect(output.match(/<svg/g)).toHaveLength(6);
+    expect(output.match(/<\/svg>/g)).toHaveLength(6);
   });
 
   test('without controls there are no cards and no buttons', () => {

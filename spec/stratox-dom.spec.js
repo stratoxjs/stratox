@@ -8,11 +8,9 @@ import { Stratox, StratoxTemplate } from '../src/index';
 // protection, the onload and done hooks, bind(), block(), bindEvent(), and the group
 // fields at runtime (typing, add and delete rows).
 //
-// happy-dom does not repair the missing </svg> of a group's add-after button (audit
-// stratox F20): everything after that button lands inside the SVG. Chrome repairs it
-// (checked 2026-10-03). So the group tests here keep content out of that position:
-// one row with controls, checkboxes before the group. Several rows with controls are
-// for the real-browser layer (roadmap 2.13).
+// Before audit stratox F20 was fixed, a group's add-after button lacked </svg>, which
+// happy-dom does not repair, so most group tests here use one row with controls.
+// The second-row test below needs the fix.
 //
 // Components are registered globally by function name (audit stratox F1), so every
 // component in this file has its own name.
@@ -441,6 +439,20 @@ describe('group fields at runtime', () => {
     expect(values.rows).toEqual([{ title: 'typed' }, {}]);
     expect(app().querySelector('input[name="rows[0][title]"]').getAttribute('value')).toBe('typed');
     expect(app().querySelectorAll('[name="rows[1][title]"]')).toHaveLength(1);
+  });
+
+  test('the second row\'s add-after button adds a third row in happy-dom too (audit stratox F20, fixed)', async () => {
+    const values = { rows: [{ title: 'A' }, { title: 'B' }] };
+    await mount((form) => form.form('rows', { type: 'group' })
+      .setFields({ title: { type: 'text' } })
+      .setConfig({ nestedNames: true, controls: true }), values);
+    const button = app().querySelector('.wa-field-group-btn.after[data-position="1"]');
+
+    expect(button.namespaceURI).toBe('http://www.w3.org/1999/xhtml');
+    click(button);
+    await nextTick();
+
+    expect(values.rows).toEqual([{ title: 'A' }, { title: 'B' }, {}]);
   });
 
   test('add-before inserts an empty row before the row', async () => {

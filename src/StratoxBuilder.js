@@ -8,6 +8,7 @@
 
 import StratoxItem from './StratoxItem.js';
 import { addHandler } from './StratoxHandlers.js';
+import { html, raw, escape } from './StratoxHtml.js';
 
 export default class StratoxBuilder {
   static factory = {};
@@ -421,6 +422,9 @@ export default class StratoxBuilder {
                 }
               },
               view: inst.view,
+              html,
+              raw,
+              escape,
             },
           ]
           : [dataArg, this.containerInst, helper, this];

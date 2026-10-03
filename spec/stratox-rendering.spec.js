@@ -306,7 +306,7 @@ describe('update', () => {
     expect(stratox.getResponse()).toBe('n=3');
   });
 
-  test('view(name, data) again after execute does not update the output (audit stratox F7)', () => {
+  test('view(name, data) again after execute, then update(), renders the new data (audit stratox F7, fixed)', () => {
     function ViewAgain({ props }) { return `n=${props.n}`; }
     Stratox.setComponent('view-again', ViewAgain);
     const stratox = new Stratox();
@@ -314,9 +314,33 @@ describe('update', () => {
     stratox.execute();
 
     stratox.view('view-again', { n: 2 });
-
     expect(stratox.getResponse()).toBe('n=1');
-    expect(stratox.execute()).toBe('n=1');
+
+    stratox.update();
+    expect(stratox.getResponse()).toBe('n=2');
+  });
+
+  test('view(name, data) again merges into the view\'s data, as the docs\' "Update example 2" (audit stratox F7, fixed)', () => {
+    function IngressAgain({ props }) { return `${props.headline}|${props.content}`; }
+    Stratox.setComponent('ingress-again', IngressAgain);
+    const stratox = new Stratox();
+    stratox.view('ingress-again', { headline: 'One', content: 'Text' });
+    stratox.execute();
+
+    stratox.view('ingress-again', { headline: 'Two' });
+    stratox.update();
+
+    expect(stratox.getResponse()).toBe('Two|Text');
+  });
+
+  test('view(name, data) twice before execute keeps only the second data, as before', () => {
+    function ViewTwiceBefore({ props }) { return `${props.a}|${props.b}`; }
+    Stratox.setComponent('view-twice-before', ViewTwiceBefore);
+    const stratox = new Stratox();
+    stratox.view('view-twice-before', { a: 1 });
+    stratox.view('view-twice-before', { b: 2 });
+
+    expect(stratox.execute()).toBe('undefined|2');
   });
 
   test.each([

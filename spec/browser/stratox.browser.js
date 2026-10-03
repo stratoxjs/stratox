@@ -141,7 +141,7 @@ describe('group fields with several rows', () => {
     expect(app().querySelector('.wa-field-group-delete-btn')).toBeNull();
   });
 
-  test('clicking two boxes of a multi-item checkbox keeps only the last value (audit stratox F40)', async () => {
+  test('clicking two boxes of a multi-item checkbox keeps both values (audit stratox F40, fixed)', async () => {
     const values = { tags: [] };
     await mount((form) => {
       form.form('tags').setType('checkbox').setItems({ a: 'A', b: 'B' });
@@ -151,6 +151,6 @@ describe('group fields with several rows', () => {
     app().querySelector('input[name="tags[]"][value="b"]').click();
     app().querySelector('input[name="tags[]"][value="a"]').click();
 
-    expect(values.tags).toBe('a');
+    expect(values.tags).toEqual(['a', 'b']);
   });
 });

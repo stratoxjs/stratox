@@ -505,7 +505,7 @@ describe('group fields at runtime', () => {
     expect(values).toEqual({ fields: [{ type: [{ title: 'A' }, {}] }] });
   });
 
-  test('a multi-item checkbox keeps only the last checked value, and 0 after an uncheck (audit stratox F40)', async () => {
+  test('a multi-item checkbox keeps an array of its checked values (audit stratox F40, fixed)', async () => {
     const values = { tags: [] };
     await mount((form) => {
       form.form('tags').setType('checkbox').setItems({ a: 'A', b: 'B' });
@@ -518,11 +518,51 @@ describe('group fields at runtime', () => {
     boxB.dispatchEvent(new Event('input', { bubbles: true }));
     boxA.checked = true;
     boxA.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(values.tags).toBe('a');
+    expect(values.tags).toEqual(['a', 'b']);
 
     boxA.checked = false;
     boxA.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(values.tags).toBe(0);
+    expect(values.tags).toEqual(['b']);
+
+    boxB.checked = false;
+    boxB.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(values.tags).toEqual([]);
+  });
+
+  test('the checked boxes stay checked after the form renders again (audit stratox F40, fixed)', async () => {
+    const values = { tags: [], rows: [{}] };
+    await mount((form) => {
+      form.form('tags').setType('checkbox').setItems({ a: 'A', b: 'B' });
+      form.form('rows', { type: 'group' }).setFields({ title: { type: 'text' } }).setConfig({ nestedNames: true, controls: true });
+    }, values);
+    ['a', 'b'].forEach((value) => {
+      const box = app().querySelector(`input[name="tags[]"][value="${value}"]`);
+      box.checked = true;
+      box.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    click(app().querySelector('.wa-field-group-btn.after'));
+    await nextTick();
+
+    expect(app().querySelector('input[name="tags[]"][value="a"]').hasAttribute('checked')).toBe(true);
+    expect(app().querySelector('input[name="tags[]"][value="b"]').hasAttribute('checked')).toBe(true);
+  });
+
+  test('a checkbox with one item still writes its value, or 0 when unchecked', async () => {
+    const values = {};
+    await mount((form) => {
+      form.form('agree').setType('checkbox').setItems({ yes: 'Yes' });
+      form.form('rows', { type: 'group' }).setFields({ title: { type: 'text' } });
+    }, values);
+    const box = app().querySelector('input[name="agree"]');
+
+    box.checked = true;
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(values.agree).toBe('yes');
+
+    box.checked = false;
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(values.agree).toBe(0);
   });
 
   test('editFieldValue takes a comma path or an array and creates missing objects on the way', () => {

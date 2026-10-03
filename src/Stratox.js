@@ -728,7 +728,11 @@ export default class Stratox {
         const key = target.dataset.name;
         const type = target.getAttribute('type');
         let value = (target.value ?? '');
-        if (type === 'checkbox' || type === 'radio') {
+        if (type === 'checkbox' && target.name.endsWith('[]')) {
+          // A checkbox with several items keeps an array of its checked values (audit F40)
+          const boxes = [...e.currentTarget.querySelectorAll('input[type="checkbox"]')];
+          value = boxes.filter((box) => box.dataset.name === key && box.checked).map((box) => box.value);
+        } else if (type === 'checkbox' || type === 'radio') {
           value = target.checked ? value : 0;
         }
         inst.editFieldValue(key, value);

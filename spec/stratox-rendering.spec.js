@@ -443,8 +443,25 @@ describe('partial', () => {
   });
 });
 
-test('getComponent always throws a TypeError (audit stratox F5)', () => {
-  expect(() => new Stratox().getComponent('any')).toThrow('this.open is not a function');
+describe('getComponent', () => {
+  test('returns the function registered with setComponent (audit stratox F5, fixed)', () => {
+    function RegisteredForGet() { return ''; }
+    Stratox.setComponent('registered-for-get', RegisteredForGet);
+
+    expect(new Stratox().getComponent('registered-for-get')).toBe(RegisteredForGet);
+  });
+
+  test('returns a function shown with view() under its name (audit stratox F5, fixed)', () => {
+    function ShownForGet() { return ''; }
+    const stratox = new Stratox();
+    stratox.view(ShownForGet, {});
+
+    expect(stratox.getComponent('ShownForGet')).toBe(ShownForGet);
+  });
+
+  test('returns null for a name nothing is registered under (audit stratox F5, fixed)', () => {
+    expect(new Stratox().getComponent('nothing-registered')).toBeNull();
+  });
 });
 
 describe('component registry (audit stratox F1, fixed)', () => {

@@ -99,10 +99,11 @@ describe('text field and the container', () => {
     expect(output).toContain('class="mb-15 field-name half"');
   });
 
-  test('conAttr.id adds a second id attribute to the container (audit stratox F30)', () => {
+  test('conAttr.id replaces the generated container id (audit stratox F30, fixed)', () => {
     const output = render((form) => form.form('name', { conAttr: { id: 'mine' } }));
 
-    expect(output).toContain('<div id="wa-fi-view-0" data-index="0" id="mine" class="mb-15 field-name w-full">');
+    expect(output).toContain('<div id="mine" data-index="0" class="mb-15 field-name w-full">');
+    expect(output.match(/ id="/g)).toHaveLength(1);
   });
 
   test('ids and data-index count up over the fields of a form', () => {

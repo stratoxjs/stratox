@@ -27,8 +27,10 @@ export default class StratoxTemplate extends StratoxBuilder {
     }
     this.conAttr.class = `mb-15 field-${this.nameJoin}${attrClass}`;
 
-    const conAttr = this.getAttrStr(this.conAttr);
-    out = `<div id="${this.getFieldID()}" data-index="${this.index}"${conAttr}>`;
+    // conAttr.id replaces the generated id instead of adding a second one (audit F30)
+    const { id = this.getFieldID(), ...otherAttr } = this.conAttr;
+    const conAttr = this.getAttrStr(otherAttr);
+    out = `<div id="${this.escapeHtml(id)}" data-index="${this.index}"${conAttr}>`;
     if (this.label) out += `<label>${this.label}${reqSymbol}<div class="message hide"></div></label>`;
     if (this.description) out += `<div class="description legend">${this.description}</div>`;
     out += call();
@@ -239,7 +241,9 @@ export default class StratoxTemplate extends StratoxBuilder {
     const inst = this;
     return this.container(() => {
       let out = '';
-      out += `<div id="${inst.getFieldID()}" class="mb-20 wa-advanced-grouped-field">`;
+      // The wrapper and the rows get ids of their own, not the group's (audit F35)
+      out += `<div id="${inst.getFieldID()}-group" class="mb-20 wa-advanced-grouped-field">`;
+      inst.index++;
       inst.groupFactory((o, val) => {
         out += o;
       }, true);

@@ -411,15 +411,12 @@ export default class Stratox {
   }
 
   /**
-   * Form and component are the same, but below while the usage of the
-   * form is used in the context in a unit, component is not.
-   * @param  {string} name The component name
-   * @param  {object} data Pass data to the component (Not required)
-   * @return {StratoxItem}
+   * Get a registered component function (audit F5, D-029)
+   * @param  {string} name The name it was registered under, by setComponent() or view()
+   * @return {function|null} Null when nothing is registered under the name
    */
-  getComponent(name, data) {
-    const inst = this.open();
-    return inst.form(name, data);
+  getComponent(name) {
+    return Stratox.getFormHandler().factory[name] ?? null;
   }
 
   /**

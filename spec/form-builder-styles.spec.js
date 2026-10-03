@@ -151,8 +151,8 @@ describe('clearStyles', () => {
   });
 });
 
-describe('style blocks in groups (audit stratox F18)', () => {
-  test('a styled field in a group writes a block per row and one at the end, and its rule once per row', () => {
+describe('style blocks in groups (audit stratox F18, fixed)', () => {
+  test('a styled field in a group writes one block at the end with its rule once (audit stratox F18, fixed)', () => {
     function StyledGroupField({ context }) {
       context.addStyles({ '.f': { color: 'red' } });
       return '<i>f</i>';
@@ -166,14 +166,15 @@ describe('style blocks in groups (audit stratox F18)', () => {
         { rows: [{}, {}] },
       );
 
-      expect(count(output, /<style/g)).toBe(3);
-      expect(count(output, /\.f \{ color: red; \}/g)).toBe(5);
+      expect(count(output, /<style/g)).toBe(1);
+      expect(count(output, /\.f \{ color: red; \}/g)).toBe(1);
+      expect(output.endsWith('<style type="text/css">.f { color: red; } </style>')).toBe(true);
     } finally {
       delete StratoxBuilder.factory.styledGroupField;
     }
   });
 
-  test('the styles of a view before a group are written again inside the group', () => {
+  test('the styles of a view before a group are written once, after everything (audit stratox F18, fixed)', () => {
     function StyledBeforeGroup({ context }) {
       context.addStyles({ '.box': { color: 'red' } });
       return '<div class="box"></div>';
@@ -184,8 +185,8 @@ describe('style blocks in groups (audit stratox F18)', () => {
       form.form('rows', { type: 'group' }).setFields({ title: { type: 'text' } });
     });
 
-    expect(count(output, /<style type="text\/css">\.box \{ color: red; \} <\/style>/g)).toBe(2);
-    expect(output).toContain('data-name="title"></div><style type="text/css">.box { color: red; } </style></div></div>');
+    expect(count(output, /<style type="text\/css">\.box \{ color: red; \} <\/style>/g)).toBe(1);
+    expect(output.endsWith('</div></div></div><style type="text/css">.box { color: red; } </style>')).toBe(true);
   });
 });
 

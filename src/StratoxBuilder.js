@@ -233,7 +233,7 @@ export default class StratoxBuilder {
             Object.entries(cloneFields).forEach(([name, arr]) => {
               const fk = (nestedNames) ? `${nj},${nk},${name}` : name;
               fields[fk] = arr;
-              o += inst.#html(fields, false);
+              o += inst.#html(fields, false, true);
               fields = {};
             });
           }
@@ -320,10 +320,11 @@ export default class StratoxBuilder {
 
   /**
    * Generate HTML
-   * @param  {object} fields
+   * @param  {object}  fields
+   * @param  {boolean} nested  True for the fields of a group row; the styles are then left to the outer call
    * @return {string}
    */
-  #html(fields, formatData) {
+  #html(fields, formatData, nested = false) {
     let build = '';
     if (fields) {
       Object.entries(fields).forEach(([name, data]) => {
@@ -332,8 +333,9 @@ export default class StratoxBuilder {
         build += this.#build(formatData);
       });
 
+      // Only the outer call writes the style block, so a group does not repeat it (audit F18)
       const styleEntries = Object.entries(this.#styles);
-      if (styleEntries.length) {
+      if (styleEntries.length && !nested) {
         build += '<style type="text/css">';
         Object.entries(this.#styles).forEach(([key, value]) => {
           build += value;
@@ -549,8 +551,7 @@ export default class StratoxBuilder {
       throw new Error('Argument 1 in styles needs to be a non-null object!');
     }
 
-    const styledKey = key ? `${key}-` : '';
-    const styleId = `styled-${styledKey}${this.name.split('#', 1)[0].toLowerCase()}-component`;
+    const styleId = this.#styleId(key);
 
     if (!this.#styles?.[styleId]) {
       let styleStr = '';
@@ -571,12 +572,23 @@ export default class StratoxBuilder {
    * @return {void}
    */
   clearStyles(key) {
-    const styledKey = key ? `${key}-` : '';
-    const styleId = `styled-${styledKey}${this.name.split('#', 1)[0].toLowerCase()}-component`;
+    const styleId = this.#styleId(key);
 
     if (this.#styles?.[styleId]) {
       delete this.#styles[styleId];
     }
+  }
+
+  /**
+   * The id of a component's styles. It comes from the component type, not the field name:
+   * in a group the name holds the row path, so every row would add the styles again (audit F18).
+   * @param  {string} key  Optional identifier from addStyles or clearStyles
+   * @return {string}
+   */
+  #styleId(key) {
+    const styledKey = key ? `${key}-` : '';
+    const component = String(this.data?.type ?? this.name);
+    return `styled-${styledKey}${component.split('#', 1)[0].toLowerCase()}-component`;
   }
 
   /**

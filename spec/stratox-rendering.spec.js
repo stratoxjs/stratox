@@ -304,15 +304,40 @@ describe('update', () => {
   });
 
   test.each([
-    { call: 'update()', run: (stratox) => stratox.update() },
-    { call: 'update(name, data)', run: (stratox) => stratox.update('BeforeExecute', { n: 2 }) },
-    { call: 'updateAll(fn)', run: (stratox) => stratox.updateAll(() => {}) },
-  ])('$call before execute throws a TypeError (audit stratox F8)', ({ run }) => {
+    { call: 'update()', run: (stratox) => stratox.update(), expected: 'n=1' },
+    { call: 'update(name, data)', run: (stratox) => stratox.update('BeforeExecute', { n: 2 }), expected: 'n=2' },
+    {
+      call: 'update(name, fn)',
+      run: (stratox) => stratox.update('BeforeExecute', (data) => { const changed = data; changed.n = 3; }),
+      expected: 'n=3',
+    },
+    {
+      call: 'updateAll(fn)',
+      run: (stratox) => stratox.updateAll((data) => { const changed = data; changed.n = 4; }),
+      expected: 'n=4',
+    },
+  ])('$call before execute does not throw, and execute renders the change (audit stratox F8, fixed)', ({ run, expected }) => {
     function BeforeExecute({ props }) { return `n=${props.n}`; }
     const stratox = new Stratox();
     stratox.view(BeforeExecute, { n: 1 });
 
-    expect(() => run(stratox)).toThrow(TypeError);
+    expect(run(stratox)).toBe(stratox);
+    expect(stratox.execute()).toBe(expected);
+  });
+
+  test('update(name, fn) before execute gets (data, item), as after execute (audit stratox F8, fixed)', () => {
+    function BeforeExecuteArgs({ props }) { return `n=${props.n}`; }
+    const stratox = new Stratox();
+    const item = stratox.view(BeforeExecuteArgs, { n: 1 });
+    let received;
+
+    stratox.update('BeforeExecuteArgs', (data, component) => { received = [data, component]; });
+
+    expect(received).toEqual([{ n: 1 }, item]);
+  });
+
+  test('update(name, data) for an unknown view still throws a TypeError', () => {
+    expect(() => new Stratox().update('NoSuchView', { n: 1 })).toThrow(TypeError);
   });
 });
 

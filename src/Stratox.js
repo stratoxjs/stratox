@@ -382,21 +382,35 @@ export default class Stratox {
       return this.updateAll(key);
     }
     if (key === undefined) {
-      this.#observer.notify();
+      this.#observer?.notify();
       return this;
     }
     if (key instanceof StratoxItem) {
       this.#components[key.getName()] = key;
     } else {
       const viewKey = StratoxItem.getViewName(key);
+      const component = this.#findComponent(viewKey);
       if (typeof data === 'function') {
-        data(this.#components[viewKey]?.data, this.#components[viewKey]);
+        data(component?.data, component);
       } else {
-        Object.assign(this.#components[viewKey].data, data);
+        Object.assign(component.data, data);
       }
     }
-    this.#observer.set(this.#components);
+    // Before execute() there is nothing to render yet; execute() renders the changed data (audit F8)
+    this.#observer?.set(this.#components);
     return this;
+  }
+
+  /**
+   * Find a view by its full name. Before execute() the views are only in the creator list.
+   * @param  {string} viewKey  e.g. "Card#defualt"
+   * @return {StratoxItem|object|undefined}
+   */
+  #findComponent(viewKey) {
+    if (this.#components[viewKey]) {
+      return this.#components[viewKey];
+    }
+    return Object.values(this.#creator).find((item) => item.getName() === viewKey);
   }
 
   /**
@@ -405,11 +419,13 @@ export default class Stratox {
    * @return {self}
    */
   updateAll(fn, update) {
-    Object.entries(this.#components).forEach(([name, row]) => {
+    // Before execute() the views are only in the creator list (audit F8)
+    const components = this.#observer ? this.#components : this.#creator;
+    Object.entries(components).forEach(([name, row]) => {
       fn(row?.data, row);
     });
     if (update !== false) {
-      this.#observer.set(this.#components);
+      this.#observer?.set(this.#components);
     }
     return this;
   }

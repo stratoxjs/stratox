@@ -100,11 +100,21 @@ describe('a group, one level', () => {
     expect(output.match(/value="([^"]*)"/g)).toEqual(['value="top"', 'value="top"']);
   });
 
-  test('an explicit name on a child replaces its row path, also with nestedNames (audit stratox F36)', () => {
+  test('with nestedNames, a child\'s own name replaces its key inside the row path (audit stratox F36, fixed)', () => {
     const output = render(
       (form) => form.form('rows', { type: 'group' })
         .setFields({ title: { type: 'text', name: 'custom' } })
         .setConfig({ nestedNames: true }),
+      { rows: [{ custom: 'A' }, { custom: 'B' }] },
+    );
+
+    expect(names(output)).toEqual(['rows[0][custom]', 'rows[1][custom]']);
+    expect(valueOf(output, 'rows[1][custom]')).toBe('B');
+  });
+
+  test('without nestedNames, a child\'s own name is used as it is', () => {
+    const output = render(
+      (form) => form.form('rows', { type: 'group' }).setFields({ title: { type: 'text', name: 'custom' } }),
       { rows: [{}, {}] },
     );
 
@@ -131,8 +141,7 @@ describe('a group, one level', () => {
     });
 
     expect(output.match(/<label>Child/g)).toHaveLength(2);
-    // The item has its own name, so the row path is dropped too (F36)
-    expect(names(output)).toEqual(['child', 'child']);
+    expect(names(output)).toEqual(['child', 'rows[0][child]']);
   });
 
   test('the group container, its wrapper and its first child share one id (audit stratox F35)', () => {

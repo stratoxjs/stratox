@@ -247,8 +247,11 @@ export default class StratoxBuilder {
 
           if (typeof cloneFields === 'object') {
             Object.entries(cloneFields).forEach(([name, arr]) => {
-              const fk = (nestedNames) ? `${nj},${nk},${name}` : name;
-              fields[fk] = arr;
+              // A child's own name replaces its key, but keeps the row path (audit F36)
+              const hasOwnName = (typeof arr?.name === 'string');
+              const childName = hasOwnName ? arr.name : name;
+              const fk = (nestedNames) ? `${nj},${nk},${childName}` : childName;
+              fields[fk] = (nestedNames && hasOwnName) ? { ...arr, name: fk } : arr;
               o += inst.#html(fields, false, true);
               fields = {};
             });

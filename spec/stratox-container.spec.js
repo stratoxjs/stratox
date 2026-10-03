@@ -175,7 +175,7 @@ describe('resetAll and list', () => {
     expect(container.list()).toEqual({ keep: 1 });
   });
 
-  test('resetAll calls a kept factory and stores its result instead of the factory (audit stratox F15)', () => {
+  test('resetAll keeps a kept factory as a factory and does not call it (audit stratox F15, fixed)', () => {
     const container = new StratoxContainer();
     let calls = 0;
     container.set('counter', () => {
@@ -185,13 +185,19 @@ describe('resetAll and list', () => {
 
     container.resetAll(['counter']);
 
-    expect(calls).toBe(1);
-    expect(container.isFactory('counter')).toBe(false);
+    expect(calls).toBe(0);
+    expect(container.isFactory('counter')).toBe(true);
     expect(container.get('counter')).toEqual({ calls: 1 });
+    expect(container.get('counter')).toEqual({ calls: 2 });
   });
 
-  test('resetAll throws a TypeError without a list', () => {
-    expect(() => new StratoxContainer().resetAll()).toThrow(TypeError);
+  test('resetAll without a list removes every service (audit stratox F15, fixed)', () => {
+    const container = new StratoxContainer();
+    container.set('drop', 1);
+
+    container.resetAll();
+
+    expect(container.list()).toEqual({});
   });
 
   test('list returns the stored object itself', () => {

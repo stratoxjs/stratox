@@ -114,14 +114,16 @@ export default class StratoxContainer {
 
   /**
    * Will reset the container
+   * @param  {array} exclude  Keys to keep; without it every service is removed
    * @return {void}
    */
-  resetAll(exclude) {
+  resetAll(exclude = []) {
     const inst = this;
     const newService = {};
     exclude.forEach((keyValue) => {
       if (inst.has(keyValue)) {
-        newService[keyValue] = inst.get(keyValue);
+        // Copy what is stored, so a kept factory stays a factory (audit F15)
+        newService[keyValue] = inst.#service[keyValue];
       }
     });
     this.#service = newService;

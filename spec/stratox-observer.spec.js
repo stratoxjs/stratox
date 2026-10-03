@@ -1,12 +1,9 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import { StratoxObserver } from '../src/index';
 
-// StratoxObserver.notified is a static property that notify() and the hook itself
-// overwrite (audit stratox F2). Put the original back after every test.
-const originalNotified = StratoxObserver.notified;
-
+// The global hook is static: remove it after every test.
 afterEach(() => {
-  StratoxObserver.notified = originalNotified;
+  StratoxObserver.notified(null);
 });
 
 /**
@@ -47,7 +44,7 @@ describe('notify and factory', () => {
 });
 
 describe('set', () => {
-  test('after listener(), changes the data and notifies once per property (audit stratox F23)', () => {
+  test('after listener(), changes the data and notifies once per set (audit stratox F23, fixed)', () => {
     const data = { a: 1 };
     const { observer, seen } = recordingObserver(data);
     observer.listener();
@@ -55,7 +52,7 @@ describe('set', () => {
     observer.set({ b: 2, c: 3 });
 
     expect(data).toEqual({ a: 1, b: 2, c: 3 });
-    expect(seen).toEqual([{ a: 1, b: 2 }, { a: 1, b: 2, c: 3 }]);
+    expect(seen).toEqual([{ a: 1, b: 2, c: 3 }]);
   });
 
   test('after listener(), notifies even when the value does not change', () => {
@@ -82,15 +79,29 @@ describe('set', () => {
     expect(data).toEqual({ count: 2 });
   });
 
-  test('before listener(), is lost: the data does not change and nothing is notified (audit stratox F23)', () => {
+  test('before listener(), changes the data without notifying (audit stratox F23, fixed)', () => {
     const data = { a: 1 };
     const { observer, seen } = recordingObserver(data);
 
     observer.set({ b: 2 });
-    observer.notify();
+    expect(seen).toEqual([]);
 
-    expect(data).toEqual({ a: 1 });
-    expect(seen).toEqual([{ a: 1 }]);
+    observer.notify();
+    expect(data).toEqual({ a: 1, b: 2 });
+    expect(seen).toEqual([{ a: 1, b: 2 }]);
+  });
+
+  test('a function that changes the data it gets notifies once (audit stratox F23, fixed)', () => {
+    const { observer, seen } = recordingObserver({ a: 1 });
+    observer.listener();
+
+    observer.set((current) => {
+      const changed = current;
+      changed.a = 2;
+      changed.b = 3;
+    });
+
+    expect(seen).toEqual([{ a: 2, b: 3 }]);
   });
 });
 
@@ -109,7 +120,7 @@ describe('stop', () => {
   });
 });
 
-describe('global hook StratoxObserver.notified (audit stratox F2)', () => {
+describe('global hook StratoxObserver.notified (audit stratox F2, fixed)', () => {
   test('a hook registered before any notify receives the data of every notify', () => {
     const calls = [];
     StratoxObserver.notified((data) => calls.push(data));
@@ -120,33 +131,48 @@ describe('global hook StratoxObserver.notified (audit stratox F2)', () => {
     expect(calls).toEqual([{ a: 1 }, { b: 2 }]);
   });
 
-  test('registering a hook replaces the static method with the hook', () => {
-    const hook = () => {};
-    StratoxObserver.notified(hook);
+  test('registering a hook keeps the static method (audit stratox F2, fixed)', () => {
+    const method = StratoxObserver.notified;
+    StratoxObserver.notified(() => {});
 
-    expect(StratoxObserver.notified).toBe(hook);
+    expect(StratoxObserver.notified).toBe(method);
   });
 
-  test('a second hook is passed to the first hook instead of being registered', () => {
+  test('a second hook replaces the first (audit stratox F2, fixed)', () => {
     const calls = [];
-    StratoxObserver.notified((value) => calls.push(['first', typeof value]));
-    StratoxObserver.notified(() => calls.push(['second']));
+    StratoxObserver.notified(() => calls.push('first'));
+    StratoxObserver.notified(() => calls.push('second'));
 
     new StratoxObserver({ a: 1 }).notify();
 
-    expect(calls).toEqual([['first', 'function'], ['first', 'object']]);
+    expect(calls).toEqual(['second']);
   });
 
-  test('a notify before any hook replaces the static method with the data', () => {
+  test('a notify before any hook keeps the static method (audit stratox F2, fixed)', () => {
+    const method = StratoxObserver.notified;
     new StratoxObserver({ a: 1 }).notify();
 
-    expect(StratoxObserver.notified).toEqual({ a: 1 });
+    expect(StratoxObserver.notified).toBe(method);
   });
 
-  test('after a notify without a hook, registering a hook throws a TypeError', () => {
+  test('after a notify without a hook, a hook can still be registered (audit stratox F2, fixed)', () => {
+    const calls = [];
     new StratoxObserver({ a: 1 }).notify();
 
-    expect(() => StratoxObserver.notified(() => {})).toThrow(TypeError);
+    StratoxObserver.notified((data) => calls.push(data));
+    new StratoxObserver({ b: 2 }).notify();
+
+    expect(calls).toEqual([{ b: 2 }]);
+  });
+
+  test('notified(null) removes the hook (audit stratox F2, fixed)', () => {
+    const calls = [];
+    StratoxObserver.notified((data) => calls.push(data));
+    StratoxObserver.notified(null);
+
+    new StratoxObserver({ a: 1 }).notify();
+
+    expect(calls).toEqual([]);
   });
 
   test('each observer instance has its own notified field, undefined', () => {

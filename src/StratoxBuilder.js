@@ -353,9 +353,10 @@ export default class StratoxBuilder {
   #build(formatData) {
     // Set some defaults
     const inst = this;
-    this.value = (typeof this.data.value === 'string') ? this.data.value : '';
-    this.label = (typeof this.data.label === 'string') ? this.data.label : '';
-    this.description = (typeof this.data.description === 'string') ? this.data.description : '';
+    // The setters accept numbers, so numbers render as text too (audit F21)
+    this.value = this.#textOrEmpty(this.data.value);
+    this.label = this.#textOrEmpty(this.data.label);
+    this.description = this.#textOrEmpty(this.data.description);
     this.attr = (typeof this.data.attr === 'object') ? this.data.attr : {};
     this.conAttr = (typeof this.data.conAttr === 'object') ? this.data.conAttr : {};
     this.fields = (typeof this.data.fields === 'object') ? this.data.fields : {};
@@ -405,6 +406,17 @@ export default class StratoxBuilder {
     }
     this.view.observer().stop();
     console.error(`The component/view named "${this.data.type}" does not exist.`);
+    return '';
+  }
+
+  /**
+   * A string as it is, a number as text, anything else as an empty string
+   * @param  {mixed} value
+   * @return {string}
+   */
+  #textOrEmpty(value) {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return String(value);
     return '';
   }
 

@@ -240,7 +240,7 @@ describe('values', () => {
   test.each([
     ['5', 5],
     ['0', 0],
-  ])('a number %s from setValues renders, unlike a number from setValue (audit stratox F21)', (text, value) => {
+  ])('a number %s from setValues renders, like a number from setValue', (text, value) => {
     expect(render((form) => form.form('amount'), { amount: value })).toContain(`value="${text}"`);
   });
 

@@ -63,9 +63,9 @@ describe('a group, one level', () => {
 
     expect(output).toBe(
       '<div id="wa-fi-view-0" data-index="0" class="mb-15 field-rows w-full">'
-      + '<div id="wa-fi-view-0" class="mb-20 wa-advanced-grouped-field">'
-      + '<div id="wa-fi-view-0" data-index="0" class="mb-15 field-title w-full">'
-      + '<input type="text" name="title" value="" data-index="0" data-name="title">'
+      + '<div id="wa-fi-view-0-group" class="mb-20 wa-advanced-grouped-field">'
+      + '<div id="wa-fi-view-1" data-index="1" class="mb-15 field-title w-full">'
+      + '<input type="text" name="title" value="" data-index="1" data-name="title">'
       + '</div></div></div>',
     );
   });
@@ -87,7 +87,7 @@ describe('a group, one level', () => {
     expect(output).toContain('data-name="rows,1,title"');
     expect(valueOf(output, 'rows[0][title]')).toBe('A');
     expect(valueOf(output, 'rows[1][title]')).toBe('B');
-    expect(output).toContain('<textarea name="rows[1][body]" data-index="3" data-name="rows,1,body">Text</textarea>');
+    expect(output).toContain('<textarea name="rows[1][body]" data-index="4" data-name="rows,1,body">Text</textarea>');
   });
 
   test('without nestedNames every row repeats the bare name and reads the top-level value, not the row', () => {
@@ -128,7 +128,7 @@ describe('a group, one level', () => {
       const output = render((form) => form.form('rows', { type: 'group' })
         .setFields({ intro: { type: 'groupHeadline', data: { headline: 'Rows' } } }));
 
-      expect(output).toContain('<div id="wa-fi-view-0" class="mb-20 wa-advanced-grouped-field"><h2>Rows</h2></div>');
+      expect(output).toContain('<div id="wa-fi-view-0-group" class="mb-20 wa-advanced-grouped-field"><h2>Rows</h2></div>');
     } finally {
       delete StratoxBuilder.factory.groupHeadline;
     }
@@ -144,20 +144,26 @@ describe('a group, one level', () => {
     expect(names(output)).toEqual(['child', 'rows[0][child]']);
   });
 
-  test('the group container, its wrapper and its first child share one id (audit stratox F35)', () => {
+  test('the group container, its wrapper and its fields each have their own id (audit stratox F35, fixed)', () => {
     const output = render((form) => form.form('rows', { type: 'group' }).setFields(rowFields));
 
-    expect(output.match(/id="wa-fi-view-0"/g)).toHaveLength(3);
-    expect(output).toContain('id="wa-fi-view-1" data-index="1" class="mb-15 field-body');
+    const ids = [...output.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+    expect(ids).toEqual(['wa-fi-view-0', 'wa-fi-view-0-group', 'wa-fi-view-1', 'wa-fi-view-2']);
   });
 
-  test('the field after a group skips one index', () => {
+  test('every id is unique in nested groups and the fields after them (audit stratox F35, fixed)', () => {
     const output = render((form) => {
-      form.form('rows', { type: 'group' }).setFields({ title: { type: 'text' } });
+      form.form('fields', { type: 'group' })
+        .setFields({
+          title: { type: 'text' },
+          type: { type: 'group', config: { nestedNames: true }, fields: { title: { type: 'text' } } },
+        })
+        .setConfig({ nestedNames: true });
       form.form('after');
-    });
+    }, { fields: [{ type: [{}, {}] }, {}] });
 
-    expect(output).toContain('<div id="wa-fi-view-2" data-index="2" class="mb-15 field-after w-full">');
+    const ids = [...output.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   test('renders into the root element', () => {
@@ -231,8 +237,8 @@ describe('controls', () => {
     const output = render(controlled);
 
     expect(output).toContain('<div class="group relative card-3 mb-15 rounded border border-primary" data-length="1">');
-    expect(output).toContain('<a class="wa-field-group-btn form-group-icon before inline-block pad top-0 left-1/2 -translate-x-2/4 -translate-y-2/4 absolute z-10" data-name="rows" data-key="view" data-index="0" data-position="0" href="#">');
-    expect(output).toContain('<a class="wa-field-group-btn form-group-icon after inline-block pad bottom-0 left-1/2 -translate-x-2/4 translate-y-2/4 absolute z-10" data-name="rows" data-key="view" data-index="0" data-position="0" href="#">');
+    expect(output).toContain('<a class="wa-field-group-btn form-group-icon before inline-block pad top-0 left-1/2 -translate-x-2/4 -translate-y-2/4 absolute z-10" data-name="rows" data-key="view" data-index="1" data-position="0" href="#">');
+    expect(output).toContain('<a class="wa-field-group-btn form-group-icon after inline-block pad bottom-0 left-1/2 -translate-x-2/4 translate-y-2/4 absolute z-10" data-name="rows" data-key="view" data-index="1" data-position="0" href="#">');
   });
 
   test('add a delete button to every row only when there is more than one row', () => {
@@ -241,7 +247,7 @@ describe('controls', () => {
     const output = render(controlled, { rows: [{}, {}] });
 
     const deleteButtons = [...output.matchAll(/wa-field-group-delete-btn[^>]*data-index="(\d)" data-position="(\d)"/g)];
-    expect(deleteButtons.map((match) => [match[1], match[2]])).toEqual([['0', '0'], ['1', '1']]);
+    expect(deleteButtons.map((match) => [match[1], match[2]])).toEqual([['1', '0'], ['2', '1']]);
     expect(output).toContain('data-length="2"');
   });
 

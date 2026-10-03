@@ -11,6 +11,7 @@ import StratoxBuilder from './StratoxBuilder.js';
 import StratoxObserver from './StratoxObserver.js';
 import StratoxItem from './StratoxItem.js';
 import { addHandler, clearHandlers } from './StratoxHandlers.js';
+import { SafeHtml } from './StratoxHtml.js';
 
 export default class Stratox {
   static viewCount = 0;
@@ -343,14 +344,8 @@ export default class Stratox {
       call.modify.apply(view, [item]);
     }
     const output = view.execute(typeof call?.response === 'function' ? call.response : call);
-    return {
-      output,
-      view,
-      item,
-      toString() {
-        return output;
-      },
-    };
+    // Markup, so html`${view.partial(...)}` inserts it as it is (D-030); output stays the plain string
+    return Object.assign(new SafeHtml(output), { output, view, item });
   }
 
   /**
@@ -371,13 +366,8 @@ export default class Stratox {
       }
     }, config?.modify);
 
-    return {
-      output,
-      view: inst,
-      toString() {
-        return output;
-      },
-    };
+    // Markup, so html`${view.block(...)}` inserts the placeholder as it is (D-030)
+    return Object.assign(new SafeHtml(output), { output, view: inst });
   }
 
   getItem() {

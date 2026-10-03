@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
+import { html } from '../src/index';
 import { expect, test } from 'vitest';
 import Stratox from '../src/Stratox';
 
 function greetingComponent({ props }) {
-  return `<h1>${props.title}</h1>`;
+  return html`<h1>${props.title}</h1>`;
 }
 
 test('execute inserts the rendered view into the selected element', () => {

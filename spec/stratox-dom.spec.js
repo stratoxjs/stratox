@@ -2,7 +2,9 @@
 import {
   afterAll, afterEach, beforeAll, describe, expect, test,
 } from 'vitest';
-import { Stratox, StratoxTemplate } from '../src/index';
+import {
+  Stratox, StratoxTemplate, html,
+} from '../src/index';
 import { countHandlers } from '../src/StratoxHandlers';
 
 // Roadmap 2.11: what stratox does in the DOM: inserting into elements, propagation
@@ -82,7 +84,7 @@ afterEach(() => {
 describe('inserting into elements', () => {
   test('execute writes the output into the #id element right away', () => {
     document.body.innerHTML = '<div id="app"></div>';
-    function DomHello() { return '<b>hello</b>'; }
+    function DomHello() { return html`<b>hello</b>`; }
     const stratox = new Stratox('#app');
     stratox.view(DomHello, {});
 
@@ -93,7 +95,7 @@ describe('inserting into elements', () => {
 
   test('a class selector writes into every matching element', () => {
     document.body.innerHTML = '<p class="many"></p><p class="many"></p>';
-    function DomMany() { return '<b>many</b>'; }
+    function DomMany() { return html`<b>many</b>`; }
     const stratox = new Stratox('.many');
     stratox.view(DomMany, {});
 
@@ -104,7 +106,7 @@ describe('inserting into elements', () => {
 
   test('a selector without a match inserts nothing and execute still returns the output', () => {
     document.body.innerHTML = '';
-    function DomMissing() { return '<b>missing</b>'; }
+    function DomMissing() { return html`<b>missing</b>`; }
     const stratox = new Stratox('#missing');
     stratox.view(DomMissing, {});
 
@@ -113,7 +115,7 @@ describe('inserting into elements', () => {
 
   test('the constructor takes a DOM element and writes into it (audit stratox F9, fixed)', () => {
     document.body.innerHTML = '<div id="app"></div>';
-    function DomElementArg() { return '<b>element</b>'; }
+    function DomElementArg() { return html`<b>element</b>`; }
     const stratox = new Stratox(app());
     stratox.view(DomElementArg, {});
 
@@ -125,7 +127,7 @@ describe('inserting into elements', () => {
 
   test('the constructor takes a list of elements and writes into each (audit stratox F9, fixed)', () => {
     document.body.innerHTML = '<p class="list"></p><p class="list"></p>';
-    function DomListArg() { return '<b>list</b>'; }
+    function DomListArg() { return html`<b>list</b>`; }
     const stratox = new Stratox(document.querySelectorAll('.list'));
     stratox.view(DomListArg, {});
 
@@ -141,7 +143,7 @@ describe('inserting into elements', () => {
 
   test('setElement with a list of elements writes into each', () => {
     document.body.innerHTML = '<p class="list"></p><p class="list"></p>';
-    function DomList() { return '<b>list</b>'; }
+    function DomList() { return html`<b>list</b>`; }
     const stratox = new Stratox();
     stratox.setElement(document.querySelectorAll('.list'));
     stratox.view(DomList, {});
@@ -153,7 +155,7 @@ describe('inserting into elements', () => {
 
   test('setElement with one element writes into it (audit stratox F39, fixed)', async () => {
     document.body.innerHTML = '<div id="app"></div>';
-    function DomSingleElement() { return '<b>single</b>'; }
+    function DomSingleElement() { return html`<b>single</b>`; }
     const errors = [];
     const record = (error) => errors.push(error);
     process.on('unhandledRejection', record);
@@ -174,7 +176,7 @@ describe('inserting into elements', () => {
 
 describe('propagation protection', () => {
   test('the first update writes at once; a second one in the same tick waits for a timer', async () => {
-    function DomCounter({ props }) { return `<b>${props.n}</b>`; }
+    function DomCounter({ props }) { return html`<b>${props.n}</b>`; }
     const stratox = await mount((view) => view.view(DomCounter, { n: 1 }));
     const item = stratox.getItem();
 
@@ -189,7 +191,7 @@ describe('propagation protection', () => {
   });
 
   test('with popegation: false every update writes at once', async () => {
-    function DomCounterOff({ props }) { return `<b>${props.n}</b>`; }
+    function DomCounterOff({ props }) { return html`<b>${props.n}</b>`; }
     const stratox = await mount((view) => view.view(DomCounterOff, { n: 1 }));
     const item = stratox.getItem();
     Stratox.setConfigs({ popegation: false });
@@ -201,7 +203,7 @@ describe('propagation protection', () => {
   });
 
   test('propagation: false works like popegation: false (roadmap 3.5)', async () => {
-    function DomCounterAlias({ props }) { return `<b>${props.n}</b>`; }
+    function DomCounterAlias({ props }) { return html`<b>${props.n}</b>`; }
     const stratox = await mount((view) => view.view(DomCounterAlias, { n: 1 }));
     const item = stratox.getItem();
     Stratox.setConfigs({ propagation: false });
@@ -213,7 +215,7 @@ describe('propagation protection', () => {
   });
 
   test('when both keys are set, propagation wins (roadmap 3.5)', async () => {
-    function DomCounterBoth({ props }) { return `<b>${props.n}</b>`; }
+    function DomCounterBoth({ props }) { return html`<b>${props.n}</b>`; }
     const stratox = await mount((view) => view.view(DomCounterBoth, { n: 1 }));
     const item = stratox.getItem();
     Stratox.setConfigs({ popegation: false, propagation: true });
@@ -283,7 +285,7 @@ describe('bind', () => {
         const changed = data;
         changed.n += 1;
       });
-      return `<b>${props.n}</b>`;
+      return html`<b>${props.n}</b>`;
     }
     await mount((view) => view.view(DomBindCall, { n: 1 }));
     let prevented = false;
@@ -299,7 +301,7 @@ describe('bind', () => {
     let handler;
     function DomBindNoUpdate({ props, view }) {
       handler = view.bind((data) => { const changed = data; changed.n += 1; }, false);
-      return `<b>${props.n}</b>`;
+      return html`<b>${props.n}</b>`;
     }
     const stratox = await mount((view) => view.view(DomBindNoUpdate, { n: 1 }));
 
@@ -333,7 +335,7 @@ describe('bind', () => {
     const handlerList = [];
     function DomPartialButton({ props, view }) {
       handlerList.push(view.bind(() => calls.push(props.n), false));
-      return '<button></button>';
+      return html`<button></button>`;
     }
     function DomPartialParent({ props, view }) {
       return `${props.n}${view.partial(DomPartialButton, { n: props.n })}`;
@@ -359,7 +361,7 @@ describe('bind', () => {
         const changed = data;
         changed.n += 10;
       });
-      return `<i>${props.n}</i>`;
+      return html`<i>${props.n}</i>`;
     }
     await mount((view) => view.view(DomContextBind, { n: 1 }));
 
@@ -374,12 +376,12 @@ describe('block', () => {
   test('returns a placeholder div and renders the view into it after load, then calls the response callback', async () => {
     const calls = [];
     let block;
-    function DomBlockInner({ props }) { return `<em>${props.x}</em>`; }
+    function DomBlockInner({ props }) { return html`<em>${props.x}</em>`; }
     function DomBlockOuter({ view }) {
       block = view.block(DomBlockInner, { x: 'inside' }, (data, blockView, item, el) => {
         calls.push([data.x, blockView instanceof Stratox, item.getName(), el]);
       });
-      return `<section>${block}</section>`;
+      return html`<section>${block}</section>`;
     }
 
     await mount((view) => view.view(DomBlockOuter, {}));

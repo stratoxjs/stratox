@@ -1,5 +1,6 @@
 import { expect, test, it } from 'vitest'
 import Stratox from '../src/Stratox';
+import { html, raw } from '../src/index';
 import PreComponent from './PreComponent';
 
 Stratox.setConfigs({
@@ -35,8 +36,8 @@ function executeAndWait(stratox) {
 }
 
 function myTestComponentBlock({ props }) {
-  const { output, view } = this.block({ test: myTestComponent }, props);
-  return `${output}${view.execute()}`;
+  const block = this.block({ test: myTestComponent }, props);
+  return html`${block}${raw(block.view.execute())}`;
 }
 
 test('Component 1', () => {

@@ -1,7 +1,7 @@
 import {
   afterAll, beforeAll, beforeEach, describe, expect, test,
 } from 'vitest';
-import { Stratox, StratoxTemplate } from '../../src/index';
+import { Stratox, StratoxTemplate, html } from '../../src/index';
 
 // Roadmap 2.13: critical paths in real browsers (Chromium, Firefox, WebKit), run with
 // `npm run test:browser`. The same behaviour is tested in more detail in happy-dom;
@@ -51,19 +51,43 @@ beforeEach(() => {
 
 describe('element insert', () => {
   test('execute writes the output into the root element', async () => {
-    function BrowserHello({ props }) { return `<b>${props.text}</b>`; }
+    function BrowserHello({ props }) { return html`<b>${props.text}</b>`; }
     await mount((view) => view.view(BrowserHello, { text: 'hello' }));
 
     expect(app().innerHTML).toBe('<b>hello</b>');
   });
 
   test('an update renders into the element again', async () => {
-    function BrowserCounter({ props }) { return `<b>${props.n}</b>`; }
+    function BrowserCounter({ props }) { return html`<b>${props.n}</b>`; }
     const stratox = await mount((view) => view.view(BrowserCounter, { n: 1 }));
 
     stratox.getItem().set({ n: 2 }).update();
 
     expect(app().innerHTML).toBe('<b>2</b>');
+  });
+});
+
+describe('escaping by default (D-030)', () => {
+  test('an onerror payload in props does not run, also in a plain string', async () => {
+    window.stratoxXss = 0;
+    const payload = '<img src="x" onerror="window.stratoxXss += 1">';
+    function BrowserTagged({ props, html: tag }) { return tag`<p>${props.text}</p>`; }
+    function BrowserPlain({ props }) { return `<p>${props.text}</p>`; }
+    await mount((view) => {
+      view.view(BrowserTagged, { text: payload });
+      view.view(BrowserPlain, { text: payload });
+    });
+    await new Promise((resolve) => { setTimeout(resolve, 100); });
+
+    expect(app().querySelector('img')).toBeNull();
+    expect(window.stratoxXss).toBe(0);
+  });
+
+  test('a javascript: URL in href is neutralized (D-030, X-3)', async () => {
+    function BrowserLink({ props }) { return html`<a href="${props.url}">link</a>`; }
+    await mount((view) => view.view(BrowserLink, { url: 'javascript:window.stratoxXss = 1' }));
+
+    expect(app().querySelector('a').getAttribute('href')).toBe('unsafe:javascript:window.stratoxXss = 1');
   });
 });
 
@@ -74,7 +98,7 @@ describe('bind', () => {
         const changed = data;
         changed.n += 1;
       });
-      return `<button type="button" onclick="${handler}">${props.n}</button>`;
+      return html`<button type="button" onclick="${handler}">${props.n}</button>`;
     }
     await mount((view) => view.view(BrowserClicker, { n: 1 }));
 

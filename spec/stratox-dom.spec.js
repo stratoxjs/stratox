@@ -112,7 +112,7 @@ describe('inserting into elements', () => {
     expect(stratox.execute()).toBe('<b>missing</b>');
   });
 
-  test('the constructor ignores a DOM element (audit stratox F9)', () => {
+  test('the constructor takes a DOM element and writes into it (audit stratox F9, fixed)', () => {
     document.body.innerHTML = '<div id="app"></div>';
     function DomElementArg() { return '<b>element</b>'; }
     const stratox = new Stratox(app());
@@ -120,8 +120,24 @@ describe('inserting into elements', () => {
 
     stratox.execute();
 
-    expect(app().innerHTML).toBe('');
-    expect(stratox.getElement()).toBeUndefined();
+    expect(app().innerHTML).toBe('<b>element</b>');
+    expect(stratox.getElement()).toEqual([app()]);
+  });
+
+  test('the constructor takes a list of elements and writes into each (audit stratox F9, fixed)', () => {
+    document.body.innerHTML = '<p class="list"></p><p class="list"></p>';
+    function DomListArg() { return '<b>list</b>'; }
+    const stratox = new Stratox(document.querySelectorAll('.list'));
+    stratox.view(DomListArg, {});
+
+    stratox.execute();
+
+    expect([...document.querySelectorAll('.list')].map((el) => el.innerHTML)).toEqual(['<b>list</b>', '<b>list</b>']);
+  });
+
+  test('the constructor without an argument has no element', () => {
+    expect(new Stratox().getElement()).toBeUndefined();
+    expect(new Stratox(null).getElement()).toBeUndefined();
   });
 
   test('setElement with a list of elements writes into each', () => {
@@ -136,7 +152,7 @@ describe('inserting into elements', () => {
     expect([...document.querySelectorAll('.list')].map((el) => el.innerHTML)).toEqual(['<b>list</b>', '<b>list</b>']);
   });
 
-  test('setElement with one element inserts nothing; the TypeError escapes as a rejection (audit stratox F39)', async () => {
+  test('setElement with one element writes into it (audit stratox F39, fixed)', async () => {
     document.body.innerHTML = '<div id="app"></div>';
     function DomSingleElement() { return '<b>single</b>'; }
     const errors = [];
@@ -152,8 +168,8 @@ describe('inserting into elements', () => {
       process.off('unhandledRejection', record);
     }
 
-    expect(app().innerHTML).toBe('');
-    expect(errors.map((error) => error.message)).toEqual(['myElem.forEach is not a function']);
+    expect(app().innerHTML).toBe('<b>single</b>');
+    expect(errors).toEqual([]);
   });
 });
 

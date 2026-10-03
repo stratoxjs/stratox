@@ -196,15 +196,19 @@ describe('checkbox', () => {
       .toBe('<div id="wa-fi-view-0" data-index="0" class="mb-15 field-topics w-full"></div>');
   });
 
-  test('a plain field without items renders nothing; the TypeError escapes as a rejection (audit stratox F14, F3)', async () => {
+  test('a plain field without items renders its container and label and warns (audit stratox F14, fixed)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const stratox = new Stratox();
     stratox.add('topics', { type: 'checkbox', label: 'Topics' });
 
     const { output, errors } = await executeAndCatch(stratox);
 
-    expect(output).toBe('');
-    expect(errors).toHaveLength(1);
-    expect(errors[0]).toBeInstanceOf(TypeError);
+    expect(output).toBe(
+      '<div id="wa-fi-view-0" data-index="0" class="mb-15 field-topics w-full">'
+      + '<label>Topics<div class="message hide"></div></label></div>',
+    );
+    expect(errors).toEqual([]);
+    expect(warn).toHaveBeenCalledWith('Object items parameter is missing.');
   });
 });
 

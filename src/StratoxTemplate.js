@@ -185,17 +185,21 @@ export default class StratoxTemplate extends StratoxBuilder {
      * @return {string}
      */
   checkbox(helper) {
-    const inst = this; const { length } = Object.keys(inst.data.items); const
-      attr = this.getAttr({
-        type: 'checkbox',
-        name: ((length > 1) ? `${this.name}[]` : this.name),
-        'data-index': this.index,
-      });
+    const inst = this;
+    // Without items the field warns like select and radio instead of throwing (audit F14)
+    const { items } = inst.data;
+    const hasItems = (typeof items === 'object' && items !== null);
+    const length = hasItems ? Object.keys(items).length : 0;
+    const attr = this.getAttr({
+      type: 'checkbox',
+      name: ((length > 1) ? `${this.name}[]` : this.name),
+      'data-index': this.index,
+    });
 
     return this.container(() => {
       let out = '';
-      if (typeof inst.data.items === 'object') {
-        Object.entries(inst.data.items).forEach(([value, name]) => {
+      if (hasItems) {
+        Object.entries(items).forEach(([value, name]) => {
           const checked = (inst.isChecked(value)) ? ' checked="checked"' : '';
           out += `<label class="checkbox items small"><input${attr} value="${value}"${checked}><span class="title">${name}</span></label>`;
         });

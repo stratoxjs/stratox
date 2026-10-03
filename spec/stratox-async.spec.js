@@ -225,3 +225,75 @@ describe('cache (audit stratox F17)', () => {
     }
   });
 });
+
+describe('ready() (V-2)', () => {
+  test('resolves once an async component has rendered', async () => {
+    const stratox = new Stratox();
+    stratox.view('AsyncFirst#ready', { text: 'r' });
+    stratox.execute();
+    expect(stratox.getResponse()).toBe('');
+
+    await stratox.ready();
+
+    expect(stratox.getResponse()).toBe('<first>r</first>');
+  });
+
+  test('with two async components, resolves once both have rendered', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const stratox = new Stratox();
+    stratox.view('AsyncFirst#readyPair', { text: '1' });
+    stratox.view('AsyncSecond#readyPair', { text: '2' });
+    stratox.execute();
+
+    await stratox.ready();
+    error.mockRestore();
+
+    expect(stratox.getResponse()).toBe('<first>1</first><second>2</second>');
+  });
+
+  test('resolves at once for a view without async components, and before execute', async () => {
+    function ReadySync() { return 'sync'; }
+    const stratox = new Stratox();
+    await expect(stratox.ready()).resolves.toBeUndefined();
+    stratox.view(ReadySync, {});
+    stratox.execute();
+
+    await expect(stratox.ready()).resolves.toBeUndefined();
+    expect(stratox.getResponse()).toBe('sync');
+  });
+
+  test('rejects with the error of an async component, which then is no unhandled rejection', async () => {
+    const errors = [];
+    const record = (error) => errors.push(error);
+    process.on('unhandledRejection', record);
+    try {
+      const stratox = new Stratox();
+      stratox.view('AsyncThrows#ready', {});
+      stratox.execute();
+
+      await expect(stratox.ready()).rejects.toThrow('AsyncThrows failed');
+      await nextMillisecond();
+    } finally {
+      process.off('unhandledRejection', record);
+    }
+
+    expect(errors).toEqual([]);
+  });
+
+  test('rejects when a module cannot be imported', async () => {
+    const stratox = new Stratox();
+    stratox.view('AsyncMissing#ready', {});
+    stratox.execute();
+
+    await expect(stratox.ready()).rejects.toThrow('/spec/fixtures/AsyncMissing.js?v=');
+  });
+
+  test('rejects with the error of a sync component', async () => {
+    function ReadyThrows() { throw new Error('ReadyThrows failed'); }
+    const stratox = new Stratox();
+    stratox.view(ReadyThrows, {});
+    stratox.execute();
+
+    await expect(stratox.ready()).rejects.toThrow('ReadyThrows failed');
+  });
+});

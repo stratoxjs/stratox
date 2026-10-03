@@ -3,6 +3,7 @@ import {
   afterAll, afterEach, beforeAll, describe, expect, test,
 } from 'vitest';
 import { Stratox, StratoxTemplate } from '../src/index';
+import { countHandlers } from '../src/StratoxHandlers';
 
 // Roadmap 2.11: what stratox does in the DOM: inserting into elements, propagation
 // protection, the onload and done hooks, bind(), block(), bindEvent(), and the group
@@ -248,8 +249,20 @@ describe('onload and done', () => {
   });
 });
 
+/**
+ * Run an inline handler string the way an onclick attribute does.
+ * @param {string} handler e.g. the string bind() returns
+ * @param {object} event
+ */
+function runInline(handler, event) {
+  // eslint-disable-next-line no-new-func
+  new Function('event', handler)(event);
+}
+
+const fakeClick = () => ({ type: 'click', preventDefault() {} });
+
 describe('bind', () => {
-  test('returns an inline handler that calls a window function', async () => {
+  test('returns an inline call of the one stratoxHandler window function (audit stratox F10, fixed)', async () => {
     let handler;
     function DomBindName({ view }) {
       handler = view.bind(() => {});
@@ -257,8 +270,8 @@ describe('bind', () => {
     }
     await mount((view) => view.view(DomBindName, {}));
 
-    expect(handler).toMatch(/^func_[a-z0-9]+_\d+\(event\)$/);
-    expect(typeof window[handler.split('(')[0]]).toBe('function');
+    expect(handler).toMatch(/^stratoxHandler\(event, '\d+'\)$/);
+    expect(typeof window.stratoxHandler).toBe('function');
   });
 
   test('the handler prevents the default, calls fn with (data, view, item, event) and renders again', async () => {
@@ -275,7 +288,7 @@ describe('bind', () => {
     await mount((view) => view.view(DomBindCall, { n: 1 }));
     let prevented = false;
 
-    window[handler.split('(')[0]]({ type: 'click', preventDefault: () => { prevented = true; } });
+    runInline(handler, { type: 'click', preventDefault: () => { prevented = true; } });
 
     expect(prevented).toBe(true);
     expect(received).toEqual([[1, true, 'DomBindCall#defualt', 'click']]);
@@ -290,16 +303,18 @@ describe('bind', () => {
     }
     const stratox = await mount((view) => view.view(DomBindNoUpdate, { n: 1 }));
 
-    window[handler.split('(')[0]]({ type: 'click', preventDefault() {} });
+    runInline(handler, fakeClick());
 
     expect(app().innerHTML).toBe('<b>1</b>');
     expect(stratox.getItem().data.n).toBe(2);
   });
 
-  test('every render adds a new window function and keeps the old ones (audit stratox F10)', async () => {
-    const handlers2 = [];
+  test('each render replaces the view\'s handlers: no new window globals, old calls do nothing (audit stratox F10, fixed)', async () => {
+    const globalsBefore = Object.keys(window).length;
+    const calls = [];
+    const handlerList = [];
     function DomBindLeak({ props, view }) {
-      handlers2.push(view.bind(() => {}));
+      handlerList.push(view.bind(() => calls.push(props.n), false));
       return `${props.n}`;
     }
     const stratox = await mount((view) => view.view(DomBindLeak, { n: 1 }));
@@ -307,12 +322,35 @@ describe('bind', () => {
     stratox.getItem().set({ n: 3 }).update();
     await nextTick();
 
-    const names = handlers2.map((handler) => handler.split('(')[0]);
-    expect(new Set(names).size).toBe(3);
-    expect(names.every((name) => typeof window[name] === 'function')).toBe(true);
+    handlerList.forEach((handler) => runInline(handler, fakeClick()));
+
+    expect(Object.keys(window).length).toBe(globalsBefore);
+    expect(calls).toEqual([3]);
   });
 
-  test('context.bind calls fn with (event, data, name) and updates the view named in the handler', async () => {
+  test('handlers bound in a partial are replaced with the parent\'s render (audit stratox F10, fixed)', async () => {
+    const calls = [];
+    const handlerList = [];
+    function DomPartialButton({ props, view }) {
+      handlerList.push(view.bind(() => calls.push(props.n), false));
+      return '<button></button>';
+    }
+    function DomPartialParent({ props, view }) {
+      return `${props.n}${view.partial(DomPartialButton, { n: props.n })}`;
+    }
+    const stratox = await mount((view) => view.view(DomPartialParent, { n: 1 }));
+    const afterFirst = countHandlers();
+    stratox.getItem().set({ n: 2 }).update();
+    stratox.getItem().set({ n: 3 }).update();
+    await nextTick();
+
+    handlerList.forEach((handler) => runInline(handler, fakeClick()));
+
+    expect(calls).toEqual([3]);
+    expect(countHandlers()).toBe(afterFirst);
+  });
+
+  test('context.bind calls fn with (event, data, name) and updates the view it was bound in', async () => {
     let handler;
     const received = [];
     function DomContextBind({ props, context }) {
@@ -325,8 +363,7 @@ describe('bind', () => {
     }
     await mount((view) => view.view(DomContextBind, { n: 1 }));
 
-    expect(handler).toMatch(/^func_[a-z0-9]+_\d+\(event, 'DomContextBind#defualt'\)$/);
-    window[handler.split('(')[0]]({ type: 'click', preventDefault() {} }, 'DomContextBind#defualt');
+    runInline(handler, fakeClick());
 
     expect(received).toEqual([['click', 1, 'DomContextBind#defualt']]);
     expect(app().innerHTML).toBe('<i>11</i>');

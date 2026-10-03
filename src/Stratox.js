@@ -10,6 +10,7 @@ import StratoxContainer from './StratoxContainer.js';
 import StratoxBuilder from './StratoxBuilder.js';
 import StratoxObserver from './StratoxObserver.js';
 import StratoxItem from './StratoxItem.js';
+import { addHandler, clearHandlers } from './StratoxHandlers.js';
 
 export default class Stratox {
   static viewCount = 0;
@@ -56,6 +57,8 @@ export default class Stratox {
   #blockStates = [];
 
   #item = {};
+
+  #clones = [];
 
   /**
    * Default Configs
@@ -205,7 +208,20 @@ export default class Stratox {
    * @return {Stratox}
    */
   clone(elem) {
-    return new Stratox(elem);
+    const view = new Stratox(elem);
+    // Partials and blocks are clones made during a render; their handlers go with this view's (audit F10)
+    this.#clones.push(view);
+    return view;
+  }
+
+  /**
+   * Remove the event handlers of the last render, also those of its partials and blocks (audit F10)
+   * @return {void}
+   */
+  #clearHandlers() {
+    clearHandlers(this);
+    this.#clones.forEach((view) => view.#clearHandlers());
+    this.#clones = [];
   }
 
   /**
@@ -482,15 +498,14 @@ export default class Stratox {
    */
   bind(fn, update) {
     const inst = this;
-    const fnName = this.genRandStr(8, 'func_', `_${Stratox.funcIndex}`);
     Stratox.funcIndex++;
-    window[fnName] = (event, name) => {
+    // One window function for all handlers; this view's handlers are replaced on each render (audit F10)
+    return addHandler(this, (event) => {
       event.preventDefault();
       inst.updateAll((data, item) => {
         fn.apply(inst, [data, inst, item, event]);
       }, (update !== false));
-    };
-    return `${fnName}(event)`;
+    });
   }
 
   /**
@@ -683,6 +698,7 @@ export default class Stratox {
           Stratox.viewCount++;
           // If response is not empty,
           // then insert, processed components and insert to the document
+          inst.#clearHandlers();
           inst.#response = field.get();
           propCheck[field.name] = true;
 

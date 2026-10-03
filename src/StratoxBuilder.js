@@ -7,6 +7,7 @@
  */
 
 import StratoxItem from './StratoxItem.js';
+import { addHandler } from './StratoxHandlers.js';
 
 export default class StratoxBuilder {
   static factory = {};
@@ -559,21 +560,20 @@ export default class StratoxBuilder {
   bind(fn, update) {
     const inst = this;
     const { view } = this;
-    const fnName = view.genRandStr(8, 'func_', `_${StratoxBuilder.funcIndex}`);
     const viewName = (typeof update === 'string') ? StratoxItem.getViewName(update) : this.name;
 
     StratoxBuilder.funcIndex++;
-    window[fnName] = (event, name) => {
+    // Registered with the view, so it is replaced on the view's next render (audit F10)
+    return addHandler(view, (event) => {
       event.preventDefault();
       if (update === undefined || update) {
-        view.update(name, (data, component) => {
-          fn.apply(inst, [event, data, name]);
+        view.update(viewName, (data, component) => {
+          fn.apply(inst, [event, data, viewName]);
         });
       } else {
-        fn.apply(inst, [event, {}, name]);
+        fn.apply(inst, [event, {}, viewName]);
       }
-    };
-    return `${fnName}(event, '${viewName}')`;
+    });
   }
 
   /**

@@ -251,6 +251,15 @@ describe('setFields', () => {
     expect(fields.first).not.toBeInstanceOf(StratoxItem);
   });
 
+  test('marks a StratoxItem it is given as inGroup (audit stratox F37, fixed)', () => {
+    const field = StratoxItem.form('first');
+    expect(field.inGroup).toBe(false);
+
+    new StratoxItem('group').setFields({ first: field });
+
+    expect(field.inGroup).toBe(true);
+  });
+
   test('builds a new fields object', () => {
     const value = { title: { type: 'text' } };
 

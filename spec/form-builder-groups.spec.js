@@ -134,14 +134,14 @@ describe('a group, one level', () => {
     }
   });
 
-  test('a form() item passed to setFields renders twice: on its own and in the group (audit stratox F37)', () => {
+  test('a form() item passed to setFields renders only inside the group (audit stratox F37, fixed)', () => {
     const output = render((form) => {
       const child = form.form('child').setLabel('Child');
       form.form('rows', { type: 'group' }).setFields({ ignoredKey: child }).setConfig({ nestedNames: true });
     });
 
-    expect(output.match(/<label>Child/g)).toHaveLength(2);
-    expect(names(output)).toEqual(['child', 'rows[0][child]']);
+    expect(output.match(/<label>Child/g)).toHaveLength(1);
+    expect(names(output)).toEqual(['rows[0][child]']);
   });
 
   test('the group container, its wrapper and its fields each have their own id (audit stratox F35, fixed)', () => {

@@ -232,11 +232,24 @@ describe('numeric values (audit stratox F33)', () => {
   });
 });
 
-describe('no escaping (audit stratox F11)', () => {
-  test('option values and titles are inserted as they are', () => {
+describe('escaping (audit stratox F11)', () => {
+  test('option values are escaped; option titles stay HTML (audit stratox F11, fixed)', () => {
     const output = render((form) => form.form('n').setType('select').setItems({ 'a"b': '<i>A</i>' }));
 
-    expect(output).toContain('<option value="a"b"><i>A</i></option>');
+    expect(output).toContain('<option value="a&quot;b"><i>A</i></option>');
+  });
+
+  test('radio and checkbox values are escaped (audit stratox F11, fixed)', () => {
+    expect(render((form) => form.form('n').setType('radio').setItems({ 'a"b': 'A' })))
+      .toContain('value="a&quot;b"');
+    expect(render((form) => form.form('n').setType('checkbox').setItems({ 'a"b': 'A' })))
+      .toContain('value="a&quot;b"');
+  });
+
+  test('an escaped option value is still selected by its raw value (audit stratox F11, fixed)', () => {
+    const output = render((form) => form.form('n').setType('select').setItems({ 'a&b': 'A' }), { n: 'a&b' });
+
+    expect(output).toContain('<option value="a&amp;b" selected="selected">A</option>');
   });
 
   test('radio and checkbox titles are inserted as HTML', () => {

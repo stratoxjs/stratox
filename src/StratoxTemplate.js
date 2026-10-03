@@ -125,7 +125,7 @@ export default class StratoxTemplate extends StratoxBuilder {
         'data-index': this.index,
       });
 
-    return this.container(() => `<textarea${attr}>${inst.value}</textarea>`);
+    return this.container(() => `<textarea${attr}>${inst.escapeHtml(inst.value)}</textarea>`);
   }
 
   /**
@@ -144,7 +144,7 @@ export default class StratoxTemplate extends StratoxBuilder {
       if (typeof inst.data.items === 'object') {
         Object.entries(inst.data.items).forEach(([value, name]) => {
           const selected = (inst.isChecked(value)) ? ' selected="selected"' : '';
-          out += `<option value="${value}"${selected}>${name}</option>`;
+          out += `<option value="${inst.escapeHtml(value)}"${selected}>${name}</option>`;
         });
       } else {
         console.warn('Object items parameter is missing.');
@@ -171,7 +171,7 @@ export default class StratoxTemplate extends StratoxBuilder {
       if (typeof inst.data.items === 'object') {
         Object.entries(inst.data.items).forEach(([value, name]) => {
           const checked = (inst.isChecked(value)) ? ' checked="checked"' : '';
-          out += `<label class="radio items small"><input${attr} value="${value}"${checked}><span class="title">${name}</span></label>`;
+          out += `<label class="radio items small"><input${attr} value="${inst.escapeHtml(value)}"${checked}><span class="title">${name}</span></label>`;
         });
       } else {
         console.warn('Object items parameter is missing.');
@@ -201,7 +201,7 @@ export default class StratoxTemplate extends StratoxBuilder {
       if (hasItems) {
         Object.entries(items).forEach(([value, name]) => {
           const checked = (inst.isChecked(value)) ? ' checked="checked"' : '';
-          out += `<label class="checkbox items small"><input${attr} value="${value}"${checked}><span class="title">${name}</span></label>`;
+          out += `<label class="checkbox items small"><input${attr} value="${inst.escapeHtml(value)}"${checked}><span class="title">${name}</span></label>`;
         });
       } else {
         console.warn('Object items parameter is missing.');

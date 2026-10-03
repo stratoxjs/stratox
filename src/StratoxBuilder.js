@@ -118,9 +118,24 @@ export default class StratoxBuilder {
    * @return {string}
    */
   getAttrStr(attrObj) {
+    // Escaped, so a quote in a value cannot end the attribute (audit F11)
     return Object.entries(attrObj)
-      .map(([key, value]) => ` ${key}="${value}"`)
+      .map(([key, value]) => ` ${key}="${this.escapeHtml(value)}"`)
       .join('');
+  }
+
+  /**
+   * Escape a value for an HTML attribute or text: & " < >
+   * Used for form values and attributes; custom templates can use it too.
+   * @param  {mixed} value
+   * @return {string}
+   */
+  escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   /**

@@ -344,7 +344,7 @@ describe('field type lookup', () => {
     expect(warn).toHaveBeenCalledWith('To use the field item nope you need to specify a formHandler in config!');
   });
 
-  test('after an unknown type, the view does not render again on update (audit stratox F16)', () => {
+  test('after an unknown type, the view still renders again on update (audit stratox F16, fixed)', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const stratox = new Stratox();
@@ -355,7 +355,7 @@ describe('field type lookup', () => {
     item.setLabel('After');
     stratox.update(item);
 
-    expect(stratox.getResponse()).toContain('<label>Before');
+    expect(stratox.getResponse()).toContain('<label>After');
   });
 
   test('a registered component with the name of a field type replaces that field and gets data.data as props', () => {

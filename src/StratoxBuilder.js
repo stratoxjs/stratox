@@ -427,7 +427,7 @@ export default class StratoxBuilder {
       this.index++;
       return (out || '');
     }
-    this.view.observer().stop();
+    // Log it, but keep the view updating (audit F16)
     console.error(`The component/view named "${this.data.type}" does not exist.`);
     return '';
   }

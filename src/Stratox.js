@@ -996,8 +996,11 @@ export default class Stratox {
           if (targetElem) callback.apply(targetElem, [e, targetElem]);
         };
         el.addEventListener(event, eventHandler);
+        // off() removes every listener bindEvent added to the element, not only the last (audit F41)
+        const previousOff = el.off;
         el.off = () => {
           el.removeEventListener(event, eventHandler);
+          if (typeof previousOff === 'function') previousOff();
         };
       }
     });

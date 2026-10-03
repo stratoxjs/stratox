@@ -405,7 +405,7 @@ describe('bindEvent', () => {
     expect(hits).toEqual(['x']);
   });
 
-  test('off() on the element removes only the last listener bound to it (audit stratox F41)', () => {
+  test('off() on the element removes every listener bound to it (audit stratox F41, fixed)', () => {
     document.body.innerHTML = '<ul id="list"><li><a class="x">a</a></li></ul>';
     const hits = [];
     const stratox = new Stratox();
@@ -415,7 +415,20 @@ describe('bindEvent', () => {
     document.getElementById('list').off();
     click(document.querySelector('.x'));
 
-    expect(hits).toEqual(['first']);
+    expect(hits).toEqual([]);
+  });
+
+  test('a listener bound after off() works', () => {
+    document.body.innerHTML = '<ul id="list"><li><a class="x">a</a></li></ul>';
+    const hits = [];
+    const stratox = new Stratox();
+    stratox.bindEvent('#list', 'click', () => hits.push('old'));
+    document.getElementById('list').off();
+
+    stratox.bindEvent('#list', 'click', () => hits.push('new'));
+    click(document.querySelector('.x'));
+
+    expect(hits).toEqual(['new']);
   });
 });
 

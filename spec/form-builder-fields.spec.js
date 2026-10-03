@@ -271,9 +271,16 @@ describe('values', () => {
     expect(render((form) => form.form('tags'), { tags: ['a', 'b'] })).toContain('value="a,b"');
   });
 
-  test('null from setValues renders the text "null" (audit stratox F29)', () => {
-    expect(render((form) => form.form('name').setValue('own'), { name: null })).toContain('value="null"');
-    expect(render((form) => form.form('note').setType('textarea'), { note: null })).toContain('>null</textarea>');
+  test('null from setValues renders an empty value and replaces setValue (audit stratox F29, fixed)', () => {
+    expect(render((form) => form.form('name').setValue('own'), { name: null })).toContain('name="name" value=""');
+    expect(render((form) => form.form('note').setType('textarea'), { note: null }))
+      .toContain('<textarea name="note" data-index="0" data-name="note"></textarea>');
+  });
+
+  test('null from setValues selects no option, not even an option keyed "null"', () => {
+    const output = render((form) => form.form('size').setType('select').setItems({ null: 'Null', s: 'Small' }), { size: null });
+
+    expect(output).not.toContain('selected');
   });
 
   test('a missing value is not padded into the values object (audit stratox F13)', () => {

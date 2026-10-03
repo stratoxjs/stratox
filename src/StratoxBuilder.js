@@ -480,7 +480,8 @@ export default class StratoxBuilder {
     }
 
     if (valueObj[last] !== undefined) {
-      this.value = valueObj[last];
+      // null, such as an empty column from a server, renders as an empty value (audit F29)
+      this.value = (valueObj[last] === null) ? '' : valueObj[last];
     } else {
       const isNested = Object.entries(this.fields).length;
       if (isNested > 0) {

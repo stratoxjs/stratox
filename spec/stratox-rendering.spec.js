@@ -1,4 +1,6 @@
-import { beforeEach, describe, expect, test } from 'vitest';
+import {
+  afterEach, beforeEach, describe, expect, test,
+} from 'vitest';
 import { Stratox, StratoxContainer } from '../src/index';
 import StratoxBuilder from '../src/StratoxBuilder';
 
@@ -448,5 +450,41 @@ describe('component registry (audit stratox F1)', () => {
 
     expect(firstOutput).toBe('A1');
     expect(second.execute()).toBe('A2');
+  });
+});
+
+describe('setConfigs', () => {
+  let saved;
+
+  beforeEach(() => {
+    saved = { ...Stratox.getConfigs(), handlers: { ...Stratox.getConfigs('handlers') } };
+  });
+
+  afterEach(() => {
+    Stratox.setConfigs(saved);
+  });
+
+  test('handlers are merged one level deep, so setting fields keeps the default helper (audit stratox F12, fixed)', () => {
+    const { helper } = Stratox.getConfigs('handlers');
+    class Fields {}
+
+    Stratox.setConfigs({ handlers: { fields: Fields } });
+
+    expect(Stratox.getConfigs('handlers')).toEqual({ fields: Fields, helper });
+  });
+
+  test('a handler given to setConfigs replaces that handler', () => {
+    const helper = () => ({ mine: true });
+
+    Stratox.setConfigs({ handlers: { helper } });
+
+    expect(Stratox.getConfigs('handlers').helper).toBe(helper);
+  });
+
+  test('other keys replace their value', () => {
+    Stratox.setConfigs({ directory: '/components/', cache: true });
+
+    expect(Stratox.getConfigs('directory')).toBe('/components/');
+    expect(Stratox.getConfigs('cache')).toBe(true);
   });
 });

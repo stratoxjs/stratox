@@ -8,8 +8,7 @@ import StratoxBuilder from '../src/StratoxBuilder';
 // datetime, hidden, textarea, submit) and what every field shares: the container,
 // attributes, names, values, type lookup and custom templates.
 // Read docs/guides/form-builder.md first. Configs are static, so the handlers are
-// restored after this file; setConfigs merges shallowly (audit stratox F12), so the
-// whole handlers object is passed.
+// restored after this file.
 
 let handlers;
 

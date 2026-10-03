@@ -94,7 +94,12 @@ export default class Stratox {
    * @param {object} configs
    */
   static setConfigs(configs) {
-    Object.assign(this.#configs, configs);
+    // "handlers" is merged one level deep, so { handlers: { fields } } keeps the default helper (audit F12)
+    const { handlers, ...rest } = configs;
+    Object.assign(this.#configs, rest);
+    if (typeof handlers === 'object' && handlers !== null) {
+      this.#configs.handlers = { ...this.#configs.handlers, ...handlers };
+    }
   }
 
   /**

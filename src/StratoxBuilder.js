@@ -402,6 +402,8 @@ export default class StratoxBuilder {
         const args = isNewStyle
           ? [
             {
+              // Services first, so a service cannot replace a built-in argument (audit F19)
+              ...this.containerInst.list(),
               props: dataArg,
               services: this.containerInst,
               helper,
@@ -414,7 +416,6 @@ export default class StratoxBuilder {
                 }
               },
               view: inst.view,
-              ...this.containerInst.list(),
             },
           ]
           : [dataArg, this.containerInst, helper, this];

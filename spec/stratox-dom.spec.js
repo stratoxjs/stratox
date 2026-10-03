@@ -74,7 +74,7 @@ afterAll(() => {
 });
 
 afterEach(() => {
-  Stratox.setConfigs({ popegation: true });
+  Stratox.setConfigs({ popegation: true, propagation: undefined });
   // Group events without a root element are bound to body and cannot be removed (audit stratox F41, F42),
   // so every test gets a new body element.
   document.body.replaceWith(document.createElement('body'));
@@ -183,6 +183,30 @@ describe('propagation protection', () => {
     item.set({ n: 3 }).update();
 
     expect(app().innerHTML).toBe('<b>3</b>');
+  });
+
+  test('propagation: false works like popegation: false (roadmap 3.5)', async () => {
+    function DomCounterAlias({ props }) { return `<b>${props.n}</b>`; }
+    const stratox = await mount((view) => view.view(DomCounterAlias, { n: 1 }));
+    const item = stratox.getItem();
+    Stratox.setConfigs({ propagation: false });
+
+    item.set({ n: 2 }).update();
+    item.set({ n: 3 }).update();
+
+    expect(app().innerHTML).toBe('<b>3</b>');
+  });
+
+  test('when both keys are set, propagation wins (roadmap 3.5)', async () => {
+    function DomCounterBoth({ props }) { return `<b>${props.n}</b>`; }
+    const stratox = await mount((view) => view.view(DomCounterBoth, { n: 1 }));
+    const item = stratox.getItem();
+    Stratox.setConfigs({ popegation: false, propagation: true });
+
+    item.set({ n: 2 }).update();
+    item.set({ n: 3 }).update();
+
+    expect(app().innerHTML).toBe('<b>2</b>');
   });
 });
 

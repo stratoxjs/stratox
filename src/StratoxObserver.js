@@ -9,11 +9,14 @@
 export default class StratoxObserver {
   #data = {};
 
-  #proxyData = {};
+  #isListening = false;
 
   #callables = [];
 
   notified;
+
+  // The global hook; kept apart from the static notified() method, so it cannot replace it (audit F2)
+  static #hook;
 
   constructor(defaults) {
     if (typeof defaults === 'object') this.#data = defaults;
@@ -25,13 +28,11 @@ export default class StratoxObserver {
      * @return {void}
      */
   set(obj) {
-    let newobj; const
-      inst = this;
-    if (typeof obj === 'function') {
-      newobj = obj(inst.#proxyData);
-      Object.assign(inst.#proxyData, newobj);
-    } else {
-      Object.assign(inst.#proxyData, obj);
+    const changes = (typeof obj === 'function') ? obj(this.#data) : obj;
+    Object.assign(this.#data, changes);
+    // Before listener() the data changes quietly; after it, one set() notifies once (audit F23)
+    if (this.#isListening) {
+      this.notify();
     }
   }
 
@@ -46,19 +47,11 @@ export default class StratoxObserver {
   }
 
   /**
-     * Proxy listener
+     * Start listening: from now on every set() notifies the factories
      * @return {self}
      */
   listener() {
-    const inst = this;
-    this.#proxyData = new Proxy(this.#data, {
-      set: (target, property, value) => {
-        const newTarget = target;
-        newTarget[property] = value;
-        inst.notify();
-        return true;
-      },
-    });
+    this.#isListening = true;
     return this;
   }
 
@@ -73,18 +66,18 @@ export default class StratoxObserver {
         fn(inst.#data);
       });
     }
-    if (typeof StratoxObserver.notified === 'function') {
-      StratoxObserver.notified(inst.#data);
+    if (typeof StratoxObserver.#hook === 'function') {
+      StratoxObserver.#hook(inst.#data);
     }
   }
 
   /**
-     * Access every notify call globally
-     * @param  {callable} call
+     * Access every notify call globally. A new hook replaces the previous one; null removes it.
+     * @param  {callable|null} call
      * @return {void}
      */
   static notified(call) {
-    StratoxObserver.notified = call;
+    StratoxObserver.#hook = (typeof call === 'function') ? call : undefined;
   }
 
   /**
@@ -93,7 +86,7 @@ export default class StratoxObserver {
      */
   stop() {
     this.#data = {};
-    this.#proxyData = {};
+    this.#isListening = false;
     this.#callables = [];
   }
 }

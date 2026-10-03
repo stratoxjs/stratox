@@ -310,8 +310,9 @@ export default class StratoxItem {
   }
 
   /**
-   * Get field html output
-   * @return {[type]} [description]
+   * The HTML of the whole view this item belongs to, rendered again: every item of the
+   * Stratox instance, not only this one (audit F27, kept by D-029)
+   * @return {string}
    */
   toString() {
     return this.#container.get('view').execute();

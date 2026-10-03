@@ -529,21 +529,31 @@ describe('through the form builder', () => {
     expect(stratox.execute()).toContain('<label>Via set');
   });
 
-  test('a numeric setValue renders an empty value (audit stratox F21)', () => {
+  test.each([
+    [5, '5'],
+    [0, '0'],
+  ])('a numeric setValue(%s) renders as text (audit stratox F21, fixed)', (value, text) => {
     const stratox = new Stratox();
-    stratox.form('amount').setValue(5);
+    stratox.form('amount').setValue(value);
 
-    expect(stratox.execute()).toContain('name="amount" value=""');
+    expect(stratox.execute()).toContain(`name="amount" value="${text}"`);
   });
 
   test.each([
-    ['setLabel', 'label'],
-    ['setDescription', 'description'],
-  ])('a numeric %s is not rendered (audit stratox F21)', (setter) => {
+    [12345, '<label>12345'],
+    [0, '<label>0'],
+  ])('a numeric setLabel(%s) renders (audit stratox F21, fixed)', (value, expected) => {
     const stratox = new Stratox();
-    stratox.form('amount')[setter](12345);
+    stratox.form('amount').setLabel(value);
 
-    expect(stratox.execute()).not.toContain('12345');
+    expect(stratox.execute()).toContain(expected);
+  });
+
+  test('a numeric setDescription renders (audit stratox F21, fixed)', () => {
+    const stratox = new Stratox();
+    stratox.form('amount').setDescription(12345);
+
+    expect(stratox.execute()).toContain('<div class="description legend">12345</div>');
   });
 
   test('setAttr(null) renders nothing; the TypeError escapes as a rejection (audit stratox F25, F3)', async () => {

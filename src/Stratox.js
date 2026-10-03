@@ -590,6 +590,15 @@ export default class Stratox {
   }
 
   /**
+   * Get the form values: the object given to setValues(), kept up to date while the user
+   * types and adds or removes group rows (V-9). It is the same object, not a copy.
+   * @return {object}
+   */
+  getValues() {
+    return this.#values;
+  }
+
+  /**
    * Advanced option to add view and form data
    * @param {mixed} key  The view key/name or object form StratoxItem instance
    * @param {object} data Pass data to view

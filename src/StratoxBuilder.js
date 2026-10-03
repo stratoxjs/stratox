@@ -119,9 +119,11 @@ export default class StratoxBuilder {
    * @return {string}
    */
   getAttrStr(attrObj) {
-    // Escaped, so a quote in a value cannot end the attribute (audit F11)
+    // Escaped, so a quote in a value cannot end the attribute (audit F11).
+    // false, null and undefined leave the attribute out; true writes it bare, e.g. disabled (audit F34)
     return Object.entries(attrObj)
-      .map(([key, value]) => ` ${key}="${this.escapeHtml(value)}"`)
+      .filter(([, value]) => value !== false && value !== null && value !== undefined)
+      .map(([key, value]) => ((value === true) ? ` ${key}` : ` ${key}="${this.escapeHtml(value)}"`))
       .join('');
   }
 

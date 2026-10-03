@@ -175,18 +175,21 @@ describe('text field and the container', () => {
 });
 
 describe('other simple field types', () => {
-  test('password renders a password input without the show-password button (audit stratox F28)', () => {
+  test('password renders a plain password input', () => {
     const output = render((form) => form.form('pw').setType('password'));
 
     expect(output).toContain('<input type="password" name="pw" value="" data-index="0" data-name="pw">');
     expect(output).not.toContain('wa-show-password-btn');
   });
 
-  test('attr.type "password" adds the show-password button, also on a text field (audit stratox F28)', () => {
+  test('attr.type "password" renders a plain password input, without the old button (audit stratox F28, fixed)', () => {
     const output = render((form) => form.form('pw').setAttr({ type: 'password' }));
 
-    expect(output).toContain('<div class="relative"><a class="abs right block middle over-1 pad wa-show-password-btn" href="#">');
-    expect(output).toContain('<input type="password" name="pw" value="" data-index="0" data-name="pw"></div></div>');
+    expect(output).toBe(
+      '<div id="wa-fi-view-0" data-index="0" class="mb-15 field-pw w-full">'
+      + '<input type="password" name="pw" value="" data-index="0" data-name="pw">'
+      + '</div>',
+    );
   });
 
   test.each([

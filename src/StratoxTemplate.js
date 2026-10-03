@@ -48,7 +48,6 @@ export default class StratoxTemplate extends StratoxBuilder {
     if (typeof newAttr !== 'object') newAttr = {};
 
     // Default
-    let out = '';
     const args = {
       type: 'text',
       name: this.name,
@@ -56,19 +55,8 @@ export default class StratoxTemplate extends StratoxBuilder {
       'data-index': this.index,
       ...newAttr,
     };
-    const type = (typeof this.attr.type === 'string' ? this.attr.type : null);
-    const attr = this.getAttr(args);
-
-    if (type === 'password') {
-      out += '<div class="relative">';
-      out += '<a class="abs right block middle over-1 pad wa-show-password-btn" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="17" cy="15" r="1"/><circle cx="16" cy="16" r="6"/><path d="M2 16S7 6 16 6s14 10 14 10-5 10-14 10S2 16 2 16Z"/></svg></a>';
-    }
-    out += `<input${attr}>`;
-    if (type === 'password') {
-      out += '</div>';
-    }
-
-    return out;
+    // The show-password button that attr.type "password" used to add had no script; removed (audit F28, D-029)
+    return `<input${this.getAttr(args)}>`;
   }
 
   /**

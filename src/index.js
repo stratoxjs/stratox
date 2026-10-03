@@ -10,7 +10,10 @@ import Stratox from './Stratox.js';
 import StratoxContainer from './StratoxContainer.js';
 import StratoxObserver from './StratoxObserver.js';
 import StratoxTemplate from './StratoxTemplate.js';
+import {
+  html, raw, escape, SafeHtml,
+} from './StratoxHtml.js';
 
 export {
-  Stratox, StratoxContainer, StratoxObserver, StratoxTemplate,
+  Stratox, StratoxContainer, StratoxObserver, StratoxTemplate, html, raw, escape, SafeHtml,
 };

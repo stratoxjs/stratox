@@ -394,8 +394,7 @@ export default class Stratox {
     if (key instanceof StratoxItem) {
       this.#components[key.getName()] = key;
     } else {
-      const viewKey = StratoxItem.getViewName(key);
-      const component = this.#findComponent(viewKey);
+      const component = this.#findComponent(key);
       if (typeof data === 'function') {
         data(component?.data, component);
       } else {
@@ -408,15 +407,21 @@ export default class Stratox {
   }
 
   /**
-   * Find a view by its full name. Before execute() the views are only in the creator list.
-   * @param  {string} viewKey  e.g. "Card#defualt"
+   * Find a view or form item by the name given to update(). A view is stored as "Card#defualt",
+   * a form item under its bare name (audit F32); a view wins when both exist.
+   * Before execute() the items are only in the creator list (audit F8).
+   * @param  {string} name  e.g. "Card", "Card#defualt" or a form field name
    * @return {StratoxItem|object|undefined}
    */
-  #findComponent(viewKey) {
-    if (this.#components[viewKey]) {
-      return this.#components[viewKey];
+  #findComponent(name) {
+    const viewKey = StratoxItem.getViewName(name);
+    const found = this.#components[viewKey] ?? this.#components[name];
+    if (found) {
+      return found;
     }
-    return Object.values(this.#creator).find((item) => item.getName() === viewKey);
+    const creatorItems = Object.values(this.#creator);
+    return creatorItems.find((item) => item.getName() === viewKey)
+      ?? creatorItems.find((item) => item.getName() === name);
   }
 
   /**

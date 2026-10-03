@@ -212,23 +212,29 @@ describe('checkbox', () => {
   });
 });
 
-describe('numeric values (audit stratox F33)', () => {
-  test('a number from setValues selects no option, because the item keys are strings', () => {
+describe('numeric values (audit stratox F33, fixed)', () => {
+  test('a number from setValues selects the option with that key (audit stratox F33, fixed)', () => {
     const output = render((form) => form.form('n').setType('select').setItems({ 1: 'One', 2: 'Two' }), { n: 1 });
 
-    expect(chosenValues(output)).toEqual([]);
+    expect(chosenValues(output)).toEqual(['1']);
   });
 
-  test('a number from setValues checks no radio', () => {
+  test('a number from setValues checks the radio with that key (audit stratox F33, fixed)', () => {
     const output = render((form) => form.form('n').setType('radio').setItems({ 1: 'One', 2: 'Two' }), { n: 2 });
 
-    expect(chosenValues(output)).toEqual([]);
+    expect(chosenValues(output)).toEqual(['2']);
   });
 
-  test('numbers in an array value check no checkbox; strings in it do', () => {
-    const output = render((form) => form.form('n').setType('checkbox').setItems({ 1: 'One', 2: 'Two' }), { n: [1, '2'] });
+  test('numbers and strings in an array value both check their checkboxes (audit stratox F33, fixed)', () => {
+    const output = render((form) => form.form('n').setType('checkbox').setItems({ 1: 'One', 2: 'Two', 3: 'Three' }), { n: [1, '2'] });
 
-    expect(chosenValues(output)).toEqual(['2']);
+    expect(chosenValues(output)).toEqual(['1', '2']);
+  });
+
+  test('0 selects the option "0" but not an empty option (audit stratox F33, fixed)', () => {
+    const output = render((form) => form.form('n').setType('select').setItems({ '': 'None', 0: 'Zero' }), { n: 0 });
+
+    expect(chosenValues(output)).toEqual(['0']);
   });
 });
 
